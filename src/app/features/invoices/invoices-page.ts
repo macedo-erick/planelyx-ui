@@ -1,7 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Paginator, PaginatorState } from 'primeng/paginator';
@@ -16,11 +15,11 @@ import { InvoiceStatus } from '../../shared/models/enums';
 import { Invoice } from '../../shared/models/invoice';
 import { emptyPage, PageResponse } from '../../shared/models/page';
 import { Transaction } from '../../shared/models/transaction';
-import { FintrackCard } from '../../shared/ui/card';
-import { FintrackEmptyState } from '../../shared/ui/empty-state';
-import { FintrackMonthNav } from '../../shared/ui/month-nav';
-import { FintrackPageHeader } from '../../shared/ui/page-header';
-import { FintrackTransactionRow } from '../../shared/ui/transaction-row';
+import { PlanelyxCard } from '../../shared/ui/card';
+import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
+import { PlanelyxMonthNav } from '../../shared/ui/month-nav';
+import { PlanelyxPageHeader } from '../../shared/ui/page-header';
+import { PlanelyxTransactionRow } from '../../shared/ui/transaction-row';
 import { daysUntil, fromIsoDate, startOfMonth, todayIso } from '../../shared/util/date';
 import { INVOICE_STATUS_LABELS, INVOICE_STATUS_SEVERITY } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
@@ -41,20 +40,19 @@ import { InvoiceService } from './invoice.service';
  * that fetching it once and slicing locally beats a round trip per step.
  */
 @Component({
-  selector: 'fintrack-invoices-page',
+  selector: 'planelyx-invoices-page',
   imports: [
     Button,
     Paginator,
     Popover,
-    RouterLink,
     Select,
     Tag,
     FormsModule,
-    FintrackCard,
-    FintrackEmptyState,
-    FintrackMonthNav,
-    FintrackPageHeader,
-    FintrackTransactionRow,
+    PlanelyxCard,
+    PlanelyxEmptyState,
+    PlanelyxMonthNav,
+    PlanelyxPageHeader,
+    PlanelyxTransactionRow,
     TransactionFormDialog,
   ],
   templateUrl: './invoices-page.html',

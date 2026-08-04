@@ -1,8 +1,8 @@
-import { Service, computed, inject, signal } from '@angular/core';
+import { computed, inject, Service, signal } from '@angular/core';
 import Keycloak from 'keycloak-js';
 
 /** The subset of Keycloak ID-token claims the UI cares about. */
-interface FintrackTokenClaims {
+interface PlanelyxTokenClaims {
   readonly sub?: string;
   readonly name?: string;
   readonly preferred_username?: string;
@@ -19,8 +19,8 @@ export class AuthService {
    * claims once at construction. `provideKeycloak` finishes init before the app
    * bootstraps, so the token is already present here.
    */
-  private readonly claims = signal<FintrackTokenClaims>(
-    (this.keycloak.tokenParsed ?? {}) as FintrackTokenClaims,
+  private readonly claims = signal<PlanelyxTokenClaims>(
+    (this.keycloak.tokenParsed ?? {}) as PlanelyxTokenClaims,
   );
 
   readonly isAuthenticated = computed(() => this.keycloak.authenticated ?? false);

@@ -6,12 +6,12 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "fintrack-ui": {
+    "planelyx-ui": {
       "projectType": "application",
       "schematics": {},
       "root": "",
       "sourceRoot": "src",
-      "prefix": "fintrack",
+      "prefix": "planelyx",
       "architect": {
         "build": {
           "builder": "@angular/build:application",
@@ -87,13 +87,13 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "fintrack-ui:build:production"
+              "buildTarget": "planelyx-ui:build:production"
             },
             "staging": {
-              "buildTarget": "fintrack-ui:build:staging"
+              "buildTarget": "planelyx-ui:build:staging"
             },
             "development": {
-              "buildTarget": "fintrack-ui:build:development"
+              "buildTarget": "planelyx-ui:build:development"
             }
           },
           "defaultConfiguration": "development"

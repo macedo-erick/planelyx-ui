@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 
 @Component({
-  selector: 'fintrack-not-found-page',
+  selector: 'planelyx-not-found-page',
   imports: [RouterLink, Button],
   template: `
     <div class="grid h-full place-items-center p-8 text-center">

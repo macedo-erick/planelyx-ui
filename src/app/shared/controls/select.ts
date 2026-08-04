@@ -4,19 +4,19 @@ import type { FormValueControl } from '@angular/forms/signals';
 import { Select } from 'primeng/select';
 
 import { SelectOption } from '../util/enum-labels';
-import { FintrackControlBase, generateControlId } from './control-base';
-import { FintrackFieldShell } from './field-shell';
+import { generateControlId, PlanelyxControlBase } from './control-base';
+import { PlanelyxFieldShell } from './field-shell';
 
 @Component({
-  selector: 'fintrack-select',
-  imports: [Select, FormsModule, FintrackFieldShell],
+  selector: 'planelyx-select',
+  imports: [Select, FormsModule, PlanelyxFieldShell],
   templateUrl: './select.html',
 })
-export class FintrackSelect<T> extends FintrackControlBase implements FormValueControl<T | null> {
+export class PlanelyxSelect<T> extends PlanelyxControlBase implements FormValueControl<T | null> {
   readonly value = model<T | null>(null);
   /** Mutable array type on purpose — PrimeNG's `options` input is not readonly. */
   readonly options = input.required<SelectOption<T>[]>();
   readonly showClear = input(false);
 
-  protected readonly inputId = generateControlId('fintrack-select');
+  protected readonly inputId = generateControlId('planelyx-select');
 }

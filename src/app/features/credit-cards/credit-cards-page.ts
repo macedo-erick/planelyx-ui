@@ -4,22 +4,22 @@ import { ProgressBar } from 'primeng/progressbar';
 
 import { Uuid } from '../../shared/models/common';
 import { CreditCard } from '../../shared/models/credit-card';
-import { FintrackCard } from '../../shared/ui/card';
-import { FintrackEmptyState } from '../../shared/ui/empty-state';
-import { FintrackPageHeader } from '../../shared/ui/page-header';
+import { PlanelyxCard } from '../../shared/ui/card';
+import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
+import { PlanelyxPageHeader } from '../../shared/ui/page-header';
 import { formatMoney } from '../../shared/util/money';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
 import { CreditCardFormDialog } from './credit-card-form-dialog';
 import { CreditCardService } from './credit-card.service';
 
 @Component({
-  selector: 'fintrack-credit-cards-page',
+  selector: 'planelyx-credit-cards-page',
   imports: [
     Button,
     ProgressBar,
-    FintrackCard,
-    FintrackPageHeader,
-    FintrackEmptyState,
+    PlanelyxCard,
+    PlanelyxPageHeader,
+    PlanelyxEmptyState,
     CreditCardFormDialog,
   ],
   templateUrl: './credit-cards-page.html',

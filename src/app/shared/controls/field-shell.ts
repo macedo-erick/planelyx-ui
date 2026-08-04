@@ -2,14 +2,14 @@ import { Component, computed, input } from '@angular/core';
 import type { ValidationError, WithOptionalFieldTree } from '@angular/forms/signals';
 
 /**
- * Label + control + error chrome shared by every `fintrack-*` control.
+ * Label + control + error chrome shared by every `planelyx-*` control.
  *
  * Centralising it here is what keeps the accessibility contract (label association,
  * `aria-describedby`, `role="alert"` on errors) correct in one place rather than in
  * every form across the app.
  */
 @Component({
-  selector: 'fintrack-field-shell',
+  selector: 'planelyx-field-shell',
   template: `
     <div class="flex flex-col gap-1.5">
       <label [attr.for]="inputId()" class="text-sm font-medium text-[var(--p-text-color)]">
@@ -41,7 +41,7 @@ import type { ValidationError, WithOptionalFieldTree } from '@angular/forms/sign
     }
   `,
 })
-export class FintrackFieldShell {
+export class PlanelyxFieldShell {
   readonly label = input.required<string>();
   readonly inputId = input.required<string>();
   readonly hint = input<string>('');

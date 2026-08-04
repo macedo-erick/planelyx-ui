@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 
 @Component({
-  selector: 'fintrack-empty-state',
+  selector: 'planelyx-empty-state',
   template: `
     <div class="flex flex-col items-center gap-2 px-4 py-12 text-center">
       <i
@@ -22,7 +22,7 @@ import { Component, input } from '@angular/core';
     }
   `,
 })
-export class FintrackEmptyState {
+export class PlanelyxEmptyState {
   readonly title = input.required<string>();
   readonly message = input<string>('');
   readonly icon = input('pi-inbox');

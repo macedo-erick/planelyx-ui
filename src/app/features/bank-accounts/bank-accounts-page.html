@@ -1,11 +1,11 @@
-<fintrack-page-header title="Bank accounts" subtitle="Where your money actually sits.">
+<planelyx-page-header title="Bank accounts" subtitle="Where your money actually sits.">
   <p-button icon="pi pi-plus" label="New account" (onClick)="openCreate()" />
-</fintrack-page-header>
+</planelyx-page-header>
 
 @if (service.isLoading()) {
   <p class="text-[var(--p-text-muted-color)]">Loading…</p>
 } @else if (accounts().length === 0) {
-  <fintrack-empty-state
+  <planelyx-empty-state
     icon="pi-building-columns"
     title="No accounts yet"
     message="Add an account before recording transactions or cards."
@@ -13,7 +13,7 @@
 } @else {
   <div class="grid gap-4 md:grid-cols-2">
     @for (account of accounts(); track account.id) {
-      <fintrack-card class="group relative">
+      <planelyx-card class="group relative">
         <!--
           The card body holds an <h2> and block-level content, which a <button> may not
           contain, so the whole-card-button trick used by the transaction rows does not
@@ -56,9 +56,9 @@
             {{ account.currency }} · {{ cardsLabel(account.id) }}
           </p>
         </div>
-      </fintrack-card>
+      </planelyx-card>
     }
   </div>
 }
 
-<fintrack-bank-account-form-dialog [(visible)]="dialogOpen" [account]="selected()" />
+<planelyx-bank-account-form-dialog [(visible)]="dialogOpen" [account]="selected()" />

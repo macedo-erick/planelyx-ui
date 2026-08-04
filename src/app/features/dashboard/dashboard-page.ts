@@ -9,24 +9,24 @@ import { environment } from '../../../environments/environment';
 import { IsoDate, Uuid } from '../../shared/models/common';
 import { Dashboard } from '../../shared/models/dashboard';
 import { InvoiceStatus } from '../../shared/models/enums';
-import { FintrackEmptyState } from '../../shared/ui/empty-state';
-import { FintrackMonthNav } from '../../shared/ui/month-nav';
-import { FintrackPageHeader } from '../../shared/ui/page-header';
+import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
+import { PlanelyxMonthNav } from '../../shared/ui/month-nav';
+import { PlanelyxPageHeader } from '../../shared/ui/page-header';
 import { daysUntil, fromIsoDate, startOfMonth, toIsoDate } from '../../shared/util/date';
 import { INVOICE_STATUS_LABELS, INVOICE_STATUS_SEVERITY } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
 import { CreditCardService } from '../credit-cards/credit-card.service';
 
 @Component({
-  selector: 'fintrack-dashboard-page',
+  selector: 'planelyx-dashboard-page',
   imports: [
     TableModule,
     Tag,
     UIChart,
     RouterLink,
-    FintrackMonthNav,
-    FintrackPageHeader,
-    FintrackEmptyState,
+    PlanelyxMonthNav,
+    PlanelyxPageHeader,
+    PlanelyxEmptyState,
   ],
   templateUrl: './dashboard-page.html',
 })

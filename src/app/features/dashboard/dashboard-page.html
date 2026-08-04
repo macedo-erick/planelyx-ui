@@ -1,6 +1,6 @@
-<fintrack-page-header title="Dashboard" [subtitle]="monthLabel()" />
+<planelyx-page-header title="Dashboard" [subtitle]="monthLabel()" />
 
-<fintrack-month-nav class="mb-4" [(month)]="month" />
+<planelyx-month-nav class="mb-4" [(month)]="month" />
 
 @if (incomplete()) {
   <p
@@ -61,7 +61,7 @@
     @if (hasBreakdown()) {
       <p-chart type="doughnut" [data]="chartData()" [options]="chartOptions" height="300px" />
     } @else {
-      <fintrack-empty-state
+      <planelyx-empty-state
         icon="pi-chart-pie"
         title="Nothing spent this month"
         message="Add a transaction to see the breakdown."
@@ -92,7 +92,7 @@
       <ng-template #emptymessage>
         <tr>
           <td colspan="2">
-            <fintrack-empty-state
+            <planelyx-empty-state
               icon="pi-building-columns"
               title="No accounts yet"
               message="Add one to start tracking."
@@ -137,7 +137,7 @@
       <ng-template #emptymessage>
         <tr>
           <td colspan="4">
-            <fintrack-empty-state icon="pi-check-circle" title="Nothing due" />
+            <planelyx-empty-state icon="pi-check-circle" title="Nothing due" />
           </td>
         </tr>
       </ng-template>

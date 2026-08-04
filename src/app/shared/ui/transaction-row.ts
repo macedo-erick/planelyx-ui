@@ -4,7 +4,7 @@ import { Category } from '../models/category';
 import { Transaction } from '../models/transaction';
 import { fromIsoDate } from '../util/date';
 import { formatMoney } from '../util/money';
-import { FintrackCategoryBadge } from './category-badge';
+import { PlanelyxCategoryBadge } from './category-badge';
 
 /**
  * One transaction as a list row: coloured category circle, description over a muted
@@ -17,8 +17,8 @@ import { FintrackCategoryBadge } from './category-badge';
  * is reachable by keyboard for free.
  */
 @Component({
-  selector: 'fintrack-transaction-row',
-  imports: [FintrackCategoryBadge],
+  selector: 'planelyx-transaction-row',
+  imports: [PlanelyxCategoryBadge],
   templateUrl: './transaction-row.html',
   styles: `
     :host {
@@ -26,7 +26,7 @@ import { FintrackCategoryBadge } from './category-badge';
     }
   `,
 })
-export class FintrackTransactionRow {
+export class PlanelyxTransactionRow {
   readonly transaction = input.required<Transaction>();
   /** Undefined when the category was deleted but the transaction still references it. */
   readonly category = input<Category | undefined>(undefined);

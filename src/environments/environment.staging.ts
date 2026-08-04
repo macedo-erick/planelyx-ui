@@ -2,11 +2,11 @@ import type { Environment } from './environment.model';
 
 export const environment: Environment = {
   production: false,
-  apiUrl: 'https://staging-api.fintrack.local/api',
+  apiUrl: 'https://staging-api.planelyx.local/api',
   keycloak: {
-    url: 'https://staging-auth.fintrack.local',
-    realm: 'fintrack',
-    clientId: 'fintrack-api',
+    url: 'https://staging-auth.planelyx.local',
+    realm: 'planelyx',
+    clientId: 'planelyx-api',
   },
   defaultCurrency: 'BRL',
   defaultLocale: 'pt-BR',

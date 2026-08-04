@@ -3,14 +3,14 @@ import { FormsModule } from '@angular/forms';
 import type { FormCheckboxControl } from '@angular/forms/signals';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 
-import { FintrackControlBase, generateControlId } from './control-base';
+import { generateControlId, PlanelyxControlBase } from './control-base';
 
 /**
  * Boolean toggle. Implements `FormCheckboxControl`, so it exposes `checked` rather than
  * `value` — the two contracts are mutually exclusive.
  */
 @Component({
-  selector: 'fintrack-switch',
+  selector: 'planelyx-switch',
   imports: [ToggleSwitch, FormsModule],
   template: `
     <div class="flex items-center gap-3">
@@ -36,8 +36,8 @@ import { FintrackControlBase, generateControlId } from './control-base';
     }
   `,
 })
-export class FintrackSwitch extends FintrackControlBase implements FormCheckboxControl {
+export class PlanelyxSwitch extends PlanelyxControlBase implements FormCheckboxControl {
   readonly checked = model<boolean>(false);
 
-  protected readonly inputId = generateControlId('fintrack-switch');
+  protected readonly inputId = generateControlId('planelyx-switch');
 }

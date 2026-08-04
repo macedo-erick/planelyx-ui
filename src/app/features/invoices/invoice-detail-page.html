@@ -1,4 +1,4 @@
-<fintrack-page-header [title]="heading()" [subtitle]="periodText()">
+<planelyx-page-header [title]="heading()" [subtitle]="periodText()">
   <p-button
     routerLink="/invoices"
     icon="pi pi-arrow-left"
@@ -13,25 +13,25 @@
       <p-button label="Mark paid" [disabled]="inv.totalAmount === 0" (onClick)="confirmPay(inv)" />
     }
   }
-</fintrack-page-header>
+</planelyx-page-header>
 
 @if (resource.isLoading()) {
   <p class="text-[var(--p-text-muted-color)]">Loading…</p>
 } @else if (invoice(); as inv) {
   <div class="mb-5 grid gap-4 sm:grid-cols-3">
-    <fintrack-card [padded]="true">
+    <planelyx-card [padded]="true">
       <div>
         <div class="text-xs text-[var(--p-text-muted-color)]">Total</div>
         <div class="text-2xl font-semibold tabular-nums">{{ money(inv.totalAmount) }}</div>
       </div>
-    </fintrack-card>
-    <fintrack-card [padded]="true">
+    </planelyx-card>
+    <planelyx-card [padded]="true">
       <div>
         <div class="text-xs text-[var(--p-text-muted-color)]">Due date</div>
         <div class="text-2xl font-semibold tabular-nums">{{ longDate(inv.dueDate) }}</div>
       </div>
-    </fintrack-card>
-    <fintrack-card [padded]="true">
+    </planelyx-card>
+    <planelyx-card [padded]="true">
       <div>
         <div class="mb-1 text-xs text-[var(--p-text-muted-color)]">Status</div>
         <p-tag [value]="statusLabel(inv.status)" [severity]="statusSeverity(inv.status)" />
@@ -41,25 +41,25 @@
           </div>
         }
       </div>
-    </fintrack-card>
+    </planelyx-card>
   </div>
 
   <h2 class="mb-2 text-lg font-medium">Charges</h2>
-  <fintrack-card>
+  <planelyx-card>
     @if (chargesResource.isLoading()) {
       <p class="px-4 py-12 text-center text-[var(--p-text-muted-color)]">Loading charges…</p>
     } @else if (charges().length === 0) {
-      <fintrack-empty-state icon="pi-receipt" title="No charges on this invoice" />
+      <planelyx-empty-state icon="pi-receipt" title="No charges on this invoice" />
     } @else {
       @for (tx of charges(); track tx.id) {
-        <fintrack-transaction-row
+        <planelyx-transaction-row
           [transaction]="tx"
           [category]="category(tx.categoryId)"
           [clickable]="false"
         />
       }
     }
-  </fintrack-card>
+  </planelyx-card>
 
   @if (chargeTotal() > 0) {
     <p-paginator
@@ -72,7 +72,7 @@
     />
   }
 } @else {
-  <fintrack-empty-state
+  <planelyx-empty-state
     icon="pi-exclamation-circle"
     title="Invoice not found"
     message="It may have been removed."

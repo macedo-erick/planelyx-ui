@@ -11,7 +11,7 @@ import {
   TransactionKind,
 } from '../models/enums';
 
-/** Option shape consumed by `fintrack-select`. */
+/** Option shape consumed by `planelyx-select`. */
 export interface SelectOption<T> {
   readonly label: string;
   readonly value: T;

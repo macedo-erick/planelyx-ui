@@ -2,10 +2,10 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Tag } from 'primeng/tag';
 
-import { FintrackCard } from '../../shared/ui/card';
-import { FintrackCategoryBadge } from '../../shared/ui/category-badge';
-import { FintrackEmptyState } from '../../shared/ui/empty-state';
-import { FintrackPageHeader } from '../../shared/ui/page-header';
+import { PlanelyxCard } from '../../shared/ui/card';
+import { PlanelyxCategoryBadge } from '../../shared/ui/category-badge';
+import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
+import { PlanelyxPageHeader } from '../../shared/ui/page-header';
 import { Category } from '../../shared/models/category';
 import { CategoryType } from '../../shared/models/enums';
 import { CATEGORY_TYPE_LABELS } from '../../shared/util/enum-labels';
@@ -13,14 +13,14 @@ import { CategoryFormDialog } from './category-form-dialog';
 import { CategoryService } from './category.service';
 
 @Component({
-  selector: 'fintrack-categories-page',
+  selector: 'planelyx-categories-page',
   imports: [
     Tag,
     Button,
-    FintrackCard,
-    FintrackPageHeader,
-    FintrackEmptyState,
-    FintrackCategoryBadge,
+    PlanelyxCard,
+    PlanelyxPageHeader,
+    PlanelyxEmptyState,
+    PlanelyxCategoryBadge,
     CategoryFormDialog,
   ],
   templateUrl: './categories-page.html',

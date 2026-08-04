@@ -7,17 +7,17 @@
   [draggable]="false"
 >
   <form class="flex flex-col gap-4" novalidate (ngSubmit)="onSubmit()">
-    <fintrack-text-input [formField]="f.name" label="Account name" placeholder="Everyday" />
-    <fintrack-text-input [formField]="f.bankName" label="Bank" placeholder="Nubank" />
-    <fintrack-select [formField]="f.accountType" label="Type" [options]="typeOptions" />
-    <fintrack-money-input
+    <planelyx-text-input [formField]="f.name" label="Account name" placeholder="Everyday" />
+    <planelyx-text-input [formField]="f.bankName" label="Bank" placeholder="Nubank" />
+    <planelyx-select [formField]="f.accountType" label="Type" [options]="typeOptions" />
+    <planelyx-money-input
       [formField]="f.initialBalance"
       label="Initial balance"
       [currency]="f.currency().value() || defaultCurrency"
       hint="The starting point. Transactions are applied on top of it."
     />
 
-    <fintrack-text-input
+    <planelyx-text-input
       [formField]="f.currency"
       label="Currency"
       placeholder="BRL"

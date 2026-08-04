@@ -25,11 +25,11 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 
-import { FintrackDatePicker } from '../../shared/controls/date-picker';
-import { FintrackMoneyInput } from '../../shared/controls/money-input';
-import { FintrackNumberInput } from '../../shared/controls/number-input';
-import { FintrackSelect } from '../../shared/controls/select';
-import { FintrackTextInput } from '../../shared/controls/text-input';
+import { PlanelyxDatePicker } from '../../shared/controls/date-picker';
+import { PlanelyxMoneyInput } from '../../shared/controls/money-input';
+import { PlanelyxNumberInput } from '../../shared/controls/number-input';
+import { PlanelyxSelect } from '../../shared/controls/select';
+import { PlanelyxTextInput } from '../../shared/controls/text-input';
 import { IsoDate, Uuid } from '../../shared/models/common';
 import { RecurrenceType, TransactionKind, TransactionScope } from '../../shared/models/enums';
 import {
@@ -89,16 +89,16 @@ const empty = (): TransactionFormModel => ({
 });
 
 @Component({
-  selector: 'fintrack-transaction-form-dialog',
+  selector: 'planelyx-transaction-form-dialog',
   imports: [
     Dialog,
     Button,
     FormField,
-    FintrackSelect,
-    FintrackTextInput,
-    FintrackMoneyInput,
-    FintrackNumberInput,
-    FintrackDatePicker,
+    PlanelyxSelect,
+    PlanelyxTextInput,
+    PlanelyxMoneyInput,
+    PlanelyxNumberInput,
+    PlanelyxDatePicker,
     FormsModule,
     RecurrenceScopeDialog,
   ],

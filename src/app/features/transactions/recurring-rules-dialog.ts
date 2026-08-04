@@ -9,8 +9,8 @@ import { Category } from '../../shared/models/category';
 import { IsoDate, Uuid } from '../../shared/models/common';
 import { RecurrenceType } from '../../shared/models/enums';
 import { TransactionTemplate } from '../../shared/models/transaction-template';
-import { FintrackCategoryBadge } from '../../shared/ui/category-badge';
-import { FintrackEmptyState } from '../../shared/ui/empty-state';
+import { PlanelyxCategoryBadge } from '../../shared/ui/category-badge';
+import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
 import { fromIsoDate } from '../../shared/util/date';
 import { RECURRENCE_TYPE_LABELS } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
@@ -27,8 +27,8 @@ import { TransactionTemplateService } from './transaction-template.service';
  * endpoint and DELETE is a soft deactivate.
  */
 @Component({
-  selector: 'fintrack-recurring-rules-dialog',
-  imports: [Dialog, TableModule, Tag, Button, FintrackEmptyState, FintrackCategoryBadge],
+  selector: 'planelyx-recurring-rules-dialog',
+  imports: [Dialog, TableModule, Tag, Button, PlanelyxEmptyState, PlanelyxCategoryBadge],
   templateUrl: './recurring-rules-dialog.html',
 })
 export class RecurringRulesDialog {

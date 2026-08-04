@@ -5,8 +5,8 @@ import { InputNumber } from 'primeng/inputnumber';
 
 import { environment } from '../../../environments/environment';
 import { Money } from '../models/common';
-import { FintrackControlBase, generateControlId } from './control-base';
-import { FintrackFieldShell } from './field-shell';
+import { generateControlId, PlanelyxControlBase } from './control-base';
+import { PlanelyxFieldShell } from './field-shell';
 
 /**
  * Currency input backed by PrimeNG's InputNumber.
@@ -16,10 +16,10 @@ import { FintrackFieldShell } from './field-shell';
  * binds to.
  */
 @Component({
-  selector: 'fintrack-money-input',
-  imports: [InputNumber, FormsModule, FintrackFieldShell],
+  selector: 'planelyx-money-input',
+  imports: [InputNumber, FormsModule, PlanelyxFieldShell],
   template: `
-    <fintrack-field-shell
+    <planelyx-field-shell
       [label]="label()"
       [inputId]="inputId"
       [hint]="hint()"
@@ -46,10 +46,10 @@ import { FintrackFieldShell } from './field-shell';
         [ariaDescribedBy]="describedBy"
         [fluid]="true"
       />
-    </fintrack-field-shell>
+    </planelyx-field-shell>
   `,
 })
-export class FintrackMoneyInput extends FintrackControlBase implements FormValueControl<Money> {
+export class PlanelyxMoneyInput extends PlanelyxControlBase implements FormValueControl<Money> {
   readonly value = model<Money>(0);
   readonly currency = input(environment.defaultCurrency);
   /** Bound automatically from `min()`/`max()` rules in the form schema. */
@@ -57,7 +57,7 @@ export class FintrackMoneyInput extends FintrackControlBase implements FormValue
   readonly max = input<number | undefined>(undefined);
 
   protected readonly locale = environment.defaultLocale;
-  protected readonly inputId = generateControlId('fintrack-money');
+  protected readonly inputId = generateControlId('planelyx-money');
   protected readonly describedBy = `${this.inputId}-hint ${this.inputId}-error`;
 
   /** InputNumber emits null when cleared; the model is non-nullable, so normalize to 0. */

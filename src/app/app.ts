@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
-  selector: 'fintrack-root',
+  selector: 'planelyx-root',
   imports: [RouterOutlet],
   template: `<router-outlet />`,
 })

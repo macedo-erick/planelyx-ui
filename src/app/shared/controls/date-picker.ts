@@ -6,8 +6,8 @@ import { DatePicker } from 'primeng/datepicker';
 import { environment } from '../../../environments/environment';
 import { IsoDate } from '../models/common';
 import { fromIsoDate, toIsoDate } from '../util/date';
-import { FintrackControlBase, generateControlId } from './control-base';
-import { FintrackFieldShell } from './field-shell';
+import { generateControlId, PlanelyxControlBase } from './control-base';
+import { PlanelyxFieldShell } from './field-shell';
 
 /**
  * Date input whose model value is the API's `LocalDate` string, not a `Date`.
@@ -17,10 +17,10 @@ import { FintrackFieldShell } from './field-shell';
  * which works in local date parts — so the selected day never shifts by a timezone offset.
  */
 @Component({
-  selector: 'fintrack-date-picker',
-  imports: [DatePicker, FormsModule, FintrackFieldShell],
+  selector: 'planelyx-date-picker',
+  imports: [DatePicker, FormsModule, PlanelyxFieldShell],
   template: `
-    <fintrack-field-shell
+    <planelyx-field-shell
       [label]="label()"
       [inputId]="inputId"
       [hint]="hint()"
@@ -45,17 +45,17 @@ import { FintrackFieldShell } from './field-shell';
         appendTo="body"
         [fluid]="true"
       />
-    </fintrack-field-shell>
+    </planelyx-field-shell>
   `,
 })
-export class FintrackDatePicker
-  extends FintrackControlBase
+export class PlanelyxDatePicker
+  extends PlanelyxControlBase
   implements FormValueControl<IsoDate | null>
 {
   readonly value = model<IsoDate | null>(null);
 
   protected readonly locale = environment.defaultLocale;
-  protected readonly inputId = generateControlId('fintrack-date');
+  protected readonly inputId = generateControlId('planelyx-date');
 
   /** Follows `value()` but is what the picker actually binds to. */
   protected readonly displayValue = linkedSignal(() => fromIsoDate(this.value()));

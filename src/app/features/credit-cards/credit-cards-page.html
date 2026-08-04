@@ -1,14 +1,14 @@
-<fintrack-page-header title="Credit cards" subtitle="Each one bills against an account.">
+<planelyx-page-header title="Credit cards" subtitle="Each one bills against an account.">
   <p-button
     icon="pi pi-plus"
     label="New credit card"
     [disabled]="!hasAccounts()"
     (onClick)="openCreate()"
   />
-</fintrack-page-header>
+</planelyx-page-header>
 
 @if (!hasAccounts()) {
-  <fintrack-empty-state
+  <planelyx-empty-state
     icon="pi-building-columns"
     title="Add a bank account first"
     message="Cards must be attached to an account, so create one before adding a card."
@@ -16,7 +16,7 @@
 } @else if (service.isLoading()) {
   <p class="text-[var(--p-text-muted-color)]">Loading…</p>
 } @else if (cards().length === 0) {
-  <fintrack-empty-state
+  <planelyx-empty-state
     icon="pi-credit-card"
     title="No cards yet"
     message="Add a card to start tracking charges and invoices."
@@ -24,7 +24,7 @@
 } @else {
   <div class="grid gap-4 md:grid-cols-2">
     @for (card of cards(); track card.id) {
-      <fintrack-card class="group relative">
+      <planelyx-card class="group relative">
         <!--
           Overlay rather than wrapping the body in a <button>: the card holds an <h2> and a
           progress bar, neither of which is valid button content. Delete lives in the edit
@@ -80,9 +80,9 @@
             {{ card.closingDay }} · due day {{ card.dueDay }}
           </p>
         </div>
-      </fintrack-card>
+      </planelyx-card>
     }
   </div>
 }
 
-<fintrack-credit-card-form-dialog [(visible)]="dialogOpen" [card]="selected()" />
+<planelyx-credit-card-form-dialog [(visible)]="dialogOpen" [card]="selected()" />

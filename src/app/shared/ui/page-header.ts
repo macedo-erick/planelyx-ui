@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 
 @Component({
-  selector: 'fintrack-page-header',
+  selector: 'planelyx-page-header',
   template: `
     <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
       <div>
@@ -21,7 +21,7 @@ import { Component, input } from '@angular/core';
     }
   `,
 })
-export class FintrackPageHeader {
+export class PlanelyxPageHeader {
   readonly title = input.required<string>();
   readonly subtitle = input<string>('');
 }

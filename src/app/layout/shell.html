@@ -8,7 +8,7 @@
     </nav>
   </aside>
 
-  <p-drawer [(visible)]="mobileNavOpen" header="Fintrack" styleClass="w-72">
+  <p-drawer [(visible)]="mobileNavOpen" header="Planelyx" styleClass="w-72">
     <nav aria-label="Main">
       <ng-container *ngTemplateOutlet="navLinks" />
     </nav>
@@ -28,8 +28,8 @@
       </button>
 
       <a [routerLink]="homeRoute" class="flex items-center gap-2 rounded font-semibold lg:hidden">
-        <fintrack-logo size="1.25rem" />
-        Fintrack
+        <planelyx-logo size="1.25rem" />
+        Planelyx
       </a>
 
       <div class="ml-auto flex items-center gap-2">
@@ -87,8 +87,8 @@
     [routerLink]="homeRoute"
     class="flex h-16 shrink-0 items-center gap-2 border-b border-[var(--p-content-border-color)] px-5 text-lg font-semibold"
   >
-    <fintrack-logo size="1.5rem" />
-    Fintrack
+    <planelyx-logo size="1.5rem" />
+    Planelyx
   </a>
 </ng-template>
 

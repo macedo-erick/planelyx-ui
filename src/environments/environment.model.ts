@@ -1,7 +1,7 @@
 /** Shape every environment file must satisfy. Keeps the variants from drifting apart. */
 export interface Environment {
   readonly production: boolean;
-  /** Base URL of the Fintrack API, including the `/api` prefix and no trailing slash. */
+  /** Base URL of the Planelyx API, including the `/api` prefix and no trailing slash. */
   readonly apiUrl: string;
   readonly keycloak: {
     /** Keycloak base URL, without `/realms/...`. */

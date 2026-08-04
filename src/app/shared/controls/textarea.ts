@@ -2,14 +2,14 @@ import { Component, input, model } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { Textarea } from 'primeng/textarea';
 
-import { FintrackControlBase, generateControlId } from './control-base';
-import { FintrackFieldShell } from './field-shell';
+import { generateControlId, PlanelyxControlBase } from './control-base';
+import { PlanelyxFieldShell } from './field-shell';
 
 @Component({
-  selector: 'fintrack-textarea',
-  imports: [Textarea, FintrackFieldShell],
+  selector: 'planelyx-textarea',
+  imports: [Textarea, PlanelyxFieldShell],
   template: `
-    <fintrack-field-shell
+    <planelyx-field-shell
       [label]="label()"
       [inputId]="inputId"
       [hint]="hint()"
@@ -34,15 +34,15 @@ import { FintrackFieldShell } from './field-shell';
         (blur)="touch.emit()"
         class="w-full"
       ></textarea>
-    </fintrack-field-shell>
+    </planelyx-field-shell>
   `,
 })
-export class FintrackTextarea extends FintrackControlBase implements FormValueControl<string> {
+export class PlanelyxTextarea extends PlanelyxControlBase implements FormValueControl<string> {
   readonly value = model<string>('');
   readonly rows = input(3);
   readonly maxLength = input<number | undefined>(undefined);
 
-  protected readonly inputId = generateControlId('fintrack-textarea');
+  protected readonly inputId = generateControlId('planelyx-textarea');
   protected readonly describedBy = `${this.inputId}-hint ${this.inputId}-error`;
 
   protected onInput(event: Event): void {

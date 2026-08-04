@@ -34,7 +34,7 @@
         <td>
           <div class="font-medium">{{ tpl.description }}</div>
           <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
-            <fintrack-category-badge [category]="category(tpl.categoryId)" [showName]="true" />
+            <planelyx-category-badge [category]="category(tpl.categoryId)" [showName]="true" />
           </div>
         </td>
         <td>
@@ -83,7 +83,7 @@
     <ng-template #emptymessage>
       <tr>
         <td colspan="7">
-          <fintrack-empty-state
+          <planelyx-empty-state
             icon="pi-replay"
             title="No recurring rules"
             message="Add a transaction and set it to repeat, or split a card purchase into installments."

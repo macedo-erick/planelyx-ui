@@ -13,7 +13,7 @@ import { TransactionScope } from '../../shared/models/enums';
  * and there are three answers here.
  */
 @Component({
-  selector: 'fintrack-recurrence-scope-dialog',
+  selector: 'planelyx-recurrence-scope-dialog',
   imports: [Dialog, Button, RadioButton, FormsModule],
   templateUrl: './recurrence-scope-dialog.html',
 })

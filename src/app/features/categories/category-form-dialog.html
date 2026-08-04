@@ -7,16 +7,16 @@
   [draggable]="false"
 >
   <form class="flex flex-col gap-4" novalidate (ngSubmit)="onSubmit()">
-    <fintrack-text-input [formField]="f.name" label="Name" placeholder="Groceries" />
+    <planelyx-text-input [formField]="f.name" label="Name" placeholder="Groceries" />
 
-    <fintrack-select
+    <planelyx-select
       [formField]="f.type"
       label="Type"
       [options]="typeOptions"
       hint="Income categories are for money coming in."
     />
 
-    <fintrack-select
+    <planelyx-select
       [formField]="f.icon"
       label="Icon"
       [options]="iconOptions"

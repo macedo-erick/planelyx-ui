@@ -10,7 +10,7 @@ import { Category } from '../models/category';
  * and search-in-page still find it. Set `showName` where there is room for both.
  */
 @Component({
-  selector: 'fintrack-category-badge',
+  selector: 'planelyx-category-badge',
   template: `
     <span class="inline-flex items-center gap-2" [attr.title]="name()">
       <span
@@ -35,7 +35,7 @@ import { Category } from '../models/category';
     }
   `,
 })
-export class FintrackCategoryBadge {
+export class PlanelyxCategoryBadge {
   /** Undefined when the category was deleted but transactions still reference it. */
   readonly category = input<Category | undefined>(undefined);
   readonly showName = input(false);

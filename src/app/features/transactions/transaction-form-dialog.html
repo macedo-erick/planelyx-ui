@@ -16,18 +16,18 @@
         </p>
       </div>
     } @else {
-      <fintrack-select [formField]="f.repeats" label="Repeats" [options]="repeatOptions" />
+      <planelyx-select [formField]="f.repeats" label="Repeats" [options]="repeatOptions" />
 
       @if (isInstallment()) {
         <div class="rounded-md bg-[var(--p-content-hover-background)] px-3 py-2 text-xs">
           Installments are card purchases, so the type is fixed to a card charge.
         </div>
       } @else {
-        <fintrack-select [formField]="f.kind" label="Type" [options]="kindOptions" />
+        <planelyx-select [formField]="f.kind" label="Type" [options]="kindOptions" />
       }
 
       @if (!f.bankAccountId().hidden()) {
-        <fintrack-select
+        <planelyx-select
           [formField]="f.bankAccountId"
           label="Bank account"
           [options]="accountOptions()"
@@ -35,7 +35,7 @@
       }
 
       @if (!f.creditCardId().hidden()) {
-        <fintrack-select
+        <planelyx-select
           [formField]="f.creditCardId"
           label="Credit card"
           [options]="cardOptions()"
@@ -44,17 +44,17 @@
       }
     }
 
-    <fintrack-select [formField]="f.categoryId" label="Category" [options]="categoryOptions()" />
-    <fintrack-money-input [formField]="f.amount" [label]="amountLabel()" [hint]="amountHint()" />
-    <fintrack-date-picker [formField]="f.transactionDate" [label]="dateLabel()" />
-    <fintrack-text-input
+    <planelyx-select [formField]="f.categoryId" label="Category" [options]="categoryOptions()" />
+    <planelyx-money-input [formField]="f.amount" [label]="amountLabel()" [hint]="amountHint()" />
+    <planelyx-date-picker [formField]="f.transactionDate" [label]="dateLabel()" />
+    <planelyx-text-input
       [formField]="f.description"
       label="Description"
       placeholder="Weekly shop"
     />
 
     @if (!f.totalOccurrences().hidden()) {
-      <fintrack-number-input [formField]="f.totalOccurrences" [label]="occurrencesLabel()" />
+      <planelyx-number-input [formField]="f.totalOccurrences" [label]="occurrencesLabel()" />
     }
 
     @if (previewSummary()) {
@@ -92,7 +92,7 @@
   </form>
 </p-dialog>
 
-<fintrack-recurrence-scope-dialog
+<planelyx-recurrence-scope-dialog
   [(visible)]="scopeOpen"
   [mode]="scopeMode()"
   [installment]="isInstallmentSeries()"

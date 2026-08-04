@@ -5,9 +5,9 @@ import { Tag } from 'primeng/tag';
 import { BankAccount } from '../../shared/models/bank-account';
 import { Uuid } from '../../shared/models/common';
 import { AccountType } from '../../shared/models/enums';
-import { FintrackCard } from '../../shared/ui/card';
-import { FintrackEmptyState } from '../../shared/ui/empty-state';
-import { FintrackPageHeader } from '../../shared/ui/page-header';
+import { PlanelyxCard } from '../../shared/ui/card';
+import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
+import { PlanelyxPageHeader } from '../../shared/ui/page-header';
 import { ACCOUNT_TYPE_LABELS } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
 import { CreditCardService } from '../credit-cards/credit-card.service';
@@ -15,13 +15,13 @@ import { BankAccountFormDialog } from './bank-account-form-dialog';
 import { BankAccountService } from './bank-account.service';
 
 @Component({
-  selector: 'fintrack-bank-accounts-page',
+  selector: 'planelyx-bank-accounts-page',
   imports: [
     Tag,
     Button,
-    FintrackCard,
-    FintrackPageHeader,
-    FintrackEmptyState,
+    PlanelyxCard,
+    PlanelyxPageHeader,
+    PlanelyxEmptyState,
     BankAccountFormDialog,
   ],
   templateUrl: './bank-accounts-page.html',

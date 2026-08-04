@@ -1,4 +1,4 @@
-<fintrack-page-header title="Transactions" subtitle="Debits, credits and card charges.">
+<planelyx-page-header title="Transactions" subtitle="Debits, credits and card charges.">
   <p-button
     icon="pi pi-replay"
     label="Recurring rules"
@@ -7,7 +7,7 @@
     (onClick)="rulesOpen.set(true)"
   />
   <p-button icon="pi pi-plus" label="Add a transaction" (onClick)="openCreate()" />
-</fintrack-page-header>
+</planelyx-page-header>
 
 <div class="mb-4 flex flex-wrap items-end gap-3">
   <div class="flex flex-col gap-1">
@@ -77,18 +77,18 @@
   </div>
 </div>
 
-<fintrack-card>
+<planelyx-card>
   @if (service.isLoading()) {
     <p class="px-4 py-12 text-center text-[var(--p-text-muted-color)]">Loading…</p>
   } @else if (rows().length === 0) {
-    <fintrack-empty-state
+    <planelyx-empty-state
       icon="pi-arrow-right-arrow-left"
       title="Nothing here"
       message="No transactions match the current filters."
     />
   } @else {
     @for (tx of rows(); track tx.id) {
-      <fintrack-transaction-row
+      <planelyx-transaction-row
         [transaction]="tx"
         [category]="category(tx.categoryId)"
         [secondary]="sourceName(tx)"
@@ -96,7 +96,7 @@
       />
     }
   }
-</fintrack-card>
+</planelyx-card>
 
 @if (service.totalElements() > 0) {
   <!--
@@ -114,5 +114,5 @@
   />
 }
 
-<fintrack-transaction-form-dialog [(visible)]="dialogOpen" [transaction]="selected()" />
-<fintrack-recurring-rules-dialog [(visible)]="rulesOpen" />
+<planelyx-transaction-form-dialog [(visible)]="dialogOpen" [transaction]="selected()" />
+<planelyx-recurring-rules-dialog [(visible)]="rulesOpen" />

@@ -1,16 +1,16 @@
 import { Component, input } from '@angular/core';
 
 /**
- * The Fintrack mark — the same rounded square and rising bars as `public/favicon.svg`, so the
+ * The Planelyx mark — the same rounded square and rising bars as `public/favicon.svg`, so the
  * browser tab and the in-app brand read as one icon rather than two unrelated ones.
  *
  * Kept as markup instead of an `<img src="favicon.svg">` so it inherits the surrounding text
  * size and never flashes in unstyled while the file loads.
  */
 @Component({
-  selector: 'fintrack-logo',
+  selector: 'planelyx-logo',
   template: `
-    <svg viewBox="0 0 1024 1024" role="img" aria-label="Fintrack" [style.width]="size()">
+    <svg viewBox="0 0 1024 1024" role="img" aria-label="Planelyx" [style.width]="size()">
       <defs>
         <linearGradient [attr.id]="gradientId" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stop-color="#34d399" />
@@ -35,7 +35,7 @@ import { Component, input } from '@angular/core';
     }
   `,
 })
-export class FintrackLogo {
+export class PlanelyxLogo {
   /** Any CSS length; the mark is always square. */
   readonly size = input('1.5rem');
 
@@ -43,7 +43,7 @@ export class FintrackLogo {
    * The gradient is referenced by `url(#…)`, which is document-scoped — two logos on the page
    * with the same id would be invalid markup, so each instance gets its own.
    */
-  protected readonly gradientId = `fintrack-logo-${++instances}`;
+  protected readonly gradientId = `planelyx-logo-${++instances}`;
 }
 
 let instances = 0;

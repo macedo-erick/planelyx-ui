@@ -2,14 +2,14 @@ import { Component, input, model } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { InputText } from 'primeng/inputtext';
 
-import { FintrackControlBase, generateControlId } from './control-base';
-import { FintrackFieldShell } from './field-shell';
+import { generateControlId, PlanelyxControlBase } from './control-base';
+import { PlanelyxFieldShell } from './field-shell';
 
 @Component({
-  selector: 'fintrack-text-input',
-  imports: [InputText, FintrackFieldShell],
+  selector: 'planelyx-text-input',
+  imports: [InputText, PlanelyxFieldShell],
   template: `
-    <fintrack-field-shell
+    <planelyx-field-shell
       [label]="label()"
       [inputId]="inputId"
       [hint]="hint()"
@@ -34,15 +34,15 @@ import { FintrackFieldShell } from './field-shell';
         (blur)="touch.emit()"
         class="w-full"
       />
-    </fintrack-field-shell>
+    </planelyx-field-shell>
   `,
 })
-export class FintrackTextInput extends FintrackControlBase implements FormValueControl<string> {
+export class PlanelyxTextInput extends PlanelyxControlBase implements FormValueControl<string> {
   readonly value = model<string>('');
   readonly type = input<'text' | 'email' | 'search'>('text');
   readonly maxLength = input<number | undefined>(undefined);
 
-  protected readonly inputId = generateControlId('fintrack-text');
+  protected readonly inputId = generateControlId('planelyx-text');
   protected readonly describedBy = `${this.inputId}-hint ${this.inputId}-error`;
 
   protected onInput(event: Event): void {

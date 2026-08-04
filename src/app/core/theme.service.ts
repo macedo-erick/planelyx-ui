@@ -1,6 +1,6 @@
-import { Service, effect, signal } from '@angular/core';
+import { effect, Service, signal } from '@angular/core';
 
-const STORAGE_KEY = 'fintrack.theme';
+const STORAGE_KEY = 'planelyx.theme';
 
 /** Matches `darkModeSelector` in providePrimeNG and the `dark:` variant in styles.css. */
 const DARK_CLASS = 'app-dark';

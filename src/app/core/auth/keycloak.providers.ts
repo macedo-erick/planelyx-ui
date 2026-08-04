@@ -1,11 +1,11 @@
 import { EnvironmentProviders, Provider } from '@angular/core';
 import {
   AutoRefreshTokenService,
+  createInterceptorCondition,
   INCLUDE_BEARER_TOKEN_INTERCEPTOR_CONFIG,
   IncludeBearerTokenCondition,
-  UserActivityService,
-  createInterceptorCondition,
   provideKeycloak,
+  UserActivityService,
   withAutoRefreshToken,
 } from 'keycloak-angular';
 
@@ -34,14 +34,12 @@ export const provideKeycloakAuth = (): EnvironmentProviders =>
       clientId: environment.keycloak.clientId,
     },
     initOptions: {
-
       onLoad: 'check-sso',
       pkceMethod: 'S256',
       silentCheckSsoRedirectUri: `${window.location.origin}/silent-check-sso.html`,
     },
     features: [
       withAutoRefreshToken({
-
         onInactivityTimeout: 'logout',
         sessionTimeout: 30 * 60 * 1000,
       }),
@@ -49,7 +47,7 @@ export const provideKeycloakAuth = (): EnvironmentProviders =>
     providers: [AutoRefreshTokenService, UserActivityService],
   });
 
-/** Provider that scopes the bearer-token interceptor to the Fintrack API only. */
+/** Provider that scopes the bearer-token interceptor to the Planelyx API only. */
 export const keycloakBearerTokenConfig: Provider = {
   provide: INCLUDE_BEARER_TOKEN_INTERCEPTOR_CONFIG,
   useValue: [apiUrlCondition],

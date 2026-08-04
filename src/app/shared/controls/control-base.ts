@@ -20,7 +20,7 @@ export function generateControlId(prefix: string): string {
  * field, so declaring them here means each wrapper only has to declare its `value`.
  */
 @Directive()
-export abstract class FintrackControlBase {
+export abstract class PlanelyxControlBase {
   readonly label = input.required<string>();
   readonly hint = input<string>('');
   readonly placeholder = input<string>('');

@@ -3,15 +3,15 @@ import { FormsModule } from '@angular/forms';
 import type { FormValueControl } from '@angular/forms/signals';
 import { InputNumber } from 'primeng/inputnumber';
 
-import { FintrackControlBase, generateControlId } from './control-base';
-import { FintrackFieldShell } from './field-shell';
+import { generateControlId, PlanelyxControlBase } from './control-base';
+import { PlanelyxFieldShell } from './field-shell';
 
 /** Plain integer input — used for closing/due day and occurrence counts. */
 @Component({
-  selector: 'fintrack-number-input',
-  imports: [InputNumber, FormsModule, FintrackFieldShell],
+  selector: 'planelyx-number-input',
+  imports: [InputNumber, FormsModule, PlanelyxFieldShell],
   template: `
-    <fintrack-field-shell
+    <planelyx-field-shell
       [label]="label()"
       [inputId]="inputId"
       [hint]="hint()"
@@ -37,11 +37,11 @@ import { FintrackFieldShell } from './field-shell';
         [ariaDescribedBy]="describedBy"
         [fluid]="true"
       />
-    </fintrack-field-shell>
+    </planelyx-field-shell>
   `,
 })
-export class FintrackNumberInput
-  extends FintrackControlBase
+export class PlanelyxNumberInput
+  extends PlanelyxControlBase
   implements FormValueControl<number | null>
 {
   readonly value = model<number | null>(null);
@@ -49,7 +49,7 @@ export class FintrackNumberInput
   readonly max = input<number | undefined>(undefined);
   readonly showButtons = input(true);
 
-  protected readonly inputId = generateControlId('fintrack-number');
+  protected readonly inputId = generateControlId('planelyx-number');
   protected readonly describedBy = `${this.inputId}-hint ${this.inputId}-error`;
 
   protected onChange(next: number | null): void {

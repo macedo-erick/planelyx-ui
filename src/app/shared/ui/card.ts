@@ -8,7 +8,7 @@ import { Component, input } from '@angular/core';
  * everything else, so a header can keep its own padding while the body stays flush.
  */
 @Component({
-  selector: 'fintrack-card',
+  selector: 'planelyx-card',
   template: `
     <div
       class="overflow-hidden rounded-xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] shadow-sm"
@@ -24,7 +24,7 @@ import { Component, input } from '@angular/core';
     }
   `,
 })
-export class FintrackCard {
+export class PlanelyxCard {
   /**
    * Off by default: a list of rows draws its own edge-to-edge separators and must not be
    * inset. Turn it on for cards holding plain content.

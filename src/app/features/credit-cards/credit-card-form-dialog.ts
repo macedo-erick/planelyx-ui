@@ -15,10 +15,10 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 
-import { FintrackMoneyInput } from '../../shared/controls/money-input';
-import { FintrackNumberInput } from '../../shared/controls/number-input';
-import { FintrackSelect } from '../../shared/controls/select';
-import { FintrackTextInput } from '../../shared/controls/text-input';
+import { PlanelyxMoneyInput } from '../../shared/controls/money-input';
+import { PlanelyxNumberInput } from '../../shared/controls/number-input';
+import { PlanelyxSelect } from '../../shared/controls/select';
+import { PlanelyxTextInput } from '../../shared/controls/text-input';
 import { Uuid } from '../../shared/models/common';
 import { CreditCard, CreditCardRequest } from '../../shared/models/credit-card';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
@@ -44,15 +44,15 @@ const empty = (): CreditCardFormModel => ({
 });
 
 @Component({
-  selector: 'fintrack-credit-card-form-dialog',
+  selector: 'planelyx-credit-card-form-dialog',
   imports: [
     Dialog,
     Button,
     FormField,
-    FintrackTextInput,
-    FintrackSelect,
-    FintrackMoneyInput,
-    FintrackNumberInput,
+    PlanelyxTextInput,
+    PlanelyxSelect,
+    PlanelyxMoneyInput,
+    PlanelyxNumberInput,
     FormsModule,
   ],
   templateUrl: './credit-card-form-dialog.html',

@@ -1,15 +1,15 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { FormField, form, required } from '@angular/forms/signals';
+import { form, FormField, required } from '@angular/forms/signals';
 import { providePrimeNG } from 'primeng/config';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { toIsoDate } from '../util/date';
-import { FintrackDatePicker } from './date-picker';
+import { PlanelyxDatePicker } from './date-picker';
 
 @Component({
-  imports: [FormField, FintrackDatePicker],
-  template: `<fintrack-date-picker [formField]="f.date" label="Date" />`,
+  imports: [FormField, PlanelyxDatePicker],
+  template: `<planelyx-date-picker [formField]="f.date" label="Date" />`,
 })
 class Host {
   readonly model = signal<{ date: string | null }>({ date: '2026-08-03' });
@@ -18,7 +18,7 @@ class Host {
   });
 }
 
-describe('FintrackDatePicker', () => {
+describe('PlanelyxDatePicker', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ providers: [providePrimeNG({})] });
   });
@@ -27,7 +27,7 @@ describe('FintrackDatePicker', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
 
-    const control = fixture.debugElement.children[0].componentInstance as FintrackDatePicker;
+    const control = fixture.debugElement.children[0].componentInstance as PlanelyxDatePicker;
     expect(control.value()).toBe('2026-08-03');
   });
 
@@ -35,7 +35,7 @@ describe('FintrackDatePicker', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
 
-    const control = fixture.debugElement.children[0].componentInstance as FintrackDatePicker;
+    const control = fixture.debugElement.children[0].componentInstance as PlanelyxDatePicker;
     control.value.set(toIsoDate(new Date(2026, 11, 25)));
     fixture.detectChanges();
 
@@ -47,7 +47,7 @@ describe('FintrackDatePicker', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
 
-    const control = fixture.debugElement.children[0].componentInstance as FintrackDatePicker;
+    const control = fixture.debugElement.children[0].componentInstance as PlanelyxDatePicker;
     control.value.set(null);
     fixture.detectChanges();
 
@@ -60,7 +60,7 @@ describe('FintrackDatePicker', () => {
     fixture.detectChanges();
 
     const host = fixture.componentInstance;
-    const control = fixture.debugElement.children[0].componentInstance as FintrackDatePicker;
+    const control = fixture.debugElement.children[0].componentInstance as PlanelyxDatePicker;
 
     control.value.set(null);
     host.f.date().markAsTouched();

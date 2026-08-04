@@ -16,9 +16,9 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 
 import { environment } from '../../../environments/environment';
-import { FintrackMoneyInput } from '../../shared/controls/money-input';
-import { FintrackSelect } from '../../shared/controls/select';
-import { FintrackTextInput } from '../../shared/controls/text-input';
+import { PlanelyxMoneyInput } from '../../shared/controls/money-input';
+import { PlanelyxSelect } from '../../shared/controls/select';
+import { PlanelyxTextInput } from '../../shared/controls/text-input';
 import { BankAccount, BankAccountRequest } from '../../shared/models/bank-account';
 import { AccountType } from '../../shared/models/enums';
 import { ACCOUNT_TYPE_OPTIONS } from '../../shared/util/enum-labels';
@@ -42,14 +42,14 @@ const empty = (): BankAccountFormModel => ({
 });
 
 @Component({
-  selector: 'fintrack-bank-account-form-dialog',
+  selector: 'planelyx-bank-account-form-dialog',
   imports: [
     Dialog,
     Button,
     FormField,
-    FintrackTextInput,
-    FintrackSelect,
-    FintrackMoneyInput,
+    PlanelyxTextInput,
+    PlanelyxSelect,
+    PlanelyxMoneyInput,
     FormsModule,
   ],
   templateUrl: './bank-account-form-dialog.html',

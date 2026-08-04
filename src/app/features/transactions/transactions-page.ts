@@ -9,10 +9,10 @@ import { Category } from '../../shared/models/category';
 import { IsoDate, Uuid } from '../../shared/models/common';
 import { TransactionKind } from '../../shared/models/enums';
 import { Transaction } from '../../shared/models/transaction';
-import { FintrackCard } from '../../shared/ui/card';
-import { FintrackEmptyState } from '../../shared/ui/empty-state';
-import { FintrackPageHeader } from '../../shared/ui/page-header';
-import { FintrackTransactionRow } from '../../shared/ui/transaction-row';
+import { PlanelyxCard } from '../../shared/ui/card';
+import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
+import { PlanelyxPageHeader } from '../../shared/ui/page-header';
+import { PlanelyxTransactionRow } from '../../shared/ui/transaction-row';
 import { currentMonthRange, fromIsoDate, toIsoDate } from '../../shared/util/date';
 import { TRANSACTION_KIND_OPTIONS } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
@@ -24,17 +24,17 @@ import { TransactionFormDialog } from './transaction-form-dialog';
 import { TransactionService } from './transaction.service';
 
 @Component({
-  selector: 'fintrack-transactions-page',
+  selector: 'planelyx-transactions-page',
   imports: [
     Button,
     Select,
     DatePicker,
     Paginator,
     FormsModule,
-    FintrackCard,
-    FintrackPageHeader,
-    FintrackEmptyState,
-    FintrackTransactionRow,
+    PlanelyxCard,
+    PlanelyxPageHeader,
+    PlanelyxEmptyState,
+    PlanelyxTransactionRow,
     TransactionFormDialog,
     RecurringRulesDialog,
   ],

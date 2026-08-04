@@ -15,8 +15,8 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 
-import { FintrackSelect } from '../../shared/controls/select';
-import { FintrackTextInput } from '../../shared/controls/text-input';
+import { PlanelyxSelect } from '../../shared/controls/select';
+import { PlanelyxTextInput } from '../../shared/controls/text-input';
 import { Category, CategoryRequest } from '../../shared/models/category';
 import { CategoryType } from '../../shared/models/enums';
 import { CATEGORY_TYPE_OPTIONS } from '../../shared/util/enum-labels';
@@ -34,8 +34,8 @@ interface CategoryFormModel {
 const EMPTY: CategoryFormModel = { name: '', type: 'EXPENSE', icon: null, color: null };
 
 @Component({
-  selector: 'fintrack-category-form-dialog',
-  imports: [Dialog, Button, FormField, FintrackTextInput, FintrackSelect, FormsModule],
+  selector: 'planelyx-category-form-dialog',
+  imports: [Dialog, Button, FormField, PlanelyxTextInput, PlanelyxSelect, FormsModule],
   templateUrl: './category-form-dialog.html',
 })
 export class CategoryFormDialog {

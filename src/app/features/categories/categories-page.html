@@ -1,11 +1,11 @@
-<fintrack-page-header title="Categories" subtitle="Every transaction needs one.">
+<planelyx-page-header title="Categories" subtitle="Every transaction needs one.">
   <p-button icon="pi pi-plus" label="New category" (onClick)="openCreate()" />
-</fintrack-page-header>
+</planelyx-page-header>
 
 @if (service.isLoading()) {
   <p class="text-[var(--p-text-muted-color)]">Loading…</p>
 } @else if (categories().length === 0) {
-  <fintrack-empty-state
+  <planelyx-empty-state
     icon="pi-tags"
     title="No categories yet"
     message="Create one before adding transactions."
@@ -13,7 +13,7 @@
 } @else {
   <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
     @for (category of categories(); track category.id) {
-      <fintrack-card class="group relative">
+      <planelyx-card class="group relative">
         <!--
           Overlay rather than wrapping the body in a <button>: a p-tag is not valid button
           content. Delete lives in the edit dialog, matching the transactions flow.
@@ -28,15 +28,15 @@
         <div
           class="flex items-center justify-between gap-3 p-4 group-hover:bg-[var(--p-content-hover-background)]"
         >
-          <fintrack-category-badge [category]="category" [showName]="true" size="md" />
+          <planelyx-category-badge [category]="category" [showName]="true" size="md" />
           <p-tag
             [value]="typeLabel(category.type)"
             [severity]="category.type === 'INCOME' ? 'success' : 'info'"
           />
         </div>
-      </fintrack-card>
+      </planelyx-card>
     }
   </div>
 }
 
-<fintrack-category-form-dialog [(visible)]="dialogOpen" [category]="selected()" />
+<planelyx-category-form-dialog [(visible)]="dialogOpen" [category]="selected()" />

@@ -1,10 +1,10 @@
-<fintrack-page-header
+<planelyx-page-header
   title="Invoices"
   subtitle="Created automatically when you post a card charge."
 />
 
 @if (cardOptions().length === 0) {
-  <fintrack-empty-state
+  <planelyx-empty-state
     icon="pi-credit-card"
     title="No credit cards yet"
     message="Add a card and its invoices will show up here."
@@ -25,10 +25,10 @@
     />
   </div>
 
-  <fintrack-month-nav class="mb-4" [(month)]="month" />
+  <planelyx-month-nav class="mb-4" [(month)]="month" />
 
   @if (invoice(); as inv) {
-    <fintrack-card>
+    <planelyx-card>
       <div card-header class="border-b border-[var(--p-content-border-color)] px-4 py-3">
         <div class="mb-3 flex items-start justify-between gap-2">
           <h2 class="text-lg font-medium text-[var(--p-text-color)]">
@@ -80,15 +80,6 @@
                     (onClick)="actions.hide(); confirmPay(inv)"
                   />
                 }
-                <p-button
-                  label="View details"
-                  icon="pi pi-external-link"
-                  severity="secondary"
-                  [text]="true"
-                  styleClass="justify-start w-full"
-                  [routerLink]="['/invoices', inv.id]"
-                  (onClick)="actions.hide()"
-                />
               </div>
             </p-popover>
           </span>
@@ -130,17 +121,17 @@
       @if (detail.isLoading()) {
         <p class="px-4 py-12 text-center text-[var(--p-text-muted-color)]">Loading charges…</p>
       } @else if (charges().length === 0) {
-        <fintrack-empty-state icon="pi-receipt" title="No charges on this invoice" />
+        <planelyx-empty-state icon="pi-receipt" title="No charges on this invoice" />
       } @else {
         @for (tx of charges(); track tx.id) {
-          <fintrack-transaction-row
+          <planelyx-transaction-row
             [transaction]="tx"
             [category]="category(tx.categoryId)"
             (edit)="openEdit(tx)"
           />
         }
       }
-    </fintrack-card>
+    </planelyx-card>
 
     @if (chargeTotal() > 0) {
       <p-paginator
@@ -153,7 +144,7 @@
       />
     }
   } @else {
-    <fintrack-empty-state
+    <planelyx-empty-state
       icon="pi-receipt"
       title="No invoice this month"
       message="Nothing was billed on this card in the selected month."
@@ -161,7 +152,7 @@
   }
 }
 
-<fintrack-transaction-form-dialog
+<planelyx-transaction-form-dialog
   [(visible)]="dialogOpen"
   [transaction]="selected()"
   [prefill]="prefill()"

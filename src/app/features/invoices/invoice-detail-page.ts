@@ -13,10 +13,10 @@ import { InvoiceStatus } from '../../shared/models/enums';
 import { Invoice } from '../../shared/models/invoice';
 import { emptyPage, PageResponse } from '../../shared/models/page';
 import { Transaction } from '../../shared/models/transaction';
-import { FintrackCard } from '../../shared/ui/card';
-import { FintrackEmptyState } from '../../shared/ui/empty-state';
-import { FintrackPageHeader } from '../../shared/ui/page-header';
-import { FintrackTransactionRow } from '../../shared/ui/transaction-row';
+import { PlanelyxCard } from '../../shared/ui/card';
+import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
+import { PlanelyxPageHeader } from '../../shared/ui/page-header';
+import { PlanelyxTransactionRow } from '../../shared/ui/transaction-row';
 import { fromIsoDate } from '../../shared/util/date';
 import { INVOICE_STATUS_LABELS, INVOICE_STATUS_SEVERITY } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
@@ -25,16 +25,16 @@ import { CreditCardService } from '../credit-cards/credit-card.service';
 import { InvoiceService } from './invoice.service';
 
 @Component({
-  selector: 'fintrack-invoice-detail-page',
+  selector: 'planelyx-invoice-detail-page',
   imports: [
     Tag,
     Button,
     Paginator,
     RouterLink,
-    FintrackCard,
-    FintrackPageHeader,
-    FintrackEmptyState,
-    FintrackTransactionRow,
+    PlanelyxCard,
+    PlanelyxPageHeader,
+    PlanelyxEmptyState,
+    PlanelyxTransactionRow,
   ],
   templateUrl: './invoice-detail-page.html',
 })

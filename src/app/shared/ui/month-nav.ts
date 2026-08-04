@@ -5,7 +5,7 @@ import { startOfMonth } from '../util/date';
 
 /** `‹ Jun 2025 ›` — steps the bound date one calendar month at a time. */
 @Component({
-  selector: 'fintrack-month-nav',
+  selector: 'planelyx-month-nav',
   imports: [Button],
   template: `
     <div
@@ -36,7 +36,7 @@ import { startOfMonth } from '../util/date';
     }
   `,
 })
-export class FintrackMonthNav {
+export class PlanelyxMonthNav {
   /** Always normalised to the first of the month so equality checks stay simple. */
   readonly month = model.required<Date>();
 

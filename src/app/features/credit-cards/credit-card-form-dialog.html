@@ -7,15 +7,15 @@
   [draggable]="false"
 >
   <form class="flex flex-col gap-4" novalidate (ngSubmit)="onSubmit()">
-    <fintrack-select
+    <planelyx-select
       [formField]="f.bankAccountId"
       label="Bank account"
       [options]="accountOptions()"
       hint="Every card is attached to an account."
     />
-    <fintrack-text-input [formField]="f.name" label="Card name" placeholder="Nubank Ultravioleta" />
-    <fintrack-text-input [formField]="f.brand" label="Brand" placeholder="Mastercard" />
-    <fintrack-money-input [formField]="f.creditLimit" label="Credit limit" />
+    <planelyx-text-input [formField]="f.name" label="Card name" placeholder="Nubank Ultravioleta" />
+    <planelyx-text-input [formField]="f.brand" label="Brand" placeholder="Mastercard" />
+    <planelyx-money-input [formField]="f.creditLimit" label="Credit limit" />
 
     <!--
       Two day fields fit side by side on a full-width dialog and stack once the dialog is
@@ -23,14 +23,14 @@
       each column for a value that is faster to type than to click up to.
     -->
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <fintrack-number-input
+      <planelyx-number-input
         [formField]="f.closingDay"
         label="Closing day"
         [showButtons]="false"
         placeholder="1–31"
         hint="Day the bill closes."
       />
-      <fintrack-number-input
+      <planelyx-number-input
         [formField]="f.dueDay"
         label="Due day"
         [showButtons]="false"

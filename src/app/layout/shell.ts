@@ -7,11 +7,11 @@ import { Toast } from 'primeng/toast';
 
 import { AuthService } from '../core/auth/auth.service';
 import { ThemeService } from '../core/theme.service';
-import { FintrackLogo } from '../shared/ui/logo';
+import { PlanelyxLogo } from '../shared/ui/logo';
 import { NAV_ITEMS } from './nav-items';
 
 @Component({
-  selector: 'fintrack-shell',
+  selector: 'planelyx-shell',
   imports: [
     RouterOutlet,
     RouterLink,
@@ -20,7 +20,7 @@ import { NAV_ITEMS } from './nav-items';
     Drawer,
     Toast,
     ConfirmDialog,
-    FintrackLogo,
+    PlanelyxLogo,
   ],
   templateUrl: './shell.html',
   styles: `
