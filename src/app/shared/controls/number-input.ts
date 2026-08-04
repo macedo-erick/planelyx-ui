@@ -5,12 +5,11 @@ import { InputNumber } from 'primeng/inputnumber';
 
 import { FintrackControlBase, generateControlId } from './control-base';
 import { FintrackFieldShell } from './field-shell';
-import { StyleClass } from 'primeng/styleclass';
 
 /** Plain integer input — used for closing/due day and occurrence counts. */
 @Component({
   selector: 'fintrack-number-input',
-  imports: [InputNumber, FormsModule, FintrackFieldShell, StyleClass],
+  imports: [InputNumber, FormsModule, FintrackFieldShell],
   template: `
     <fintrack-field-shell
       [label]="label()"
@@ -36,7 +35,7 @@ import { StyleClass } from 'primeng/styleclass';
         [placeholder]="placeholder()"
         [invalid]="invalid() && touched()"
         [ariaDescribedBy]="describedBy"
-        pStyleClass="w-full"
+        [fluid]="true"
       />
     </fintrack-field-shell>
   `,

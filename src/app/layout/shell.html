@@ -1,5 +1,4 @@
 <div class="flex h-full">
-
   <aside
     class="hidden w-64 shrink-0 flex-col border-r border-[var(--p-content-border-color)] bg-[var(--p-content-background)] lg:flex"
   >
@@ -9,15 +8,15 @@
     </nav>
   </aside>
 
-  <p-drawer [(visible)]="mobileNavOpen" header="Fintrack" pStyleClass="w-72">
-    <nav aria-label="Main" (click)="mobileNavOpen.set(false)">
+  <p-drawer [(visible)]="mobileNavOpen" header="Fintrack" styleClass="w-72">
+    <nav aria-label="Main">
       <ng-container *ngTemplateOutlet="navLinks" />
     </nav>
   </p-drawer>
 
   <div class="flex min-w-0 flex-1 flex-col">
     <header
-      class="flex items-center gap-3 border-b border-[var(--p-content-border-color)] bg-[var(--p-content-background)] px-4 py-3"
+      class="flex h-16 shrink-0 items-center gap-3 border-b border-[var(--p-content-border-color)] bg-[var(--p-content-background)] px-4"
     >
       <button
         type="button"
@@ -28,7 +27,13 @@
         <i class="pi pi-bars" aria-hidden="true"></i>
       </button>
 
-      <span class="font-semibold lg:hidden">Fintrack</span>
+      <a
+        [routerLink]="homeRoute"
+        class="flex items-center gap-2 rounded font-semibold lg:hidden"
+      >
+        <i class="pi pi-wallet text-[var(--p-primary-color)]" aria-hidden="true"></i>
+        Fintrack
+      </a>
 
       <div class="ml-auto flex items-center gap-2">
         <button
@@ -75,13 +80,19 @@
 <p-toast position="bottom-right" />
 <p-confirmdialog />
 
+<!--
+  The brand sits in the sidebar and the top bar sits beside it, so their bottom borders read
+  as one line. Both are pinned to the same height instead of being left to whatever their
+  content happens to add up to.
+-->
 <ng-template #brand>
-  <div
-    class="flex items-center gap-2 border-b border-[var(--p-content-border-color)] px-5 py-4 text-lg font-semibold"
+  <a
+    [routerLink]="homeRoute"
+    class="flex h-16 shrink-0 items-center gap-2 border-b border-[var(--p-content-border-color)] px-5 text-lg font-semibold"
   >
     <i class="pi pi-wallet text-[var(--p-primary-color)]" aria-hidden="true"></i>
     Fintrack
-  </div>
+  </a>
 </ng-template>
 
 <ng-template #navLinks>
@@ -92,6 +103,7 @@
           [routerLink]="item.route"
           routerLinkActive="bg-[var(--p-highlight-background)] text-[var(--p-highlight-color)]"
           class="flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-[var(--p-content-hover-background)]"
+          (click)="mobileNavOpen.set(false)"
         >
           <i [class]="item.icon" aria-hidden="true"></i>
           {{ item.label }}

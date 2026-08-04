@@ -7,7 +7,6 @@ import { environment } from '../../../environments/environment';
 import { Money } from '../models/common';
 import { FintrackControlBase, generateControlId } from './control-base';
 import { FintrackFieldShell } from './field-shell';
-import { StyleClass } from 'primeng/styleclass';
 
 /**
  * Currency input backed by PrimeNG's InputNumber.
@@ -18,7 +17,7 @@ import { StyleClass } from 'primeng/styleclass';
  */
 @Component({
   selector: 'fintrack-money-input',
-  imports: [InputNumber, FormsModule, FintrackFieldShell, StyleClass],
+  imports: [InputNumber, FormsModule, FintrackFieldShell],
   template: `
     <fintrack-field-shell
       [label]="label()"
@@ -45,7 +44,7 @@ import { StyleClass } from 'primeng/styleclass';
         [placeholder]="placeholder()"
         [invalid]="invalid() && touched()"
         [ariaDescribedBy]="describedBy"
-        pStyleClass="w-full"
+        [fluid]="true"
       />
     </fintrack-field-shell>
   `,

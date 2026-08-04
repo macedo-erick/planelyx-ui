@@ -8,7 +8,6 @@ import { IsoDate } from '../models/common';
 import { fromIsoDate, toIsoDate } from '../util/date';
 import { FintrackControlBase, generateControlId } from './control-base';
 import { FintrackFieldShell } from './field-shell';
-import { StyleClass } from 'primeng/styleclass';
 
 /**
  * Date input whose model value is the API's `LocalDate` string, not a `Date`.
@@ -19,7 +18,7 @@ import { StyleClass } from 'primeng/styleclass';
  */
 @Component({
   selector: 'fintrack-date-picker',
-  imports: [DatePicker, FormsModule, FintrackFieldShell, StyleClass],
+  imports: [DatePicker, FormsModule, FintrackFieldShell],
   template: `
     <fintrack-field-shell
       [label]="label()"
@@ -44,7 +43,7 @@ import { StyleClass } from 'primeng/styleclass';
         [showButtonBar]="true"
         dateFormat="dd/mm/yy"
         appendTo="body"
-        pStyleClass="w-full"
+        [fluid]="true"
       />
     </fintrack-field-shell>
   `,

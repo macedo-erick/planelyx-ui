@@ -53,7 +53,7 @@
 
   <section>
     <h2 class="mb-2 text-lg font-medium">Account balances</h2>
-    <p-table [value]="balances()" pStyleClass="p-datatable-sm">
+    <p-table [value]="balances()" size="small">
       <ng-template #header>
         <tr>
           <th scope="col">Account</th>
@@ -85,7 +85,7 @@
     </p-table>
 
     <h2 class="mb-2 mt-6 text-lg font-medium">Invoices due soon</h2>
-    <p-table [value]="upcomingInvoices()" pStyleClass="p-datatable-sm">
+    <p-table [value]="upcomingInvoices()" size="small">
       <ng-template #header>
         <tr>
           <th scope="col">Card</th>

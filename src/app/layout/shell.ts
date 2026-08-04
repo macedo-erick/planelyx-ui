@@ -32,5 +32,7 @@ export class Shell {
   protected readonly auth = inject(AuthService);
   protected readonly theme = inject(ThemeService);
   protected readonly navItems = NAV_ITEMS;
+  /** Where the brand takes you — the same landing page the empty route redirects to. */
+  protected readonly homeRoute = '/dashboard';
   protected mobileNavOpen = signal(false);
 }

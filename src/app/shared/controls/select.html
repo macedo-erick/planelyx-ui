@@ -23,9 +23,8 @@
     filterBy="label"
     [invalid]="invalid() && touched()"
     appendTo="body"
-    pStyleClass="w-full"
+    [fluid]="true"
   >
-
     <ng-template #item let-option>
       <span class="flex items-center gap-2">
         @if (option.icon) {

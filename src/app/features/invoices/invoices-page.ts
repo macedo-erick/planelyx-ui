@@ -67,10 +67,12 @@ export class InvoicesPage {
   protected dialogOpen = signal(false);
   protected readonly selected = signal<Transaction | null>(null);
 
-  /** The card and month the page lands on: whatever is still open, newest first. */
-  private readonly firstOpen = computed(
-    () => this.service.sorted().find((invoice) => invoice.status === 'OPEN') ?? null,
-  );
+  /**
+   * The card and month the page lands on: the oldest invoice that is still unpaid, since
+   * that is the one asking for money. Installments push open invoices months into the
+   * future, so landing on the newest one shows a bill nobody has to think about yet.
+   */
+  private readonly firstUnpaid = computed(() => this.service.unpaid().at(-1) ?? null);
 
   /**
    * The invoice is keyed on the month it closes in, not the month it starts in — a period
@@ -135,7 +137,7 @@ export class InvoicesPage {
   });
 
   constructor() {
-    // Land on the open invoice once the lists have arrived, then leave the choice alone —
+    // Land on the unpaid invoice once the lists have arrived, then leave the choice alone —
     // a reload after pay/unpay must not yank the user back off the month they were on.
     let seeded = false;
     effect(() => {
@@ -146,10 +148,10 @@ export class InvoicesPage {
       }
       seeded = true;
 
-      const open = this.firstOpen();
-      this.selectedCardId.set(open?.creditCardId ?? cards[0].id);
+      const pending = this.firstUnpaid();
+      this.selectedCardId.set(pending?.creditCardId ?? cards[0].id);
 
-      const end = open ? fromIsoDate(open.billingPeriodEnd) : null;
+      const end = pending ? fromIsoDate(pending.billingPeriodEnd) : null;
       this.month.set(startOfMonth(end ?? new Date()));
     });
   }

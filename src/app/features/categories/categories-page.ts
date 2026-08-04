@@ -12,7 +12,6 @@ import { CategoryType } from '../../shared/models/enums';
 import { CATEGORY_TYPE_LABELS } from '../../shared/util/enum-labels';
 import { CategoryFormDialog } from './category-form-dialog';
 import { CategoryService } from './category.service';
-import { StyleClass } from 'primeng/styleclass';
 
 @Component({
   selector: 'fintrack-categories-page',
@@ -24,7 +23,6 @@ import { StyleClass } from 'primeng/styleclass';
     FintrackEmptyState,
     FintrackCategoryBadge,
     CategoryFormDialog,
-    StyleClass,
   ],
   templateUrl: './categories-page.html',
 })

@@ -6,11 +6,10 @@ import { Select } from 'primeng/select';
 import { SelectOption } from '../util/enum-labels';
 import { FintrackControlBase, generateControlId } from './control-base';
 import { FintrackFieldShell } from './field-shell';
-import { StyleClass } from 'primeng/styleclass';
 
 @Component({
   selector: 'fintrack-select',
-  imports: [Select, FormsModule, FintrackFieldShell, StyleClass],
+  imports: [Select, FormsModule, FintrackFieldShell],
   templateUrl: './select.html',
 })
 export class FintrackSelect<T> extends FintrackControlBase implements FormValueControl<T | null> {
