@@ -1,7 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Button } from 'primeng/button';
 import { UIChart } from 'primeng/chart';
 import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
@@ -24,7 +23,6 @@ import { CreditCardService } from '../credit-cards/credit-card.service';
     TableModule,
     Tag,
     UIChart,
-    Button,
     RouterLink,
     FintrackMonthNav,
     FintrackPageHeader,
@@ -64,6 +62,8 @@ export class DashboardPage {
   );
 
   protected readonly totalBalance = computed(() => this.data()?.totalBalance ?? 0);
+  protected readonly invoicesDueTotal = computed(() => this.data()?.invoicesDueTotal ?? 0);
+  protected readonly invoicesDueCount = computed(() => this.data()?.invoicesDueCount ?? 0);
   protected readonly income = computed(() => this.data()?.income ?? 0);
   protected readonly expense = computed(() => this.data()?.expense ?? 0);
   protected readonly outstandingInvoices = computed(

@@ -27,11 +27,8 @@
         <i class="pi pi-bars" aria-hidden="true"></i>
       </button>
 
-      <a
-        [routerLink]="homeRoute"
-        class="flex items-center gap-2 rounded font-semibold lg:hidden"
-      >
-        <i class="pi pi-wallet text-[var(--p-primary-color)]" aria-hidden="true"></i>
+      <a [routerLink]="homeRoute" class="flex items-center gap-2 rounded font-semibold lg:hidden">
+        <fintrack-logo size="1.25rem" />
         Fintrack
       </a>
 
@@ -90,7 +87,7 @@
     [routerLink]="homeRoute"
     class="flex h-16 shrink-0 items-center gap-2 border-b border-[var(--p-content-border-color)] px-5 text-lg font-semibold"
   >
-    <i class="pi pi-wallet text-[var(--p-primary-color)]" aria-hidden="true"></i>
+    <fintrack-logo size="1.5rem" />
     Fintrack
   </a>
 </ng-template>

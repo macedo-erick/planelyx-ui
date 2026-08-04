@@ -7,6 +7,7 @@ import { Toast } from 'primeng/toast';
 
 import { AuthService } from '../core/auth/auth.service';
 import { ThemeService } from '../core/theme.service';
+import { FintrackLogo } from '../shared/ui/logo';
 import { NAV_ITEMS } from './nav-items';
 
 @Component({
@@ -19,6 +20,7 @@ import { NAV_ITEMS } from './nav-items';
     Drawer,
     Toast,
     ConfirmDialog,
+    FintrackLogo,
   ],
   templateUrl: './shell.html',
   styles: `

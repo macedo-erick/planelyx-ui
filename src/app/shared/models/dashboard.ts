@@ -6,7 +6,15 @@ export interface Dashboard {
   readonly periodStart: IsoDate;
   readonly periodEnd: IsoDate;
   readonly accountBalances: readonly AccountBalance[];
+  /**
+   * `accountBalances` summed, less `invoicesDueTotal` — so it deliberately does not match that
+   * sum. A card invoice is committed money that has not left any one account yet, so it comes
+   * off the total only.
+   */
   readonly totalBalance: Money;
+  /** Unpaid invoices falling due on or before `periodEnd`, already deducted from the total. */
+  readonly invoicesDueTotal: Money;
+  readonly invoicesDueCount: number;
   readonly income: Money;
   readonly expense: Money;
   readonly categoryBreakdown: readonly CategoryBreakdown[];

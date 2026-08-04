@@ -1,6 +1,4 @@
-<fintrack-page-header title="Dashboard" [subtitle]="monthLabel()">
-  <p-button routerLink="/transactions" icon="pi pi-plus" label="New transaction" />
-</fintrack-page-header>
+<fintrack-page-header title="Dashboard" [subtitle]="monthLabel()" />
 
 <fintrack-month-nav class="mb-4" [(month)]="month" />
 
@@ -19,10 +17,17 @@
     <div class="text-xs text-[var(--p-text-muted-color)]">
       {{ isFuture() ? 'Projected balance' : 'Total balance' }}
     </div>
-    <div class="text-2xl font-semibold tabular-nums">{{ money(totalBalance()) }}</div>
+    <div class="text-2xl font-semibold tabular-nums" [class.text-red-500]="totalBalance() < 0">
+      {{ money(totalBalance()) }}
+    </div>
     <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
       Across {{ accountCount() }} account(s){{ isFuture() ? ', end of month' : '' }}
     </div>
+    @if (invoicesDueCount() > 0) {
+      <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
+        less {{ invoicesDueCount() }} invoice(s) due, {{ money(invoicesDueTotal()) }}
+      </div>
+    }
   </div>
   <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
     <div class="text-xs text-[var(--p-text-muted-color)]">Income this month</div>
@@ -46,7 +51,8 @@
   class="mb-6 rounded-md bg-[var(--p-content-hover-background)] px-3 py-2 text-xs text-[var(--p-text-muted-color)]"
 >
   Balances are your initial balance plus account transactions up to the end of the selected month.
-  Paying a card invoice does not yet reduce an account balance.
+  The total also has any unpaid invoice due by then taken off it, so it will not match the per
+  account figures below — a card invoice is money committed but not yet drawn from one account.
 </p>
 
 <div class="grid gap-6 lg:grid-cols-2">
