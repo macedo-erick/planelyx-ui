@@ -1,0 +1,116 @@
+<fintrack-page-header
+  title="Invoices"
+  subtitle="Created automatically when you post a card charge."
+/>
+
+<div class="mb-4 flex flex-wrap items-end gap-3">
+  <div class="flex flex-col gap-1">
+    <label for="filter-card" class="text-xs font-medium text-[var(--p-text-muted-color)]">
+      Card
+    </label>
+    <p-select
+      inputId="filter-card"
+      [options]="cardOptions()"
+      optionLabel="label"
+      optionValue="value"
+      [ngModel]="cardFilter()"
+      (ngModelChange)="onCardChange($event)"
+      placeholder="All cards"
+      [showClear]="true"
+      appendTo="body"
+    />
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <label for="filter-status" class="text-xs font-medium text-[var(--p-text-muted-color)]">
+      Status
+    </label>
+    <p-select
+      inputId="filter-status"
+      [options]="statusOptions"
+      optionLabel="label"
+      optionValue="value"
+      [ngModel]="statusFilter()"
+      (ngModelChange)="onStatusChange($event)"
+      placeholder="Any status"
+      [showClear]="true"
+      appendTo="body"
+    />
+  </div>
+
+  <div class="ml-auto text-right">
+    <div class="text-xs text-[var(--p-text-muted-color)]">Outstanding</div>
+    <div class="text-lg font-semibold tabular-nums">{{ money(outstanding()) }}</div>
+  </div>
+</div>
+
+<p-table
+  [value]="invoices()"
+  [loading]="service.isLoading()"
+  styleClass="p-datatable-sm"
+  [tableStyle]="{ 'min-width': '52rem' }"
+>
+  <ng-template #header>
+    <tr>
+      <th scope="col">Card</th>
+      <th scope="col" style="width: 14rem">Period</th>
+      <th scope="col" style="width: 11rem">Due</th>
+      <th scope="col" style="width: 10rem" class="text-right">Total</th>
+      <th scope="col" style="width: 7rem">Status</th>
+      <th scope="col" style="width: 11rem" class="text-right">Actions</th>
+    </tr>
+  </ng-template>
+
+  <ng-template #body let-invoice>
+    <tr>
+      <td class="font-medium">
+        <a [routerLink]="['/invoices', invoice.id]" class="hover:underline">
+          {{ cardName(invoice.creditCardId) }}
+        </a>
+      </td>
+      <td class="tabular-nums">
+        {{ shortDate(invoice.billingPeriodStart) }} – {{ shortDate(invoice.billingPeriodEnd) }}
+      </td>
+      <td class="tabular-nums">
+        {{ shortDate(invoice.dueDate) }}
+        @if (dueHint(invoice); as hint) {
+          <div class="text-xs" [class.text-red-500]="hint.overdue">{{ hint.text }}</div>
+        }
+      </td>
+      <td class="text-right font-medium tabular-nums">{{ money(invoice.totalAmount) }}</td>
+      <td>
+        <p-tag [value]="statusLabel(invoice.status)" [severity]="statusSeverity(invoice.status)" />
+      </td>
+      <td class="text-right">
+        @if (invoice.status === 'PAID') {
+          <p-button
+            label="Unpay"
+            severity="secondary"
+            [text]="true"
+            size="small"
+            (onClick)="confirmUnpay(invoice)"
+          />
+        } @else {
+          <p-button
+            label="Mark paid"
+            size="small"
+            [disabled]="invoice.totalAmount === 0"
+            (onClick)="confirmPay(invoice)"
+          />
+        }
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template #emptymessage>
+    <tr>
+      <td colspan="6">
+        <fintrack-empty-state
+          icon="pi-receipt"
+          title="No invoices"
+          message="Post a card charge and its invoice will appear here."
+        />
+      </td>
+    </tr>
+  </ng-template>
+</p-table>

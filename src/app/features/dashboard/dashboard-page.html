@@ -1,0 +1,133 @@
+<fintrack-page-header title="Dashboard" [subtitle]="monthLabel()">
+  <p-button routerLink="/transactions" icon="pi pi-plus" label="New transaction" />
+</fintrack-page-header>
+
+<div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
+    <div class="text-xs text-[var(--p-text-muted-color)]">Total balance</div>
+    <div class="text-2xl font-semibold tabular-nums">{{ money(totalBalance()) }}</div>
+    <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
+      Across {{ accounts.items().length }} account(s)
+    </div>
+  </div>
+  <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
+    <div class="text-xs text-[var(--p-text-muted-color)]">Income this month</div>
+    <div class="text-2xl font-semibold tabular-nums text-green-600">
+      {{ money(monthIncome()) }}
+    </div>
+  </div>
+  <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
+    <div class="text-xs text-[var(--p-text-muted-color)]">Spent this month</div>
+    <div class="text-2xl font-semibold tabular-nums">{{ money(monthExpense()) }}</div>
+    <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">Accounts and cards combined</div>
+  </div>
+  <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
+    <div class="text-xs text-[var(--p-text-muted-color)]">Unpaid invoices</div>
+    <div class="text-2xl font-semibold tabular-nums">{{ money(outstandingInvoices()) }}</div>
+    <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
+      {{ invoices.unpaid().length }} open
+    </div>
+  </div>
+</div>
+
+<!--
+  The API exposes no balance endpoint, and paying an invoice does not create an
+  account transaction, so card spend is never deducted from a balance. Say so rather
+  than quietly showing a number that does not reconcile.
+-->
+<p
+  class="mb-6 rounded-md bg-[var(--p-content-hover-background)] px-3 py-2 text-xs text-[var(--p-text-muted-color)]"
+>
+  Balances are computed here from your initial balance plus account transactions. Paying a card
+  invoice does not yet reduce an account balance.
+</p>
+
+<div class="grid gap-6 lg:grid-cols-2">
+  <section>
+    <h2 class="mb-2 text-lg font-medium">Spending by category</h2>
+    @if (categoryChart().labels.length > 0) {
+      <p-chart type="doughnut" [data]="chartData()" [options]="chartOptions" height="300px" />
+    } @else {
+      <fintrack-empty-state
+        icon="pi-chart-pie"
+        title="Nothing spent yet this month"
+        message="Add a transaction to see the breakdown."
+      />
+    }
+  </section>
+
+  <section>
+    <h2 class="mb-2 text-lg font-medium">Account balances</h2>
+    <p-table [value]="balances()" styleClass="p-datatable-sm">
+      <ng-template #header>
+        <tr>
+          <th scope="col">Account</th>
+          <th scope="col" class="text-right">Balance</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-row>
+        <tr>
+          <td>
+            <div class="font-medium">{{ row.name }}</div>
+            <div class="text-xs text-[var(--p-text-muted-color)]">{{ row.bankName }}</div>
+          </td>
+          <td class="text-right font-medium tabular-nums" [class.text-red-500]="row.balance < 0">
+            {{ moneyIn(row.balance, row.currency) }}
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="2">
+            <fintrack-empty-state
+              icon="pi-building-columns"
+              title="No accounts yet"
+              message="Add one to start tracking."
+            />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <h2 class="mb-2 mt-6 text-lg font-medium">Invoices due soon</h2>
+    <p-table [value]="upcomingInvoices()" styleClass="p-datatable-sm">
+      <ng-template #header>
+        <tr>
+          <th scope="col">Card</th>
+          <th scope="col" style="width: 9rem">Due</th>
+          <th scope="col" style="width: 7rem">Status</th>
+          <th scope="col" class="text-right">Amount</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-invoice>
+        <tr>
+          <td>
+            <a [routerLink]="['/invoices', invoice.id]" class="font-medium hover:underline">
+              {{ cardName(invoice.creditCardId) }}
+            </a>
+          </td>
+          <td class="tabular-nums">
+            {{ shortDate(invoice.dueDate) }}
+            @if (dueText(invoice.dueDate); as text) {
+              <div class="text-xs text-[var(--p-text-muted-color)]">{{ text }}</div>
+            }
+          </td>
+          <td>
+            <p-tag
+              [value]="statusLabel(invoice.status)"
+              [severity]="statusSeverity(invoice.status)"
+            />
+          </td>
+          <td class="text-right tabular-nums">{{ money(invoice.totalAmount) }}</td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="4">
+            <fintrack-empty-state icon="pi-check-circle" title="Nothing due" />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </section>
+</div>

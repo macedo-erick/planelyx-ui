@@ -1,0 +1,61 @@
+<fintrack-page-header title="Bank accounts" subtitle="Where your money actually sits.">
+  <p-button icon="pi pi-plus" label="New account" (onClick)="openCreate()" />
+</fintrack-page-header>
+
+<p-table
+  [value]="accounts()"
+  [loading]="service.isLoading()"
+  styleClass="p-datatable-sm"
+  [tableStyle]="{ 'min-width': '44rem' }"
+>
+  <ng-template #header>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Bank</th>
+      <th scope="col" style="width: 8rem">Type</th>
+      <th scope="col" style="width: 11rem" class="text-right">Initial balance</th>
+      <th scope="col" style="width: 7rem" class="text-right">Actions</th>
+    </tr>
+  </ng-template>
+
+  <ng-template #body let-account>
+    <tr>
+      <td class="font-medium">{{ account.name }}</td>
+      <td>{{ account.bankName }}</td>
+      <td><p-tag [value]="typeLabel(account.accountType)" severity="secondary" /></td>
+      <td class="text-right tabular-nums">
+        {{ money(account.initialBalance, account.currency) }}
+      </td>
+      <td class="text-right">
+        <p-button
+          icon="pi pi-pencil"
+          severity="secondary"
+          [text]="true"
+          [ariaLabel]="'Edit ' + account.name"
+          (onClick)="openEdit(account)"
+        />
+        <p-button
+          icon="pi pi-trash"
+          severity="danger"
+          [text]="true"
+          [ariaLabel]="'Delete ' + account.name"
+          (onClick)="confirmDelete(account)"
+        />
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template #emptymessage>
+    <tr>
+      <td colspan="5">
+        <fintrack-empty-state
+          icon="pi-building-columns"
+          title="No accounts yet"
+          message="Add an account before recording transactions or cards."
+        />
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<fintrack-bank-account-form-dialog [(visible)]="dialogOpen" [account]="selected()" />

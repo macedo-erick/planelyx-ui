@@ -1,0 +1,82 @@
+<fintrack-page-header [title]="heading()" [subtitle]="periodText()">
+  <p-button
+    routerLink="/invoices"
+    icon="pi pi-arrow-left"
+    label="All invoices"
+    severity="secondary"
+    [text]="true"
+  />
+  @if (invoice(); as inv) {
+    @if (inv.status === 'PAID') {
+      <p-button label="Unpay" severity="secondary" (onClick)="confirmUnpay(inv)" />
+    } @else {
+      <p-button label="Mark paid" [disabled]="inv.totalAmount === 0" (onClick)="confirmPay(inv)" />
+    }
+  }
+</fintrack-page-header>
+
+@if (resource.isLoading()) {
+  <p class="text-[var(--p-text-muted-color)]">Loading…</p>
+} @else if (invoice(); as inv) {
+  <div class="mb-5 grid gap-4 sm:grid-cols-3">
+    <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
+      <div class="text-xs text-[var(--p-text-muted-color)]">Total</div>
+      <div class="text-2xl font-semibold tabular-nums">{{ money(inv.totalAmount) }}</div>
+    </div>
+    <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
+      <div class="text-xs text-[var(--p-text-muted-color)]">Due date</div>
+      <div class="text-2xl font-semibold tabular-nums">{{ longDate(inv.dueDate) }}</div>
+    </div>
+    <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
+      <div class="mb-1 text-xs text-[var(--p-text-muted-color)]">Status</div>
+      <p-tag [value]="statusLabel(inv.status)" [severity]="statusSeverity(inv.status)" />
+      @if (inv.paidAt) {
+        <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
+          Paid {{ instant(inv.paidAt) }}
+        </div>
+      }
+    </div>
+  </div>
+
+  <h2 class="mb-2 text-lg font-medium">Charges</h2>
+  <p-table [value]="charges()" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '40rem' }">
+    <ng-template #header>
+      <tr>
+        <th scope="col" style="width: 7rem">Date</th>
+        <th scope="col">Description</th>
+        <th scope="col" style="width: 6rem">Category</th>
+        <th scope="col" style="width: 10rem" class="text-right">Amount</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-tx>
+      <tr>
+        <td class="tabular-nums">{{ shortDate(tx.transactionDate) }}</td>
+        <td>
+          {{ tx.description }}
+          @if (tx.installmentNumber) {
+            <span class="ml-1 text-xs text-[var(--p-text-muted-color)]">
+              (installment {{ tx.installmentNumber }})
+            </span>
+          }
+        </td>
+        <td><fintrack-category-badge [category]="category(tx.categoryId)" /></td>
+        <td class="text-right tabular-nums">{{ money(tx.amount) }}</td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="4">
+          <fintrack-empty-state icon="pi-receipt" title="No charges on this invoice" />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+} @else {
+  <fintrack-empty-state
+    icon="pi-exclamation-circle"
+    title="Invoice not found"
+    message="It may have been removed."
+  />
+}

@@ -1,0 +1,44 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [header]="editing() ? 'Edit card' : 'New credit card'"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+  [draggable]="false"
+>
+  <form class="flex flex-col gap-4" novalidate (ngSubmit)="onSubmit()">
+    <fintrack-select
+      [formField]="f.bankAccountId"
+      label="Bank account"
+      [options]="accountOptions()"
+      hint="Every card is attached to an account."
+    />
+    <fintrack-text-input [formField]="f.name" label="Card name" placeholder="Nubank Ultravioleta" />
+    <fintrack-text-input [formField]="f.brand" label="Brand" placeholder="Mastercard" />
+    <fintrack-money-input [formField]="f.creditLimit" label="Credit limit" />
+
+    <div class="grid grid-cols-2 gap-4">
+      <fintrack-number-input
+        [formField]="f.closingDay"
+        label="Closing day"
+        hint="Day the bill closes."
+      />
+      <fintrack-number-input
+        [formField]="f.dueDay"
+        label="Due day"
+        hint="Rolls to the next month when it is on or before the closing day."
+      />
+    </div>
+
+    <div class="mt-2 flex justify-end gap-2">
+      <p-button
+        type="button"
+        severity="secondary"
+        [text]="true"
+        label="Cancel"
+        (onClick)="visible.set(false)"
+      />
+      <p-button type="submit" [label]="editing() ? 'Save' : 'Create'" [loading]="saving()" />
+    </div>
+  </form>
+</p-dialog>

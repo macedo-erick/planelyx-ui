@@ -1,0 +1,103 @@
+<div class="flex h-full">
+  <!-- Persistent sidebar from lg up -->
+  <aside
+    class="hidden w-64 shrink-0 flex-col border-r border-[var(--p-content-border-color)] bg-[var(--p-content-background)] lg:flex"
+  >
+    <ng-container *ngTemplateOutlet="brand" />
+    <nav class="flex-1 overflow-y-auto p-3" aria-label="Main">
+      <ng-container *ngTemplateOutlet="navLinks" />
+    </nav>
+  </aside>
+
+  <!-- Off-canvas sidebar below lg -->
+  <p-drawer [(visible)]="mobileNavOpen" header="Fintrack" styleClass="w-72">
+    <nav aria-label="Main" (click)="mobileNavOpen.set(false)">
+      <ng-container *ngTemplateOutlet="navLinks" />
+    </nav>
+  </p-drawer>
+
+  <div class="flex min-w-0 flex-1 flex-col">
+    <header
+      class="flex items-center gap-3 border-b border-[var(--p-content-border-color)] bg-[var(--p-content-background)] px-4 py-3"
+    >
+      <button
+        type="button"
+        class="rounded p-2 hover:bg-[var(--p-content-hover-background)] lg:hidden"
+        (click)="mobileNavOpen.set(true)"
+        aria-label="Open navigation"
+      >
+        <i class="pi pi-bars" aria-hidden="true"></i>
+      </button>
+
+      <span class="font-semibold lg:hidden">Fintrack</span>
+
+      <div class="ml-auto flex items-center gap-2">
+        <button
+          type="button"
+          class="rounded p-2 hover:bg-[var(--p-content-hover-background)]"
+          (click)="theme.toggle()"
+          [attr.aria-pressed]="theme.isDark()"
+          [attr.aria-label]="theme.isDark() ? 'Switch to light theme' : 'Switch to dark theme'"
+        >
+          <i
+            class="pi"
+            [class.pi-moon]="theme.isDark()"
+            [class.pi-sun]="!theme.isDark()"
+            aria-hidden="true"
+          ></i>
+        </button>
+
+        <span
+          class="grid size-9 place-items-center rounded-full bg-[var(--p-primary-color)] text-sm font-semibold text-[var(--p-primary-contrast-color)]"
+          [attr.title]="auth.displayName()"
+          aria-hidden="true"
+        >
+          {{ auth.initials() }}
+        </span>
+        <span class="hidden text-sm sm:inline">{{ auth.displayName() }}</span>
+
+        <button
+          type="button"
+          class="rounded p-2 hover:bg-[var(--p-content-hover-background)]"
+          (click)="auth.logout()"
+          aria-label="Sign out"
+        >
+          <i class="pi pi-sign-out" aria-hidden="true"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="min-w-0 flex-1 overflow-y-auto p-4 lg:p-6">
+      <router-outlet />
+    </main>
+  </div>
+</div>
+
+<p-toast position="bottom-right" />
+<p-confirmdialog />
+
+<ng-template #brand>
+  <div
+    class="flex items-center gap-2 border-b border-[var(--p-content-border-color)] px-5 py-4 text-lg font-semibold"
+  >
+    <i class="pi pi-wallet text-[var(--p-primary-color)]" aria-hidden="true"></i>
+    Fintrack
+  </div>
+</ng-template>
+
+<ng-template #navLinks>
+  <ul class="flex flex-col gap-1">
+    @for (item of navItems; track item.route) {
+      <li>
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="bg-[var(--p-highlight-background)] text-[var(--p-highlight-color)]"
+          class="flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-[var(--p-content-hover-background)]"
+        >
+          <i [class]="item.icon" aria-hidden="true"></i>
+          {{ item.label }}
+        </a>
+      </li>
+    }
+  </ul>
+</ng-template>

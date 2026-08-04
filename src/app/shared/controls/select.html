@@ -1,0 +1,50 @@
+<fintrack-field-shell
+  [label]="label()"
+  [inputId]="inputId"
+  [hint]="hint()"
+  [required]="required()"
+  [invalid]="invalid()"
+  [touched]="touched()"
+  [errors]="errors()"
+>
+  <p-select
+    [inputId]="inputId"
+    [ngModel]="value()"
+    [ngModelOptions]="{ standalone: true }"
+    (ngModelChange)="value.set($event)"
+    (onBlur)="touch.emit()"
+    [options]="options()"
+    optionLabel="label"
+    optionValue="value"
+    [disabled]="disabled()"
+    [placeholder]="placeholder() || 'Select…'"
+    [showClear]="showClear()"
+    [filter]="options().length > 8"
+    filterBy="label"
+    [invalid]="invalid() && touched()"
+    appendTo="body"
+    styleClass="w-full"
+  >
+    <!--
+      Only overridden when the options carry icons (categories). Without these
+      templates PrimeNG renders its default label-only item.
+    -->
+    <ng-template #item let-option>
+      <span class="flex items-center gap-2">
+        @if (option.icon) {
+          <i class="pi {{ option.icon }} text-[var(--p-text-muted-color)]" aria-hidden="true"></i>
+        }
+        {{ option.label }}
+      </span>
+    </ng-template>
+
+    <ng-template #selectedItem let-option>
+      <span class="flex items-center gap-2">
+        @if (option.icon) {
+          <i class="pi {{ option.icon }} text-[var(--p-text-muted-color)]" aria-hidden="true"></i>
+        }
+        {{ option.label }}
+      </span>
+    </ng-template>
+  </p-select>
+</fintrack-field-shell>

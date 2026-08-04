@@ -1,0 +1,38 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [header]="editing() ? 'Edit account' : 'New account'"
+  [modal]="true"
+  [style]="{ width: '30rem' }"
+  [draggable]="false"
+>
+  <form class="flex flex-col gap-4" novalidate (ngSubmit)="onSubmit()">
+    <fintrack-text-input [formField]="f.name" label="Account name" placeholder="Everyday" />
+    <fintrack-text-input [formField]="f.bankName" label="Bank" placeholder="Nubank" />
+    <fintrack-select [formField]="f.accountType" label="Type" [options]="typeOptions" />
+    <fintrack-money-input
+      [formField]="f.initialBalance"
+      label="Initial balance"
+      [currency]="f.currency().value() || defaultCurrency"
+      hint="The starting point. Transactions are applied on top of it."
+    />
+    <!-- maxLength comes from the schema rule; [formField] binds it automatically. -->
+    <fintrack-text-input
+      [formField]="f.currency"
+      label="Currency"
+      placeholder="BRL"
+      hint="Three-letter ISO code."
+    />
+
+    <div class="mt-2 flex justify-end gap-2">
+      <p-button
+        type="button"
+        severity="secondary"
+        [text]="true"
+        label="Cancel"
+        (onClick)="visible.set(false)"
+      />
+      <p-button type="submit" [label]="editing() ? 'Save' : 'Create'" [loading]="saving()" />
+    </div>
+  </form>
+</p-dialog>

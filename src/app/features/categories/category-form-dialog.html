@@ -1,0 +1,61 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [header]="editing() ? 'Edit category' : 'New category'"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+  [draggable]="false"
+>
+  <form class="flex flex-col gap-4" novalidate (ngSubmit)="onSubmit()">
+    <fintrack-text-input [formField]="f.name" label="Name" placeholder="Groceries" />
+
+    <fintrack-select
+      [formField]="f.type"
+      label="Type"
+      [options]="typeOptions"
+      hint="Income categories are for money coming in."
+    />
+
+    <fintrack-select
+      [formField]="f.icon"
+      label="Icon"
+      [options]="iconOptions"
+      [showClear]="true"
+      placeholder="No icon"
+    />
+
+    <div class="flex flex-col gap-1.5">
+      <label for="category-color" class="text-sm font-medium">Colour</label>
+      <div class="flex items-center gap-3">
+        <input
+          id="category-color"
+          type="color"
+          class="h-9 w-14 cursor-pointer rounded border border-[var(--p-content-border-color)] bg-transparent"
+          [value]="f.color().value() ?? '#3b82f6'"
+          (input)="onColorInput($event)"
+        />
+        @if (f.color().value()) {
+          <p-button
+            type="button"
+            severity="secondary"
+            [text]="true"
+            size="small"
+            label="Clear"
+            (onClick)="f.color().value.set(null)"
+          />
+        }
+      </div>
+    </div>
+
+    <div class="mt-2 flex justify-end gap-2">
+      <p-button
+        type="button"
+        severity="secondary"
+        [text]="true"
+        label="Cancel"
+        (onClick)="visible.set(false)"
+      />
+      <p-button type="submit" [label]="editing() ? 'Save' : 'Create'" [loading]="saving()" />
+    </div>
+  </form>
+</p-dialog>

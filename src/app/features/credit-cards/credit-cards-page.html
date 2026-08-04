@@ -1,0 +1,76 @@
+<fintrack-page-header title="Credit cards" subtitle="Each one bills against an account.">
+  <p-button
+    icon="pi pi-plus"
+    label="New card"
+    [disabled]="!hasAccounts()"
+    (onClick)="openCreate()"
+  />
+</fintrack-page-header>
+
+@if (!hasAccounts()) {
+  <fintrack-empty-state
+    icon="pi-building-columns"
+    title="Add a bank account first"
+    message="Cards must be attached to an account, so create one before adding a card."
+  />
+} @else {
+  <p-table
+    [value]="cards()"
+    [loading]="service.isLoading()"
+    styleClass="p-datatable-sm"
+    [tableStyle]="{ 'min-width': '48rem' }"
+  >
+    <ng-template #header>
+      <tr>
+        <th scope="col">Card</th>
+        <th scope="col">Brand</th>
+        <th scope="col">Account</th>
+        <th scope="col" style="width: 10rem" class="text-right">Limit</th>
+        <th scope="col" style="width: 7rem" class="text-right">Closes</th>
+        <th scope="col" style="width: 7rem" class="text-right">Due</th>
+        <th scope="col" style="width: 7rem" class="text-right">Actions</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-card>
+      <tr>
+        <td class="font-medium">{{ card.name }}</td>
+        <td>{{ card.brand }}</td>
+        <td class="text-[var(--p-text-muted-color)]">{{ accountName(card.bankAccountId) }}</td>
+        <td class="text-right tabular-nums">{{ money(card.creditLimit) }}</td>
+        <td class="text-right tabular-nums">day {{ card.closingDay }}</td>
+        <td class="text-right tabular-nums">day {{ card.dueDay }}</td>
+        <td class="text-right">
+          <p-button
+            icon="pi pi-pencil"
+            severity="secondary"
+            [text]="true"
+            [ariaLabel]="'Edit ' + card.name"
+            (onClick)="openEdit(card)"
+          />
+          <p-button
+            icon="pi pi-trash"
+            severity="danger"
+            [text]="true"
+            [ariaLabel]="'Delete ' + card.name"
+            (onClick)="confirmDelete(card)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="7">
+          <fintrack-empty-state
+            icon="pi-credit-card"
+            title="No cards yet"
+            message="Add a card to start tracking charges and invoices."
+          />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+}
+
+<fintrack-credit-card-form-dialog [(visible)]="dialogOpen" [card]="selected()" />

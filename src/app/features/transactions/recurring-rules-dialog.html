@@ -1,0 +1,95 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  header="Recurring rules"
+  [modal]="true"
+  [style]="{ width: '54rem' }"
+  [draggable]="false"
+>
+  <p class="mb-3 text-sm text-[var(--p-text-muted-color)]">
+    Rules are created by adding a transaction that repeats. They cannot be edited — stop one and
+    create a replacement instead.
+  </p>
+
+  <p-table
+    [value]="templates()"
+    [loading]="service.isLoading()"
+    styleClass="p-datatable-sm"
+    [tableStyle]="{ 'min-width': '46rem' }"
+  >
+    <ng-template #header>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col" style="width: 12rem">Recurrence</th>
+        <th scope="col" style="width: 11rem">Source</th>
+        <th scope="col" style="width: 9rem" class="text-right">Amount</th>
+        <th scope="col" style="width: 7rem">Starts</th>
+        <th scope="col" style="width: 7rem">Status</th>
+        <th scope="col" style="width: 4rem" class="text-right"></th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-tpl>
+      <tr [class.opacity-60]="!tpl.active">
+        <td>
+          <div class="font-medium">{{ tpl.description }}</div>
+          <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
+            <fintrack-category-badge [category]="category(tpl.categoryId)" [showName]="true" />
+          </div>
+        </td>
+        <td>
+          <p-tag
+            [value]="recurrenceLabel(tpl.recurrenceType)"
+            [severity]="tpl.recurrenceType === 'INSTALLMENT' ? 'warn' : 'info'"
+          />
+          <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
+            @if (tpl.totalOccurrences) {
+              {{ tpl.occurrencesGenerated }} / {{ tpl.totalOccurrences }} generated
+            } @else {
+              {{ tpl.occurrencesGenerated }} generated
+            }
+          </div>
+        </td>
+        <td class="text-[var(--p-text-muted-color)]">{{ sourceName(tpl) }}</td>
+        <td class="text-right tabular-nums">
+          <div class="font-medium">{{ money(tpl.totalAmount) }}</div>
+          @if (tpl.recurrenceType === 'INSTALLMENT' && tpl.totalOccurrences) {
+            <div class="text-xs text-[var(--p-text-muted-color)]">
+              ≈ {{ money(tpl.totalAmount / tpl.totalOccurrences) }} each
+            </div>
+          }
+        </td>
+        <td class="tabular-nums">{{ shortDate(tpl.startDate) }}</td>
+        <td>
+          <p-tag
+            [value]="tpl.active ? 'Active' : 'Finished'"
+            [severity]="tpl.active ? 'success' : 'secondary'"
+          />
+        </td>
+        <td class="text-right">
+          @if (tpl.active) {
+            <p-button
+              icon="pi pi-ban"
+              severity="danger"
+              [text]="true"
+              [ariaLabel]="'Stop ' + tpl.description"
+              (onClick)="confirmDeactivate(tpl)"
+            />
+          }
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="7">
+          <fintrack-empty-state
+            icon="pi-replay"
+            title="No recurring rules"
+            message="Add a transaction and set it to repeat, or split a card purchase into installments."
+          />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-dialog>

@@ -1,0 +1,43 @@
+import { Component, model } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import type { FormCheckboxControl } from '@angular/forms/signals';
+import { ToggleSwitch } from 'primeng/toggleswitch';
+
+import { FintrackControlBase, generateControlId } from './control-base';
+
+/**
+ * Boolean toggle. Implements `FormCheckboxControl`, so it exposes `checked` rather than
+ * `value` — the two contracts are mutually exclusive.
+ */
+@Component({
+  selector: 'fintrack-switch',
+  imports: [ToggleSwitch, FormsModule],
+  template: `
+    <div class="flex items-center gap-3">
+      <p-toggleswitch
+        [inputId]="inputId"
+        [ngModel]="checked()"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="checked.set($event)"
+        (onBlur)="touch.emit()"
+        [disabled]="disabled()"
+      />
+      <label [attr.for]="inputId" class="text-sm font-medium text-[var(--p-text-color)]">
+        {{ label() }}
+      </label>
+    </div>
+    @if (hint()) {
+      <small class="mt-1 block text-[var(--p-text-muted-color)]">{{ hint() }}</small>
+    }
+  `,
+  styles: `
+    :host {
+      display: block;
+    }
+  `,
+})
+export class FintrackSwitch extends FintrackControlBase implements FormCheckboxControl {
+  readonly checked = model<boolean>(false);
+
+  protected readonly inputId = generateControlId('fintrack-switch');
+}
