@@ -23,6 +23,7 @@ import { Uuid } from '../../shared/models/common';
 import { CreditCard, CreditCardRequest } from '../../shared/models/credit-card';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
 import { CreditCardService } from './credit-card.service';
+import { FormsModule } from '@angular/forms';
 
 interface CreditCardFormModel {
   bankAccountId: Uuid | null;
@@ -52,6 +53,7 @@ const empty = (): CreditCardFormModel => ({
     FintrackSelect,
     FintrackMoneyInput,
     FintrackNumberInput,
+    FormsModule,
   ],
   templateUrl: './credit-card-form-dialog.html',
 })

@@ -32,5 +32,5 @@ export class Shell {
   protected readonly auth = inject(AuthService);
   protected readonly theme = inject(ThemeService);
   protected readonly navItems = NAV_ITEMS;
-  protected readonly mobileNavOpen = signal(false);
+  protected mobileNavOpen = signal(false);
 }

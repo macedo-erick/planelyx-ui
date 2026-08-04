@@ -20,6 +20,7 @@ import { formatMoney } from '../../shared/util/money';
 import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
 import { InvoiceService } from './invoice.service';
+import { StyleClass } from 'primeng/styleclass';
 
 @Component({
   selector: 'fintrack-invoice-detail-page',
@@ -31,6 +32,7 @@ import { InvoiceService } from './invoice.service';
     RouterLink,
     FintrackPageHeader,
     FintrackEmptyState,
+    StyleClass,
   ],
   templateUrl: './invoice-detail-page.html',
 })

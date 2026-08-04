@@ -22,6 +22,7 @@ import { CategoryType } from '../../shared/models/enums';
 import { CATEGORY_TYPE_OPTIONS } from '../../shared/util/enum-labels';
 import { CATEGORY_ICON_OPTIONS } from './category-icons';
 import { CategoryService } from './category.service';
+import { FormsModule } from '@angular/forms';
 
 interface CategoryFormModel {
   name: string;
@@ -34,7 +35,7 @@ const EMPTY: CategoryFormModel = { name: '', type: 'EXPENSE', icon: null, color:
 
 @Component({
   selector: 'fintrack-category-form-dialog',
-  imports: [Dialog, Button, FormField, FintrackTextInput, FintrackSelect],
+  imports: [Dialog, Button, FormField, FintrackTextInput, FintrackSelect, FormsModule],
   templateUrl: './category-form-dialog.html',
 })
 export class CategoryFormDialog {

@@ -18,6 +18,7 @@ import { BankAccountService } from '../bank-accounts/bank-account.service';
 import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
 import { TransactionTemplateService } from './transaction-template.service';
+import { StyleClass } from 'primeng/styleclass';
 
 /**
  * Management surface for recurring rules.
@@ -28,7 +29,7 @@ import { TransactionTemplateService } from './transaction-template.service';
  */
 @Component({
   selector: 'fintrack-recurring-rules-dialog',
-  imports: [Dialog, TableModule, Tag, Button, FintrackEmptyState, FintrackCategoryBadge],
+  imports: [Dialog, TableModule, Tag, Button, FintrackEmptyState, FintrackCategoryBadge, StyleClass],
   templateUrl: './recurring-rules-dialog.html',
 })
 export class RecurringRulesDialog {

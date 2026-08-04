@@ -51,8 +51,8 @@ export class TransactionsPage {
   private readonly confirm = inject(ConfirmationService);
 
   protected readonly kindOptions = TRANSACTION_KIND_OPTIONS;
-  protected readonly dialogOpen = signal(false);
-  protected readonly rulesOpen = signal(false);
+  protected dialogOpen = signal(false);
+  protected rulesOpen = signal(false);
   protected readonly selected = signal<Transaction | null>(null);
 
   /** Server-side filters live on the service; these two are client-side only. */

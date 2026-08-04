@@ -5,6 +5,10 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "lint": "eslint \"src/**/*.{ts,html}\" --max-warnings=0",
+    "lint:fix": "eslint \"src/**/*.{ts,html}\" --fix && prettier \"src/**/*.{ts,html}\" --write",
+    "format": "prettier \"src/**/*.{ts,html}\" --write",
+    "format:check": "prettier \"src/**/*.{ts,html}\" --check",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "start:staging": "ng serve --configuration staging",
@@ -31,16 +35,21 @@
     "tslib": "^2.3.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.33.0",
     "@angular/build": "^22.1.2",
     "@angular/cli": "^22.1.2",
     "@angular/compiler-cli": "^22.1.0",
     "@tailwindcss/postcss": "^4.1.12",
     "@types/node": "^20.17.19",
+    "angular-eslint": "^22.0.0",
+    "eslint": "^9.33.0",
+    "eslint-config-prettier": "^10.1.8",
     "jsdom": "^28.0.0",
     "postcss": "^8.5.3",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.1.12",
     "tailwindcss-primeui": "^0.6.1",
+    "typescript-eslint": "^8.39.1",
     "typescript": "~6.0.2",
     "vitest": "^4.0.8"
   }

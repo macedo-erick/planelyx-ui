@@ -9,7 +9,7 @@
     </nav>
   </aside>
 
-  <p-drawer [(visible)]="mobileNavOpen" header="Fintrack" styleClass="w-72">
+  <p-drawer [(visible)]="mobileNavOpen" header="Fintrack" pStyleClass="w-72">
     <nav aria-label="Main" (click)="mobileNavOpen.set(false)">
       <ng-container *ngTemplateOutlet="navLinks" />
     </nav>

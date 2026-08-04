@@ -12,6 +12,7 @@ import { CategoryType } from '../../shared/models/enums';
 import { CATEGORY_TYPE_LABELS } from '../../shared/util/enum-labels';
 import { CategoryFormDialog } from './category-form-dialog';
 import { CategoryService } from './category.service';
+import { StyleClass } from 'primeng/styleclass';
 
 @Component({
   selector: 'fintrack-categories-page',
@@ -23,6 +24,7 @@ import { CategoryService } from './category.service';
     FintrackEmptyState,
     FintrackCategoryBadge,
     CategoryFormDialog,
+    StyleClass,
   ],
   templateUrl: './categories-page.html',
 })
@@ -30,7 +32,7 @@ export class CategoriesPage {
   protected readonly service = inject(CategoryService);
   private readonly confirm = inject(ConfirmationService);
 
-  protected readonly dialogOpen = signal(false);
+  protected dialogOpen = signal(false);
   protected readonly selected = signal<Category | null>(null);
 
   protected readonly categories = computed(() => this.service.sorted());

@@ -11,10 +11,18 @@ import { formatMoney } from '../../shared/util/money';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
 import { CreditCardFormDialog } from './credit-card-form-dialog';
 import { CreditCardService } from './credit-card.service';
+import { StyleClass } from 'primeng/styleclass';
 
 @Component({
   selector: 'fintrack-credit-cards-page',
-  imports: [TableModule, Button, FintrackPageHeader, FintrackEmptyState, CreditCardFormDialog],
+  imports: [
+    TableModule,
+    Button,
+    FintrackPageHeader,
+    FintrackEmptyState,
+    CreditCardFormDialog,
+    StyleClass,
+  ],
   templateUrl: './credit-cards-page.html',
 })
 export class CreditCardsPage {
@@ -22,7 +30,7 @@ export class CreditCardsPage {
   private readonly accounts = inject(BankAccountService);
   private readonly confirm = inject(ConfirmationService);
 
-  protected readonly dialogOpen = signal(false);
+  protected dialogOpen = signal(false);
   protected readonly selected = signal<CreditCard | null>(null);
   protected readonly cards = computed(() => this.service.sorted());
   protected readonly hasAccounts = computed(() => this.accounts.items().length > 0);

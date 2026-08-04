@@ -50,6 +50,7 @@ import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
 import { TransactionTemplateService } from './transaction-template.service';
 import { TransactionService } from './transaction.service';
+import { FormsModule } from '@angular/forms';
 
 /** `NONE` posts a plain transaction; anything else posts a recurring template. */
 type Repeat = 'NONE' | RecurrenceType;
@@ -96,6 +97,7 @@ const empty = (): TransactionFormModel => ({
     FintrackMoneyInput,
     FintrackNumberInput,
     FintrackDatePicker,
+    FormsModule,
   ],
   templateUrl: './transaction-form-dialog.html',
 })

@@ -12,6 +12,7 @@ import { ACCOUNT_TYPE_LABELS } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
 import { BankAccountFormDialog } from './bank-account-form-dialog';
 import { BankAccountService } from './bank-account.service';
+import { StyleClass } from 'primeng/styleclass';
 
 @Component({
   selector: 'fintrack-bank-accounts-page',
@@ -22,6 +23,7 @@ import { BankAccountService } from './bank-account.service';
     FintrackPageHeader,
     FintrackEmptyState,
     BankAccountFormDialog,
+    StyleClass,
   ],
   templateUrl: './bank-accounts-page.html',
 })
@@ -29,7 +31,7 @@ export class BankAccountsPage {
   protected readonly service = inject(BankAccountService);
   private readonly confirm = inject(ConfirmationService);
 
-  protected readonly dialogOpen = signal(false);
+  protected dialogOpen = signal(false);
   protected readonly selected = signal<BankAccount | null>(null);
   protected readonly accounts = computed(() => this.service.sorted());
 

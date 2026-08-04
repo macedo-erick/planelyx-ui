@@ -23,6 +23,7 @@ import { BankAccount, BankAccountRequest } from '../../shared/models/bank-accoun
 import { AccountType } from '../../shared/models/enums';
 import { ACCOUNT_TYPE_OPTIONS } from '../../shared/util/enum-labels';
 import { BankAccountService } from './bank-account.service';
+import { FormsModule } from '@angular/forms';
 
 interface BankAccountFormModel {
   name: string;
@@ -42,7 +43,7 @@ const empty = (): BankAccountFormModel => ({
 
 @Component({
   selector: 'fintrack-bank-account-form-dialog',
-  imports: [Dialog, Button, FormField, FintrackTextInput, FintrackSelect, FintrackMoneyInput],
+  imports: [Dialog, Button, FormField, FintrackTextInput, FintrackSelect, FintrackMoneyInput, FormsModule],
   templateUrl: './bank-account-form-dialog.html',
 })
 export class BankAccountFormDialog {

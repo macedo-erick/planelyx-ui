@@ -44,6 +44,26 @@ To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use th
 ng test
 ```
 
+## Linting and formatting
+
+Run ESLint (TypeScript + Angular HTML templates):
+
+```bash
+npm run lint
+```
+
+Auto-fix lint + format issues:
+
+```bash
+npm run lint:fix
+```
+
+Run Prettier formatting only:
+
+```bash
+npm run format
+```
+
 ## Running end-to-end tests
 
 For end-to-end (e2e) testing, run:

@@ -19,10 +19,11 @@ import { BankAccountService } from '../bank-accounts/bank-account.service';
 import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
 import { InvoiceService } from '../invoices/invoice.service';
+import { StyleClass } from 'primeng/styleclass';
 
 @Component({
   selector: 'fintrack-dashboard-page',
-  imports: [TableModule, Tag, UIChart, Button, RouterLink, FintrackPageHeader, FintrackEmptyState],
+  imports: [TableModule, Tag, UIChart, Button, RouterLink, FintrackPageHeader, FintrackEmptyState, StyleClass],
   templateUrl: './dashboard-page.html',
 })
 export class DashboardPage {
