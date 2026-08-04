@@ -22,7 +22,6 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/transactions/transactions-page').then((m) => m.TransactionsPage),
       },
-      // Recurring rules now live inside Transactions; keep old links working.
       { path: 'recurring', pathMatch: 'full', redirectTo: 'transactions' },
       {
         path: 'invoices',

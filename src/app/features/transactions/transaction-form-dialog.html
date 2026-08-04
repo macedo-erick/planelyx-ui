@@ -8,10 +8,7 @@
 >
   <form class="flex flex-col gap-4" novalidate (ngSubmit)="onSubmit()">
     @if (editing()) {
-      <!--
-        The API's update payload cannot change kind or the account/card link, so they
-        are shown as context rather than as editable fields.
-      -->
+
       <div class="rounded-md bg-[var(--p-content-hover-background)] px-3 py-2 text-sm">
         <span class="font-medium">{{ kindLabel(f.kind().value()) }}</span>
         <span class="text-[var(--p-text-muted-color)]"> · {{ sourceName() }}</span>

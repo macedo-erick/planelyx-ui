@@ -17,8 +17,6 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withComponentInputBinding()),
     provideKeycloakAuth(),
     keycloakBearerTokenConfig,
-    // Order matters: the bearer interceptor must attach the token before the error
-    // interceptor sees the response.
     provideHttpClient(withInterceptors([includeBearerTokenInterceptor, errorInterceptor])),
     providePrimeNG({
       theme: {

@@ -103,7 +103,6 @@ describe('fintrack control wrappers', () => {
     const host = fixture.componentInstance;
     const text = fixture.debugElement.children[0].componentInstance as FintrackTextInput;
 
-    // Empty name violates `required`.
     expect(host.f.name().invalid()).toBe(true);
     expect(text.invalid()).toBe(true);
     expect(text.required()).toBe(true);

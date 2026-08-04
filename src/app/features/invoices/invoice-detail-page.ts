@@ -107,7 +107,7 @@ export class InvoiceDetailPage {
       acceptButtonProps: { label: 'Mark paid' },
       rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
       accept: () => {
-        // Status is derived server-side, so refetch rather than patching locally.
+
         this.invoices.pay(inv.id).subscribe(() => this.resource.reload());
       },
     });

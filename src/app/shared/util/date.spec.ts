@@ -17,8 +17,7 @@ describe('date utils', () => {
       const date = fromIsoDate('2026-08-03');
 
       expect(date).not.toBeNull();
-      // The bug this guards against: `new Date('2026-08-03')` is UTC, which reads as the
-      // 2nd in any negative offset. These must be the literal parts we were given.
+
       expect(date!.getFullYear()).toBe(2026);
       expect(date!.getMonth()).toBe(7);
       expect(date!.getDate()).toBe(3);
@@ -45,7 +44,7 @@ describe('date utils', () => {
     });
 
     it('does not shift a date late in the local day', () => {
-      // 23:30 local would roll to the next day if this went through UTC.
+
       expect(toIsoDate(new Date(2026, 7, 3, 23, 30))).toBe('2026-08-03');
     });
   });
@@ -64,7 +63,7 @@ describe('date utils', () => {
     it('endOfMonth returns the last day, including short months', () => {
       expect(toIsoDate(endOfMonth(new Date(2026, 7, 17)))).toBe('2026-08-31');
       expect(toIsoDate(endOfMonth(new Date(2026, 1, 5)))).toBe('2026-02-28');
-      // 2028 is a leap year.
+
       expect(toIsoDate(endOfMonth(new Date(2028, 1, 5)))).toBe('2028-02-29');
     });
 

@@ -61,7 +61,6 @@ export class CategoryFormDialog {
   });
 
   constructor() {
-    // Seed the form each time the dialog opens, so a stale row is never shown.
     effect(() => {
       if (!this.visible()) {
         return;
@@ -113,7 +112,7 @@ export class CategoryFormDialog {
         this.visible.set(false);
         this.saved.emit();
       },
-      // The error interceptor already surfaced the failure; just release the button.
+
       error: () => this.saving.set(false),
     });
   }

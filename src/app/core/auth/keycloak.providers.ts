@@ -34,16 +34,14 @@ export const provideKeycloakAuth = (): EnvironmentProviders =>
       clientId: environment.keycloak.clientId,
     },
     initOptions: {
-      // `check-sso` lets the app boot for anonymous users; the route guard is what
-      // actually triggers the login redirect. `login-required` would redirect on load
-      // and make a public landing page impossible later.
+
       onLoad: 'check-sso',
       pkceMethod: 'S256',
       silentCheckSsoRedirectUri: `${window.location.origin}/silent-check-sso.html`,
     },
     features: [
       withAutoRefreshToken({
-        // Session ends after 30 minutes of no interaction rather than on token expiry.
+
         onInactivityTimeout: 'logout',
         sessionTimeout: 30 * 60 * 1000,
       }),

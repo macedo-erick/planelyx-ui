@@ -9,7 +9,6 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { environment } from '../../../environments/environment';
 import { TransactionFormDialog } from './transaction-form-dialog';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 interface TransactionFormDialogInternals {
   f: any;
   previewSummary(): string;
@@ -48,7 +47,7 @@ describe('TransactionFormDialog', () => {
     fixture.detectChanges();
 
     http = TestBed.inject(HttpTestingController);
-    // The resource-backed lookups fire on init; drain them so expectOne() is unambiguous.
+
     http.match(() => true).forEach((req) => req.flush([]));
 
     form = fixture.componentInstance as unknown as TransactionFormDialogInternals;
@@ -79,7 +78,7 @@ describe('TransactionFormDialog', () => {
       amount: 120,
       description: 'PS5',
     });
-    // A one-off must not carry recurrence fields.
+
     expect(req.request.body).not.toHaveProperty('recurrenceType');
   });
 
@@ -105,7 +104,7 @@ describe('TransactionFormDialog', () => {
     form.onSubmit();
 
     const req = http.expectOne(`${environment.apiUrl}/transaction-templates`);
-    // The API rejects FIXED_INDEFINITE with a non-null count.
+
     expect(req.request.body.totalOccurrences).toBeNull();
   });
 
@@ -115,7 +114,6 @@ describe('TransactionFormDialog', () => {
     fixture.detectChanges();
     TestBed.inject(ApplicationRef).tick();
 
-    // INSTALLMENT is only valid for CARD_CHARGE server-side.
     expect(form.f.kind().value()).toBe('CARD_CHARGE');
   });
 
@@ -123,7 +121,6 @@ describe('TransactionFormDialog', () => {
     fill({ kind: 'CARD_CHARGE', creditCardId: CARD, repeats: 'INSTALLMENT', totalOccurrences: 1 });
     form.onSubmit();
 
-    // Rejected client-side, so nothing is sent.
     http.expectNone(`${environment.apiUrl}/transaction-templates`);
     expect(form.f.totalOccurrences().invalid()).toBe(true);
   });
@@ -133,8 +130,6 @@ describe('TransactionFormDialog', () => {
     form.f.amount().value.set(10000);
     fixture.detectChanges();
 
-    // 10000 / 12 rounds down to 833.33; the leftover cents on the final installment are
-    // deliberately not shown.
     expect(form.previewSummary()).toMatch(/^12 × /);
     expect(form.previewSummary()).toContain('833');
     expect(form.previewSummary()).not.toContain('then');

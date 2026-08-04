@@ -40,10 +40,7 @@ export class TransactionTemplateService {
   readonly byIdMap = computed(() => new Map(this.items().map((t) => [t.id, t])));
 
   create(request: TransactionTemplateRequest): Observable<TransactionTemplate> {
-    /*
-     * The POST body echoes the pre-generation row, so `occurrencesGenerated` reads 0 even
-     * when occurrences were created. Always reload rather than trusting the response.
-     */
+
     return this.http
       .post<TransactionTemplate>(this.baseUrl, request)
       .pipe(tap(() => this.resource.reload()));

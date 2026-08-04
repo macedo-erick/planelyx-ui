@@ -25,7 +25,6 @@ export abstract class FintrackControlBase {
   readonly hint = input<string>('');
   readonly placeholder = input<string>('');
 
-  // --- FormUiControl inputs, bound automatically by [formField] ---
   readonly disabled = input<boolean>(false);
   readonly disabledReasons = input<readonly WithOptionalFieldTree<DisabledReason>[]>([]);
   readonly readonly = input<boolean>(false);

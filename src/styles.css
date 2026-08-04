@@ -1,13 +1,4 @@
-/*
- * Global stylesheet.
- *
- * Plain CSS on purpose: Tailwind v4's config lives in at-rules (@plugin, @theme,
- * @custom-variant) that Sass cannot resolve. Component-level styles are still SCSS.
- *
- * Layer order matters. PrimeNG sits between Tailwind's base and utilities so utility
- * classes always win over component styles without needing !important. The `primeng`
- * layer name is matched by providePrimeNG({ theme: { options: { cssLayer } } }).
- */
+
 @layer theme, base, primeng, components, utilities;
 
 @import 'tailwindcss/theme.css' layer(theme);
@@ -18,7 +9,6 @@
 
 @plugin 'tailwindcss-primeui';
 
-/* PrimeNG's darkModeSelector is `.app-dark`; teach Tailwind's `dark:` variant to match. */
 @custom-variant dark (&:where(.app-dark, .app-dark *));
 
 :root {
@@ -41,7 +31,6 @@ body {
   color: var(--p-text-color);
 }
 
-/* Visible focus for keyboard users everywhere (WCAG 2.4.7). */
 :focus-visible {
   outline: 2px solid var(--p-primary-color);
   outline-offset: 2px;

@@ -91,7 +91,7 @@ export class TransactionsPage {
   });
 
   constructor() {
-    // Default to the current month so the first load is not the entire history.
+
     const month = currentMonthRange();
     this.range.set(month);
     this.service.setFilters({ from: month.from, to: month.to });
@@ -103,7 +103,7 @@ export class TransactionsPage {
       this.pushFilters(undefined, undefined);
       return;
     }
-    // PrimeNG emits [start, null] mid-selection; wait for both ends.
+
     const [start, end] = value;
     if (!end) {
       return;

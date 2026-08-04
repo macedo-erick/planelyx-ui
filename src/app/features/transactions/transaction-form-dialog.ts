@@ -124,12 +124,6 @@ export class TransactionFormDialog {
   protected readonly f = form(this.model, (path) => {
     required(path.kind);
 
-    /*
-     * The API enforces a hard XOR: CARD_CHARGE must carry a creditCardId and no
-     * bankAccountId; the account kinds are the reverse. Violations are a 400. Marking the
-     * irrelevant field hidden also drops it from validation, so the form can never be
-     * valid in a shape the server would reject.
-     */
     hidden(path.bankAccountId, { when: ({ valueOf }) => valueOf(path.kind) === 'CARD_CHARGE' });
     hidden(path.creditCardId, { when: ({ valueOf }) => valueOf(path.kind) !== 'CARD_CHARGE' });
 
@@ -142,11 +136,6 @@ export class TransactionFormDialog {
     required(path.description, { message: 'Add a short description.' });
     maxLength(path.description, 255);
 
-    /*
-     * Occurrence rules mirror TransactionTemplateService.validateRecurrence:
-     *   FIXED_INDEFINITE -> must be null   FIXED_COUNT -> >= 1   INSTALLMENT -> >= 2
-     * Hidden keeps it out of both validation and the payload for the other cases.
-     */
     hidden(path.totalOccurrences, {
       when: ({ valueOf }) =>
         valueOf(path.repeats) === 'NONE' || valueOf(path.repeats) === 'FIXED_INDEFINITE',
@@ -212,7 +201,7 @@ export class TransactionFormDialog {
       kind === 'ACCOUNT_CREDIT'
         ? this.categories.incomeCategories()
         : this.categories.expenseCategories();
-    // Fall back to everything rather than showing an empty dropdown.
+
     const source = list.length > 0 ? list : this.categories.sorted();
     return source.map((category) => ({
       label: category.name,
@@ -248,7 +237,7 @@ export class TransactionFormDialog {
                 amount: current.amount,
                 transactionDate: current.transactionDate,
                 description: current.description,
-                // Recurrence is fixed at creation — the API has no template update.
+
                 repeats: 'NONE',
                 totalOccurrences: null,
               }
@@ -258,7 +247,6 @@ export class TransactionFormDialog {
       });
     });
 
-    // Installments only exist on cards, so force the kind rather than letting the API 400.
     effect(() => {
       if (this.f.repeats().value() === 'INSTALLMENT') {
         untracked(() => this.f.kind().value.set('CARD_CHARGE'));
@@ -281,9 +269,6 @@ export class TransactionFormDialog {
     const existing = this.transaction();
     const recurring = value.repeats !== 'NONE';
 
-    // One of three endpoints depending on mode: update, plain create, or template create.
-    // Typed as `unknown` because the three branches return different payloads and we
-    // only care that the call completed.
     const call: Observable<unknown> = existing
       ? this.service.update(existing.id, {
           categoryId: value.categoryId as Uuid,
@@ -301,12 +286,12 @@ export class TransactionFormDialog {
             totalAmount: value.amount,
             recurrenceType: value.repeats as RecurrenceType,
             startDate: value.transactionDate as IsoDate,
-            // Must be null for FIXED_INDEFINITE or the API rejects it.
+
             totalOccurrences: value.repeats === 'FIXED_INDEFINITE' ? null : value.totalOccurrences,
           } satisfies TransactionTemplateRequest)
         : this.service.create({
             kind: value.kind,
-            // Send exactly one of the two, matching the server's XOR constraint.
+
             bankAccountId: value.kind === 'CARD_CHARGE' ? null : value.bankAccountId,
             creditCardId: value.kind === 'CARD_CHARGE' ? value.creditCardId : null,
             categoryId: value.categoryId as Uuid,
@@ -319,7 +304,7 @@ export class TransactionFormDialog {
     call.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.saving.set(false);
-        // Creating a template materializes transactions server-side, so refresh the list.
+
         if (recurring) {
           this.service.reload();
         }

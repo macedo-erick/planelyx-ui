@@ -30,7 +30,6 @@ const GENERIC_DETAIL = 'Something went wrong. Please try again.';
 function parseFieldErrors(message: string): ReadonlyMap<string, string> {
   const result = new Map<string, string>();
 
-  // Only treat it as a field list when every segment looks like "name: message".
   const segments = message
     .split(';')
     .map((s) => s.trim())
@@ -46,7 +45,7 @@ function parseFieldErrors(message: string): ReadonlyMap<string, string> {
     }
     const field = segment.slice(0, separator).trim();
     const detail = segment.slice(separator + 1).trim();
-    // Field names are Java identifiers; anything else is prose that happens to contain a colon.
+
     if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(field) || !detail) {
       return new Map();
     }
@@ -80,7 +79,6 @@ export function normalizeApiError(error: unknown): NormalizedApiError {
     return { status: 0, title: 'Unexpected error', detail: GENERIC_DETAIL, fieldErrors: new Map() };
   }
 
-  // status 0 means the request never landed — network down, or a CORS preflight rejection.
   if (error.status === 0) {
     return {
       status: 0,

@@ -52,7 +52,6 @@ export class BankAccountsPage {
   }
 
   protected confirmDelete(account: BankAccount): void {
-    // The API hard-deletes accounts; there is no soft-deactivate.
     this.confirm.confirm({
       header: 'Delete account',
       message: `Permanently delete "${account.name}"? This cannot be undone, and any cards or transactions attached to it will be affected.`,

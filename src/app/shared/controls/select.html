@@ -25,10 +25,7 @@
     appendTo="body"
     styleClass="w-full"
   >
-    <!--
-      Only overridden when the options carry icons (categories). Without these
-      templates PrimeNG renders its default label-only item.
-    -->
+
     <ng-template #item let-option>
       <span class="flex items-center gap-2">
         @if (option.icon) {
