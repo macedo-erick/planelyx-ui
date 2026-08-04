@@ -56,7 +56,7 @@
           {{ tx.description }}
           @if (tx.installmentNumber) {
             <span class="ml-1 text-xs text-[var(--p-text-muted-color)]">
-              (installment {{ tx.installmentNumber }})
+              ({{ tx.installmentNumber }}/{{ tx.totalInstallments }})
             </span>
           }
         </td>

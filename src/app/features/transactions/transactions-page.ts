@@ -91,7 +91,6 @@ export class TransactionsPage {
   });
 
   constructor() {
-
     const month = currentMonthRange();
     this.range.set(month);
     this.service.setFilters({ from: month.from, to: month.to });
@@ -147,10 +146,8 @@ export class TransactionsPage {
     if (!tx.installmentNumber) {
       return null;
     }
-    const total = tx.templateId
-      ? this.templates.byIdMap().get(tx.templateId)?.totalOccurrences
-      : null;
-    return total ? `${tx.installmentNumber}/${total}` : `${tx.installmentNumber}`;
+
+    return `${tx.installmentNumber}/${tx.totalInstallments}`;
   }
 
   protected category(id: Uuid): Category | undefined {

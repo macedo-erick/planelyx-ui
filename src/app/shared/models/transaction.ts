@@ -15,6 +15,8 @@ export interface Transaction {
   readonly templateId: Uuid | null;
   /** 1-based position, populated only for INSTALLMENT templates. */
   readonly installmentNumber: number | null;
+  /** Total number of installments, populated only for INSTALLMENT templates. */
+  readonly totalInstallments: number | null;
   readonly amount: Money;
   readonly transactionDate: IsoDate;
   readonly description: string;
