@@ -22,7 +22,6 @@ import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
 import { RecurringRulesDialog } from './recurring-rules-dialog';
 import { TransactionFormDialog } from './transaction-form-dialog';
-import { TransactionTemplateService } from './transaction-template.service';
 import { TransactionService } from './transaction.service';
 
 @Component({
@@ -47,7 +46,6 @@ export class TransactionsPage {
   private readonly accounts = inject(BankAccountService);
   private readonly cards = inject(CreditCardService);
   private readonly categories = inject(CategoryService);
-  private readonly templates = inject(TransactionTemplateService);
   private readonly confirm = inject(ConfirmationService);
 
   protected readonly kindOptions = TRANSACTION_KIND_OPTIONS;

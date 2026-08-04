@@ -1,7 +1,7 @@
 import {
   Component,
-  DestroyRef,
   computed,
+  DestroyRef,
   effect,
   inject,
   input,
@@ -13,9 +13,9 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable } from 'rxjs';
 import {
-  FormField,
   applyWhen,
   form,
+  FormField,
   hidden,
   maxLength,
   min,
@@ -51,6 +51,7 @@ import { CreditCardService } from '../credit-cards/credit-card.service';
 import { TransactionTemplateService } from './transaction-template.service';
 import { TransactionService } from './transaction.service';
 import { FormsModule } from '@angular/forms';
+import { InvoiceService } from '../invoices/invoice.service';
 
 /** `NONE` posts a plain transaction; anything else posts a recurring template. */
 type Repeat = 'NONE' | RecurrenceType;
@@ -108,6 +109,7 @@ export class TransactionFormDialog {
   private readonly cards = inject(CreditCardService);
   private readonly categories = inject(CategoryService);
   private readonly messages = inject(MessageService);
+  private readonly invoice = inject(InvoiceService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly visible = model.required<boolean>();
@@ -324,6 +326,7 @@ export class TransactionFormDialog {
         });
         this.visible.set(false);
         this.saved.emit();
+        this.invoice.reload();
       },
       error: () => this.saving.set(false),
     });
