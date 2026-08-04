@@ -37,7 +37,7 @@
       optionLabel="label"
       optionValue="value"
       [ngModel]="kindFilter()"
-      (ngModelChange)="kindFilter.set($event)"
+      (ngModelChange)="onKindChange($event)"
       placeholder="Any type"
       [showClear]="true"
       appendTo="body"
@@ -87,7 +87,7 @@
       message="No transactions match the current filters."
     />
   } @else {
-    @for (tx of pagedRows(); track tx.id) {
+    @for (tx of rows(); track tx.id) {
       <fintrack-transaction-row
         [transaction]="tx"
         [category]="category(tx.categoryId)"
@@ -98,13 +98,19 @@
   }
 </fintrack-card>
 
-@if (rows().length > pageSize) {
+@if (service.totalElements() > 0) {
+  <!--
+    No `block` here. The host already carries PrimeNG's `.p-paginator`, which is
+    `display:flex; justify-content:center`, and Tailwind's `utilities` layer is ordered after
+    `primeng` in styles.css — so a `block` utility wins and collapses the bar to the left.
+  -->
   <p-paginator
-    class="mt-3 block"
-    [first]="first()"
-    [rows]="pageSize"
-    [totalRecords]="rows().length"
-    (onPageChange)="first.set($event.first ?? 0)"
+    class="mt-3"
+    [first]="page() * size()"
+    [rows]="size()"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    [totalRecords]="service.totalElements()"
+    (onPageChange)="onPage($event)"
   />
 }
 

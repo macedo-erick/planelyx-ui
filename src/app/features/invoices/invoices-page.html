@@ -34,15 +34,64 @@
           <h2 class="text-lg font-medium text-[var(--p-text-color)]">
             {{ cardName(inv.creditCardId) }}
           </h2>
-          <p-button
-            icon="pi pi-ellipsis-h"
-            severity="secondary"
-            [text]="true"
-            [rounded]="true"
-            ariaLabel="Invoice actions"
-            (onClick)="menu.toggle($event)"
-          />
-          <p-menu #menu [model]="menuItems()" [popup]="true" appendTo="body" />
+          <span class="flex items-center gap-1">
+            <p-button
+              icon="pi pi-plus"
+              label="Add charge"
+              severity="secondary"
+              [text]="true"
+              size="small"
+              (onClick)="openCreate(inv)"
+            />
+            <!--
+            A p-popover of plain buttons rather than a p-menu: PrimeNG 22.0.0's Menu template
+            tracks its @for by a template context variable, which Angular hoists into a
+            context-free function, so rendering any item throws
+            "ReferenceError: parentId_r3 is not defined". Fixed upstream in 22.1.0-rc.1, but
+            that is a prerelease — avoid p-menu until a stable release ships the fix.
+          -->
+            <p-button
+              icon="pi pi-ellipsis-h"
+              severity="secondary"
+              [text]="true"
+              [rounded]="true"
+              ariaLabel="Invoice actions"
+              (onClick)="actions.toggle($event)"
+            />
+            <p-popover #actions>
+              <div class="flex w-52 flex-col">
+                @if (inv.status === 'PAID') {
+                  <p-button
+                    label="Undo payment"
+                    icon="pi pi-undo"
+                    severity="secondary"
+                    [text]="true"
+                    styleClass="justify-start w-full"
+                    (onClick)="actions.hide(); confirmUnpay(inv)"
+                  />
+                } @else {
+                  <p-button
+                    label="Mark as paid"
+                    icon="pi pi-check-circle"
+                    severity="secondary"
+                    [text]="true"
+                    styleClass="justify-start w-full"
+                    [disabled]="inv.totalAmount === 0"
+                    (onClick)="actions.hide(); confirmPay(inv)"
+                  />
+                }
+                <p-button
+                  label="View details"
+                  icon="pi pi-external-link"
+                  severity="secondary"
+                  [text]="true"
+                  styleClass="justify-start w-full"
+                  [routerLink]="['/invoices', inv.id]"
+                  (onClick)="actions.hide()"
+                />
+              </div>
+            </p-popover>
+          </span>
         </div>
 
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
@@ -92,6 +141,17 @@
         }
       }
     </fintrack-card>
+
+    @if (chargeTotal() > 0) {
+      <p-paginator
+        class="mt-3"
+        [first]="chargePage() * chargeSize()"
+        [rows]="chargeSize()"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        [totalRecords]="chargeTotal()"
+        (onPageChange)="onChargePage($event)"
+      />
+    }
   } @else {
     <fintrack-empty-state
       icon="pi-receipt"
@@ -104,6 +164,7 @@
 <fintrack-transaction-form-dialog
   [(visible)]="dialogOpen"
   [transaction]="selected()"
+  [prefill]="prefill()"
   (saved)="detail.reload()"
   (deleted)="detail.reload()"
 />

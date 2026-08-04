@@ -1,7 +1,7 @@
 import {
   Component,
-  DestroyRef,
   computed,
+  DestroyRef,
   effect,
   inject,
   input,
@@ -10,8 +10,8 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormField, form, max, maxLength, min, required } from '@angular/forms/signals';
-import { MessageService } from 'primeng/api';
+import { form, FormField, max, maxLength, min, required } from '@angular/forms/signals';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 
@@ -61,11 +61,13 @@ export class CreditCardFormDialog {
   private readonly service = inject(CreditCardService);
   private readonly accounts = inject(BankAccountService);
   private readonly messages = inject(MessageService);
+  private readonly confirm = inject(ConfirmationService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly visible = model.required<boolean>();
   readonly card = input<CreditCard | null>(null);
   readonly saved = output<void>();
+  readonly deleted = output<CreditCard>();
 
   protected readonly accountOptions = computed(() => this.accounts.options());
   protected readonly saving = signal(false);
@@ -107,6 +109,34 @@ export class CreditCardFormDialog {
           : empty(),
       );
       this.saving.set(false);
+    });
+  }
+
+  /**
+   * Delete lives in here rather than on the card because the cards are click-to-edit —
+   * this dialog is the only place a single card is ever the subject of an action.
+   */
+  protected confirmDelete(): void {
+    const current = this.card();
+    if (!current) {
+      return;
+    }
+
+    this.confirm.confirm({
+      header: 'Delete card',
+      message: `Permanently delete "${current.name}"? Its charges and invoices will be affected.`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Delete', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
+      accept: () => {
+        this.service
+          .remove(current.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe(() => {
+            this.visible.set(false);
+            this.deleted.emit(current);
+          });
+      },
     });
   }
 

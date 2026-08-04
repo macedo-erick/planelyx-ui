@@ -2,7 +2,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { DatePicker } from 'primeng/datepicker';
-import { Paginator } from 'primeng/paginator';
+import { Paginator, PaginatorState } from 'primeng/paginator';
 import { Select } from 'primeng/select';
 
 import { Category } from '../../shared/models/category';
@@ -15,7 +15,7 @@ import { FintrackPageHeader } from '../../shared/ui/page-header';
 import { FintrackTransactionRow } from '../../shared/ui/transaction-row';
 import { currentMonthRange, fromIsoDate, toIsoDate } from '../../shared/util/date';
 import { TRANSACTION_KIND_OPTIONS } from '../../shared/util/enum-labels';
-import { formatMoney, sumMoney } from '../../shared/util/money';
+import { formatMoney } from '../../shared/util/money';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
 import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
@@ -47,13 +47,15 @@ export class TransactionsPage {
   private readonly categories = inject(CategoryService);
 
   protected readonly kindOptions = TRANSACTION_KIND_OPTIONS;
-  protected readonly pageSize = 25;
   protected dialogOpen = signal(false);
   protected rulesOpen = signal(false);
-  protected readonly first = signal(0);
   protected readonly selected = signal<Transaction | null>(null);
 
-  /** Server-side filters live on the service; these two are client-side only. */
+  /** Zero-based, matching the API. */
+  protected readonly page = signal(0);
+  protected readonly size = signal(25);
+
+  /** Every filter is applied by the API; nothing is narrowed again on this side. */
   protected readonly kindFilter = signal<TransactionKind | null>(null);
   protected readonly categoryFilter = signal<Uuid | null>(null);
   protected readonly range = signal<{ from: IsoDate; to: IsoDate } | null>(null);
@@ -68,47 +70,35 @@ export class TransactionsPage {
     return [fromIsoDate(current.from), fromIsoDate(current.to)].filter(Boolean) as Date[];
   });
 
-  protected readonly rows = computed(() => {
-    const kind = this.kindFilter();
-    return this.service.sorted().filter((tx) => kind === null || tx.kind === kind);
-  });
+  protected readonly rows = computed(() => this.service.items());
 
-  protected readonly pagedRows = computed(() =>
-    this.rows().slice(this.first(), this.first() + this.pageSize),
-  );
-
-  /** Income minus everything else, over the rows currently shown. */
-  protected readonly net = computed(() => {
-    const inflow = sumMoney(
-      this.rows()
-        .filter((t) => t.kind === 'ACCOUNT_CREDIT')
-        .map((t) => t.amount),
-    );
-    const outflow = sumMoney(
-      this.rows()
-        .filter((t) => t.kind !== 'ACCOUNT_CREDIT')
-        .map((t) => t.amount),
-    );
-    return inflow - outflow;
-  });
+  /**
+   * Income minus everything else across the whole selection, not just the visible page —
+   * which is why it comes from the API's summary endpoint rather than from `rows`.
+   */
+  protected readonly net = computed(() => this.service.summary().net);
 
   constructor() {
-    const month = currentMonthRange();
-    this.range.set(month);
-    this.service.setFilters({ from: month.from, to: month.to });
+    this.range.set(currentMonthRange());
 
-    // A narrower filter can leave fewer rows than the current offset, which would show an
-    // empty page with no obvious way back. Go to the first page whenever the set changes.
+    // One place assembles the request, so a filter and the page it should reset to can never
+    // be pushed out of step with each other.
     effect(() => {
-      this.rows();
-      this.first.set(0);
+      const range = this.range();
+      this.service.setFilters({
+        from: range?.from,
+        to: range?.to,
+        categoryId: this.categoryFilter() ?? undefined,
+        kind: this.kindFilter() ?? undefined,
+        page: this.page(),
+        size: this.size(),
+      });
     });
   }
 
   protected onRangeChange(value: Date[] | null): void {
     if (!value || value.length === 0 || !value[0]) {
-      this.range.set(null);
-      this.pushFilters(undefined, undefined);
+      this.applyFilter(() => this.range.set(null));
       return;
     }
 
@@ -116,30 +106,39 @@ export class TransactionsPage {
     if (!end) {
       return;
     }
-    const next = { from: toIsoDate(start), to: toIsoDate(end) };
-    this.range.set(next);
-    this.pushFilters(next.from, next.to);
+    this.applyFilter(() => this.range.set({ from: toIsoDate(start), to: toIsoDate(end) }));
   }
 
   protected onCategoryChange(categoryId: Uuid | null): void {
-    this.categoryFilter.set(categoryId);
-    const current = this.range();
-    this.pushFilters(current?.from, current?.to);
+    this.applyFilter(() => this.categoryFilter.set(categoryId));
+  }
+
+  protected onKindChange(kind: TransactionKind | null): void {
+    this.applyFilter(() => this.kindFilter.set(kind));
+  }
+
+  /** Fired for both page steps and rows-per-page changes; both repage server-side. */
+  protected onPage(event: PaginatorState): void {
+    this.size.set(event.rows ?? this.size());
+    this.page.set(event.page ?? 0);
   }
 
   protected clearFilters(): void {
-    this.range.set(null);
-    this.kindFilter.set(null);
-    this.categoryFilter.set(null);
-    this.service.setFilters({});
+    this.applyFilter(() => {
+      this.range.set(null);
+      this.kindFilter.set(null);
+      this.categoryFilter.set(null);
+    });
   }
 
-  private pushFilters(from: IsoDate | undefined, to: IsoDate | undefined): void {
-    this.service.setFilters({
-      from,
-      to,
-      categoryId: this.categoryFilter() ?? undefined,
-    });
+  /**
+   * A narrower filter can leave fewer rows than the current offset, which would show an empty
+   * page with no obvious way back — so any filter change also returns to the first page. Both
+   * writes land before the effect runs, keeping it to a single request.
+   */
+  private applyFilter(change: () => void): void {
+    change();
+    this.page.set(0);
   }
 
   protected category(id: Uuid): Category | undefined {

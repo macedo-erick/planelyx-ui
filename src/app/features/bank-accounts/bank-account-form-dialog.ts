@@ -1,7 +1,7 @@
 import {
   Component,
-  DestroyRef,
   computed,
+  DestroyRef,
   effect,
   inject,
   input,
@@ -10,8 +10,8 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormField, form, maxLength, min, minLength, required } from '@angular/forms/signals';
-import { MessageService } from 'primeng/api';
+import { form, FormField, maxLength, min, minLength, required } from '@angular/forms/signals';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 
@@ -43,17 +43,27 @@ const empty = (): BankAccountFormModel => ({
 
 @Component({
   selector: 'fintrack-bank-account-form-dialog',
-  imports: [Dialog, Button, FormField, FintrackTextInput, FintrackSelect, FintrackMoneyInput, FormsModule],
+  imports: [
+    Dialog,
+    Button,
+    FormField,
+    FintrackTextInput,
+    FintrackSelect,
+    FintrackMoneyInput,
+    FormsModule,
+  ],
   templateUrl: './bank-account-form-dialog.html',
 })
 export class BankAccountFormDialog {
   private readonly service = inject(BankAccountService);
   private readonly messages = inject(MessageService);
+  private readonly confirm = inject(ConfirmationService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly visible = model.required<boolean>();
   readonly account = input<BankAccount | null>(null);
   readonly saved = output<void>();
+  readonly deleted = output<BankAccount>();
 
   protected readonly typeOptions = ACCOUNT_TYPE_OPTIONS;
   protected readonly defaultCurrency = environment.defaultCurrency;
@@ -92,6 +102,34 @@ export class BankAccountFormDialog {
           : empty(),
       );
       this.saving.set(false);
+    });
+  }
+
+  /**
+   * Delete lives in here rather than on the card because the cards are click-to-edit —
+   * this dialog is the only place a single account is ever the subject of an action.
+   */
+  protected confirmDelete(): void {
+    const current = this.account();
+    if (!current) {
+      return;
+    }
+
+    this.confirm.confirm({
+      header: 'Delete account',
+      message: `Permanently delete "${current.name}"? This cannot be undone, and any cards or transactions attached to it will be affected.`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Delete', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
+      accept: () => {
+        this.service
+          .remove(current.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe(() => {
+            this.visible.set(false);
+            this.deleted.emit(current);
+          });
+      },
     });
   }
 

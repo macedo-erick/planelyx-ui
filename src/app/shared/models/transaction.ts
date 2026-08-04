@@ -1,5 +1,5 @@
 import { IsoDate, IsoInstant, Money, Uuid } from './common';
-import { TransactionKind } from './enums';
+import { TransactionKind, TransactionScope } from './enums';
 
 export interface Transaction {
   readonly id: Uuid;
@@ -46,15 +46,37 @@ export interface TransactionUpdateRequest {
   amount: Money;
   transactionDate: IsoDate;
   description: string;
+  /**
+   * How far the edit reaches through a series. Omitted means `SINGLE`. The date is only ever
+   * applied to the edited row, whatever the scope — the server keeps siblings on their own dates.
+   */
+  scope?: TransactionScope;
 }
 
-/** Server-side filters accepted by `GET /api/transactions`. All optional. */
+/**
+ * Server-side filters and paging accepted by `GET /api/transactions`. All optional.
+ *
+ * The same filter fields are accepted by `GET /api/transactions/summary`, which totals the
+ * whole selection rather than a page.
+ */
 export interface TransactionFilters {
   bankAccountId?: Uuid;
   creditCardId?: Uuid;
   categoryId?: Uuid;
+  kind?: TransactionKind;
   /** Inclusive lower bound. */
   from?: IsoDate;
   /** Inclusive upper bound. */
   to?: IsoDate;
+  /** Zero-based. */
+  page?: number;
+  size?: number;
+}
+
+/** `GET /api/transactions/summary` — totals across the filtered selection. */
+export interface TransactionSummary {
+  readonly totalIncome: Money;
+  readonly totalExpense: Money;
+  readonly net: Money;
+  readonly count: number;
 }

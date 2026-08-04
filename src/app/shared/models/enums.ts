@@ -19,6 +19,15 @@ export type RecurrenceType = (typeof RECURRENCE_TYPES)[number];
 export const INVOICE_STATUSES = ['OPEN', 'CLOSED', 'PAID'] as const;
 export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
 
+/**
+ * How far an edit or delete reaches through a series.
+ *
+ * Only meaningful for a transaction generated from a template (one with a `templateId`);
+ * a one-off transaction is always `SINGLE`.
+ */
+export const TRANSACTION_SCOPES = ['SINGLE', 'FUTURE', 'ALL'] as const;
+export type TransactionScope = (typeof TRANSACTION_SCOPES)[number];
+
 /** The backend only ever sets `MONTHLY`; it is not part of any request payload. */
 export const INTERVAL_UNITS = ['MONTHLY'] as const;
 export type IntervalUnit = (typeof INTERVAL_UNITS)[number];

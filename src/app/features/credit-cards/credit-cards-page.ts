@@ -1,5 +1,4 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { ProgressBar } from 'primeng/progressbar';
 
@@ -28,7 +27,6 @@ import { CreditCardService } from './credit-card.service';
 export class CreditCardsPage {
   protected readonly service = inject(CreditCardService);
   private readonly accounts = inject(BankAccountService);
-  private readonly confirm = inject(ConfirmationService);
 
   protected dialogOpen = signal(false);
   protected readonly selected = signal<CreditCard | null>(null);
@@ -76,18 +74,5 @@ export class CreditCardsPage {
   protected openEdit(card: CreditCard): void {
     this.selected.set(card);
     this.dialogOpen.set(true);
-  }
-
-  protected confirmDelete(card: CreditCard): void {
-    this.confirm.confirm({
-      header: 'Delete card',
-      message: `Permanently delete "${card.name}"? Its charges and invoices will be affected.`,
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Delete', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
-      accept: () => {
-        this.service.remove(card.id).subscribe();
-      },
-    });
   }
 }

@@ -31,7 +31,7 @@ import { FintrackNumberInput } from '../../shared/controls/number-input';
 import { FintrackSelect } from '../../shared/controls/select';
 import { FintrackTextInput } from '../../shared/controls/text-input';
 import { IsoDate, Uuid } from '../../shared/models/common';
-import { RecurrenceType, TransactionKind } from '../../shared/models/enums';
+import { RecurrenceType, TransactionKind, TransactionScope } from '../../shared/models/enums';
 import {
   Transaction,
   TransactionRequest,
@@ -48,6 +48,7 @@ import { formatMoney, splitInstallments } from '../../shared/util/money';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
 import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
+import { RecurrenceScopeDialog } from './recurrence-scope-dialog';
 import { TransactionTemplateService } from './transaction-template.service';
 import { TransactionService } from './transaction.service';
 import { FormsModule } from '@angular/forms';
@@ -63,7 +64,7 @@ const REPEAT_OPTIONS: SelectOption<Repeat>[] = [
   { label: 'Split into installments', value: 'INSTALLMENT' },
 ];
 
-interface TransactionFormModel {
+export interface TransactionFormModel {
   kind: TransactionKind;
   bankAccountId: Uuid | null;
   creditCardId: Uuid | null;
@@ -99,6 +100,7 @@ const empty = (): TransactionFormModel => ({
     FintrackNumberInput,
     FintrackDatePicker,
     FormsModule,
+    RecurrenceScopeDialog,
   ],
   templateUrl: './transaction-form-dialog.html',
 })
@@ -115,6 +117,11 @@ export class TransactionFormDialog {
 
   readonly visible = model.required<boolean>();
   readonly transaction = input<Transaction | null>(null);
+  /**
+   * Seeds a *new* transaction — ignored when editing. Lets the invoice screen open the dialog
+   * already pointed at that card and billing period.
+   */
+  readonly prefill = input<Partial<TransactionFormModel> | null>(null);
   readonly saved = output<void>();
   readonly deleted = output<Transaction>();
 
@@ -124,6 +131,17 @@ export class TransactionFormDialog {
   protected readonly cardOptions = computed(() => this.cards.options());
   protected readonly saving = signal(false);
   protected readonly editing = computed(() => this.transaction() !== null);
+
+  protected readonly scopeOpen = signal(false);
+  protected readonly scopeMode = signal<'delete' | 'save'>('delete');
+
+  /** Generated from a template, so an edit or delete can reach past this one row. */
+  protected readonly isSeries = computed(() => this.transaction()?.templateId != null);
+
+  /** Installments read as "installments"; open-ended rules read as "occurrences". */
+  protected readonly isInstallmentSeries = computed(
+    () => this.transaction()?.installmentNumber != null,
+  );
 
   protected readonly model = signal<TransactionFormModel>(empty());
 
@@ -247,7 +265,7 @@ export class TransactionFormDialog {
                 repeats: 'NONE',
                 totalOccurrences: null,
               }
-            : empty(),
+            : { ...empty(), ...(this.prefill() ?? {}) },
         );
         this.saving.set(false);
       });
@@ -267,10 +285,19 @@ export class TransactionFormDialog {
   /**
    * Delete lives in here rather than on the row because the rows are click-to-edit — this
    * dialog is the only place a single transaction is ever the subject of an action.
+   *
+   * A transaction belonging to a series asks how far to reach first; a one-off keeps the plain
+   * confirm it always had.
    */
   protected confirmDelete(): void {
     const current = this.transaction();
     if (!current) {
+      return;
+    }
+
+    if (this.isSeries()) {
+      this.scopeMode.set('delete');
+      this.scopeOpen.set(true);
       return;
     }
 
@@ -280,18 +307,34 @@ export class TransactionFormDialog {
       icon: 'pi pi-exclamation-triangle',
       acceptButtonProps: { label: 'Delete', severity: 'danger' },
       rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
-      accept: () => {
-        this.service
-          .remove(current.id)
-          .pipe(takeUntilDestroyed(this.destroyRef))
-          .subscribe(() => {
-            this.visible.set(false);
-            this.deleted.emit(current);
-            this.invoice.reload();
-            this.cards.reload();
-          });
-      },
+      accept: () => this.performDelete('SINGLE'),
     });
+  }
+
+  /** Routes the answer from the scope dialog to whichever action opened it. */
+  protected onScopeConfirmed(scope: TransactionScope): void {
+    if (this.scopeMode() === 'delete') {
+      this.performDelete(scope);
+      return;
+    }
+    this.performSave(scope);
+  }
+
+  private performDelete(scope: TransactionScope): void {
+    const current = this.transaction();
+    if (!current) {
+      return;
+    }
+
+    this.service
+      .remove(current.id, scope)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.visible.set(false);
+        this.deleted.emit(current);
+        this.invoice.reload();
+        this.cards.reload();
+      });
   }
 
   protected onSubmit(): void {
@@ -301,6 +344,17 @@ export class TransactionFormDialog {
       return;
     }
 
+    // Editing one of a series asks how far the change reaches before anything is sent.
+    if (this.isSeries()) {
+      this.scopeMode.set('save');
+      this.scopeOpen.set(true);
+      return;
+    }
+
+    this.performSave('SINGLE');
+  }
+
+  private performSave(scope: TransactionScope): void {
     const value = this.model();
     const existing = this.transaction();
     const recurring = value.repeats !== 'NONE';
@@ -311,6 +365,7 @@ export class TransactionFormDialog {
           amount: value.amount,
           transactionDate: value.transactionDate as IsoDate,
           description: value.description.trim(),
+          scope,
         } satisfies TransactionUpdateRequest)
       : recurring
         ? this.templates.create({

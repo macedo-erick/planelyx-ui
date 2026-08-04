@@ -1,10 +1,11 @@
 import { httpResource } from '@angular/common/http';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { ConfirmationService, MenuItem } from 'primeng/api';
+import { RouterLink } from '@angular/router';
+import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
-import { Menu } from 'primeng/menu';
+import { Paginator, PaginatorState } from 'primeng/paginator';
+import { Popover } from 'primeng/popover';
 import { Select } from 'primeng/select';
 import { Tag } from 'primeng/tag';
 
@@ -12,19 +13,23 @@ import { environment } from '../../../environments/environment';
 import { Category } from '../../shared/models/category';
 import { IsoDate, Uuid } from '../../shared/models/common';
 import { InvoiceStatus } from '../../shared/models/enums';
-import { Invoice, InvoiceDetail } from '../../shared/models/invoice';
+import { Invoice } from '../../shared/models/invoice';
+import { emptyPage, PageResponse } from '../../shared/models/page';
 import { Transaction } from '../../shared/models/transaction';
 import { FintrackCard } from '../../shared/ui/card';
 import { FintrackEmptyState } from '../../shared/ui/empty-state';
 import { FintrackMonthNav } from '../../shared/ui/month-nav';
 import { FintrackPageHeader } from '../../shared/ui/page-header';
 import { FintrackTransactionRow } from '../../shared/ui/transaction-row';
-import { daysUntil, fromIsoDate, startOfMonth } from '../../shared/util/date';
+import { daysUntil, fromIsoDate, startOfMonth, todayIso } from '../../shared/util/date';
 import { INVOICE_STATUS_LABELS, INVOICE_STATUS_SEVERITY } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
 import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
-import { TransactionFormDialog } from '../transactions/transaction-form-dialog';
+import {
+  TransactionFormDialog,
+  TransactionFormModel,
+} from '../transactions/transaction-form-dialog';
 import { InvoiceService } from './invoice.service';
 
 /**
@@ -39,7 +44,9 @@ import { InvoiceService } from './invoice.service';
   selector: 'fintrack-invoices-page',
   imports: [
     Button,
-    Menu,
+    Paginator,
+    Popover,
+    RouterLink,
     Select,
     Tag,
     FormsModule,
@@ -57,7 +64,6 @@ export class InvoicesPage {
   private readonly cards = inject(CreditCardService);
   private readonly categories = inject(CategoryService);
   private readonly confirm = inject(ConfirmationService);
-  private readonly router = inject(Router);
 
   protected readonly cardOptions = computed(() => this.cards.options());
 
@@ -66,6 +72,7 @@ export class InvoicesPage {
 
   protected dialogOpen = signal(false);
   protected readonly selected = signal<Transaction | null>(null);
+  protected readonly prefill = signal<Partial<TransactionFormModel> | null>(null);
 
   /**
    * The card and month the page lands on: the oldest invoice that is still unpaid, since
@@ -100,41 +107,29 @@ export class InvoicesPage {
     );
   });
 
-  /** The list payload has no charges on it, so the detail endpoint fills them in. */
-  protected readonly detail = httpResource<InvoiceDetail>(() => {
-    const current = this.invoice();
-    return current ? `${environment.apiUrl}/invoices/${current.id}` : undefined;
-  });
+  /** Zero-based page of the charge list, independent of the invoice summary above it. */
+  protected readonly chargePage = signal(0);
+  protected readonly chargeSize = signal(25);
 
-  protected readonly charges = computed(() =>
-    this.detail.hasValue() ? [...this.detail.value().transactions] : [],
+  /**
+   * Charges come from their own paged endpoint rather than riding along on the invoice, so
+   * turning a page does not refetch the totals shown in the header.
+   */
+  protected readonly detail = httpResource<PageResponse<Transaction>>(
+    () => {
+      const current = this.invoice();
+      return current
+        ? {
+            url: `${environment.apiUrl}/invoices/${current.id}/transactions`,
+            params: { page: this.chargePage(), size: this.chargeSize() },
+          }
+        : undefined;
+    },
+    { defaultValue: emptyPage<Transaction>() },
   );
 
-  protected readonly menuItems = computed<MenuItem[]>(() => {
-    const current = this.invoice();
-    if (!current) {
-      return [];
-    }
-
-    const payItem: MenuItem =
-      current.status === 'PAID'
-        ? { label: 'Undo payment', icon: 'pi pi-undo', command: () => this.confirmUnpay(current) }
-        : {
-            label: 'Mark as paid',
-            icon: 'pi pi-check-circle',
-            disabled: current.totalAmount === 0,
-            command: () => this.confirmPay(current),
-          };
-
-    return [
-      payItem,
-      {
-        label: 'View details',
-        icon: 'pi pi-external-link',
-        command: () => void this.router.navigate(['/invoices', current.id]),
-      },
-    ];
-  });
+  protected readonly charges = computed(() => this.detail.value().content);
+  protected readonly chargeTotal = computed(() => this.detail.value().totalElements);
 
   constructor() {
     // Land on the unpaid invoice once the lists have arrived, then leave the choice alone —
@@ -204,7 +199,34 @@ export class InvoicesPage {
 
   protected openEdit(tx: Transaction): void {
     this.selected.set(tx);
+    this.prefill.set(null);
     this.dialogOpen.set(true);
+  }
+
+  /**
+   * Opens the dialog already pointed at this card and billing period.
+   *
+   * The date matters: the API files a charge onto whichever invoice its date falls in, so a
+   * date outside this period would silently open the next month's invoice instead. Today is
+   * used when it falls inside the period, and the closing date otherwise.
+   */
+  protected openCreate(inv: Invoice): void {
+    const today = todayIso();
+    const withinPeriod = today >= inv.billingPeriodStart && today <= inv.billingPeriodEnd;
+
+    this.selected.set(null);
+    this.prefill.set({
+      kind: 'CARD_CHARGE',
+      bankAccountId: null,
+      creditCardId: inv.creditCardId,
+      transactionDate: withinPeriod ? today : inv.billingPeriodEnd,
+    });
+    this.dialogOpen.set(true);
+  }
+
+  protected onChargePage(event: PaginatorState): void {
+    this.chargeSize.set(event.rows ?? this.chargeSize());
+    this.chargePage.set(event.page ?? 0);
   }
 
   protected confirmPay(invoice: Invoice): void {

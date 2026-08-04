@@ -1,5 +1,4 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Tag } from 'primeng/tag';
 
@@ -30,7 +29,6 @@ import { BankAccountService } from './bank-account.service';
 export class BankAccountsPage {
   protected readonly service = inject(BankAccountService);
   private readonly cards = inject(CreditCardService);
-  private readonly confirm = inject(ConfirmationService);
 
   protected dialogOpen = signal(false);
   protected readonly selected = signal<BankAccount | null>(null);
@@ -66,18 +64,5 @@ export class BankAccountsPage {
   protected openEdit(account: BankAccount): void {
     this.selected.set(account);
     this.dialogOpen.set(true);
-  }
-
-  protected confirmDelete(account: BankAccount): void {
-    this.confirm.confirm({
-      header: 'Delete account',
-      message: `Permanently delete "${account.name}"? This cannot be undone, and any cards or transactions attached to it will be affected.`,
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Delete', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
-      accept: () => {
-        this.service.remove(account.id).subscribe();
-      },
-    });
   }
 }

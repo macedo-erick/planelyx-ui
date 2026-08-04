@@ -1,15 +1,18 @@
 import { httpResource } from '@angular/common/http';
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
+import { Paginator, PaginatorState } from 'primeng/paginator';
 import { Tag } from 'primeng/tag';
 
 import { environment } from '../../../environments/environment';
 import { Category } from '../../shared/models/category';
 import { IsoDate, Uuid } from '../../shared/models/common';
 import { InvoiceStatus } from '../../shared/models/enums';
-import { InvoiceDetail } from '../../shared/models/invoice';
+import { Invoice } from '../../shared/models/invoice';
+import { emptyPage, PageResponse } from '../../shared/models/page';
+import { Transaction } from '../../shared/models/transaction';
 import { FintrackCard } from '../../shared/ui/card';
 import { FintrackEmptyState } from '../../shared/ui/empty-state';
 import { FintrackPageHeader } from '../../shared/ui/page-header';
@@ -26,6 +29,7 @@ import { InvoiceService } from './invoice.service';
   imports: [
     Tag,
     Button,
+    Paginator,
     RouterLink,
     FintrackCard,
     FintrackPageHeader,
@@ -43,7 +47,7 @@ export class InvoiceDetailPage {
   private readonly invoices = inject(InvoiceService);
   private readonly confirm = inject(ConfirmationService);
 
-  protected readonly resource = httpResource<InvoiceDetail>(
+  protected readonly resource = httpResource<Invoice>(
     () => `${environment.apiUrl}/invoices/${this.id()}`,
   );
 
@@ -51,7 +55,29 @@ export class InvoiceDetailPage {
     this.resource.hasValue() ? this.resource.value() : null,
   );
 
-  protected readonly charges = computed(() => [...(this.invoice()?.transactions ?? [])]);
+  /** Zero-based page of the charge list, independent of the invoice summary above it. */
+  protected readonly chargePage = signal(0);
+  protected readonly chargeSize = signal(25);
+
+  /**
+   * Charges have their own paged endpoint rather than riding along on the invoice, so turning
+   * a page does not refetch the totals in the header.
+   */
+  protected readonly chargesResource = httpResource<PageResponse<Transaction>>(
+    () => ({
+      url: `${environment.apiUrl}/invoices/${this.id()}/transactions`,
+      params: { page: this.chargePage(), size: this.chargeSize() },
+    }),
+    { defaultValue: emptyPage<Transaction>() },
+  );
+
+  protected readonly charges = computed(() => this.chargesResource.value().content);
+  protected readonly chargeTotal = computed(() => this.chargesResource.value().totalElements);
+
+  protected onChargePage(event: PaginatorState): void {
+    this.chargeSize.set(event.rows ?? this.chargeSize());
+    this.chargePage.set(event.page ?? 0);
+  }
 
   protected readonly heading = computed(() => {
     const inv = this.invoice();
@@ -99,7 +125,7 @@ export class InvoiceDetailPage {
     return new Date(value).toLocaleString();
   }
 
-  protected confirmPay(inv: InvoiceDetail): void {
+  protected confirmPay(inv: Invoice): void {
     this.confirm.confirm({
       header: 'Mark invoice as paid',
       message: `Mark this invoice of ${formatMoney(inv.totalAmount)} as paid?`,
@@ -112,7 +138,7 @@ export class InvoiceDetailPage {
     });
   }
 
-  protected confirmUnpay(inv: InvoiceDetail): void {
+  protected confirmUnpay(inv: Invoice): void {
     this.confirm.confirm({
       header: 'Undo payment',
       message: 'Reopen this invoice? Its status goes back to open and the paid date is cleared.',

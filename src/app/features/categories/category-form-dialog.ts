@@ -1,7 +1,7 @@
 import {
   Component,
-  DestroyRef,
   computed,
+  DestroyRef,
   effect,
   inject,
   input,
@@ -10,8 +10,8 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormField, form, maxLength, required } from '@angular/forms/signals';
-import { MessageService } from 'primeng/api';
+import { form, FormField, maxLength, required } from '@angular/forms/signals';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 
@@ -41,12 +41,14 @@ const EMPTY: CategoryFormModel = { name: '', type: 'EXPENSE', icon: null, color:
 export class CategoryFormDialog {
   private readonly service = inject(CategoryService);
   private readonly messages = inject(MessageService);
+  private readonly confirm = inject(ConfirmationService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly visible = model.required<boolean>();
   /** Null means "create"; a category means "edit". */
   readonly category = input<Category | null>(null);
   readonly saved = output<void>();
+  readonly deleted = output<Category>();
 
   protected readonly typeOptions = CATEGORY_TYPE_OPTIONS;
   protected readonly iconOptions = CATEGORY_ICON_OPTIONS;
@@ -78,6 +80,34 @@ export class CategoryFormDialog {
 
   protected onColorInput(event: Event): void {
     this.f.color().value.set((event.target as HTMLInputElement).value);
+  }
+
+  /**
+   * Delete lives in here rather than on the card because the cards are click-to-edit —
+   * this dialog is the only place a single category is ever the subject of an action.
+   */
+  protected confirmDelete(): void {
+    const current = this.category();
+    if (!current) {
+      return;
+    }
+
+    this.confirm.confirm({
+      header: 'Delete category',
+      message: `Delete "${current.name}"? Transactions using it will be left without a valid category.`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Delete', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
+      accept: () => {
+        this.service
+          .remove(current.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe(() => {
+            this.visible.set(false);
+            this.deleted.emit(current);
+          });
+      },
+    });
   }
 
   protected onSubmit(): void {

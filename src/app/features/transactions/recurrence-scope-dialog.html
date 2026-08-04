@@ -1,0 +1,71 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [header]="heading()"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+  [draggable]="false"
+>
+  <p class="mb-4 text-sm text-[var(--p-text-muted-color)]">
+    This transaction is part of a series. Which ones should this apply to?
+  </p>
+
+  <div class="flex flex-col gap-3" role="radiogroup" [attr.aria-label]="heading()">
+    <!--
+      The radio sits beside the label rather than inside it: `for`/`inputId` is the association
+      the linter and screen readers both recognise, since p-radiobutton is a component wrapper
+      rather than a native input.
+    -->
+    <div class="flex items-start gap-3">
+      <p-radiobutton name="scope" value="SINGLE" inputId="scope-single" [(ngModel)]="scope" />
+      <label for="scope-single" class="cursor-pointer">
+        <span class="block font-medium">Only this one</span>
+        <span class="block text-sm text-[var(--p-text-muted-color)]">
+          The rest of the series is left alone.
+        </span>
+      </label>
+    </div>
+
+    <div class="flex items-start gap-3">
+      <p-radiobutton name="scope" value="FUTURE" inputId="scope-future" [(ngModel)]="scope" />
+      <label for="scope-future" class="cursor-pointer">
+        <span class="block font-medium">This and future {{ unit() }}s</span>
+        <span class="block text-sm text-[var(--p-text-muted-color)]">
+          Earlier {{ unit() }}s stay as they are.
+        </span>
+      </label>
+    </div>
+
+    <div class="flex items-start gap-3">
+      <p-radiobutton name="scope" value="ALL" inputId="scope-all" [(ngModel)]="scope" />
+      <label for="scope-all" class="cursor-pointer">
+        <span class="block font-medium">All {{ unit() }}s</span>
+        <span class="block text-sm text-[var(--p-text-muted-color)]">
+          Every {{ unit() }} in the series, including past ones.
+        </span>
+      </label>
+    </div>
+  </div>
+
+  @if (mode() === 'delete' && scope() !== 'SINGLE') {
+    <p class="mt-4 rounded-md bg-[var(--p-content-hover-background)] px-3 py-2 text-xs">
+      The rule stops generating new {{ unit() }}s as well.
+    </p>
+  }
+
+  <div class="mt-5 flex justify-end gap-2">
+    <p-button
+      type="button"
+      severity="secondary"
+      [text]="true"
+      label="Cancel"
+      (onClick)="visible.set(false)"
+    />
+    <p-button
+      type="button"
+      [label]="confirmLabel()"
+      [severity]="confirmSeverity()"
+      (onClick)="onConfirm()"
+    />
+  </div>
+</p-dialog>

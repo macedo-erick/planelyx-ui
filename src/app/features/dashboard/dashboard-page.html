@@ -2,30 +2,42 @@
   <p-button routerLink="/transactions" icon="pi pi-plus" label="New transaction" />
 </fintrack-page-header>
 
+<fintrack-month-nav class="mb-4" [(month)]="month" />
+
+@if (incomplete()) {
+  <p
+    class="mb-4 rounded-md border border-[var(--p-content-border-color)] px-3 py-2 text-xs text-[var(--p-text-muted-color)]"
+  >
+    <i class="pi pi-info-circle mr-1" aria-hidden="true"></i>
+    This month is past the last generated occurrence of an open-ended recurring rule, so it shows
+    only what has been scheduled so far. Those rules are extended a month at a time.
+  </p>
+}
+
 <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
   <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
-    <div class="text-xs text-[var(--p-text-muted-color)]">Total balance</div>
+    <div class="text-xs text-[var(--p-text-muted-color)]">
+      {{ isFuture() ? 'Projected balance' : 'Total balance' }}
+    </div>
     <div class="text-2xl font-semibold tabular-nums">{{ money(totalBalance()) }}</div>
     <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
-      Across {{ accounts.items().length }} account(s)
+      Across {{ accountCount() }} account(s){{ isFuture() ? ', end of month' : '' }}
     </div>
   </div>
   <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
     <div class="text-xs text-[var(--p-text-muted-color)]">Income this month</div>
-    <div class="text-2xl font-semibold tabular-nums text-green-600">
-      {{ money(monthIncome()) }}
-    </div>
+    <div class="text-2xl font-semibold tabular-nums text-green-600">{{ money(income()) }}</div>
   </div>
   <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
     <div class="text-xs text-[var(--p-text-muted-color)]">Spent this month</div>
-    <div class="text-2xl font-semibold tabular-nums">{{ money(monthExpense()) }}</div>
+    <div class="text-2xl font-semibold tabular-nums">{{ money(expense()) }}</div>
     <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">Accounts and cards combined</div>
   </div>
   <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
     <div class="text-xs text-[var(--p-text-muted-color)]">Unpaid invoices</div>
     <div class="text-2xl font-semibold tabular-nums">{{ money(outstandingInvoices()) }}</div>
     <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
-      {{ invoices.unpaid().length }} open
+      {{ openInvoiceCount() }} due soonest
     </div>
   </div>
 </div>
@@ -33,19 +45,19 @@
 <p
   class="mb-6 rounded-md bg-[var(--p-content-hover-background)] px-3 py-2 text-xs text-[var(--p-text-muted-color)]"
 >
-  Balances are computed here from your initial balance plus account transactions. Paying a card
-  invoice does not yet reduce an account balance.
+  Balances are your initial balance plus account transactions up to the end of the selected month.
+  Paying a card invoice does not yet reduce an account balance.
 </p>
 
 <div class="grid gap-6 lg:grid-cols-2">
   <section>
     <h2 class="mb-2 text-lg font-medium">Spending by category</h2>
-    @if (categoryChart().labels.length > 0) {
+    @if (hasBreakdown()) {
       <p-chart type="doughnut" [data]="chartData()" [options]="chartOptions" height="300px" />
     } @else {
       <fintrack-empty-state
         icon="pi-chart-pie"
-        title="Nothing spent yet this month"
+        title="Nothing spent this month"
         message="Add a transaction to see the breakdown."
       />
     }
@@ -53,7 +65,7 @@
 
   <section>
     <h2 class="mb-2 text-lg font-medium">Account balances</h2>
-    <p-table [value]="balances()" size="small">
+    <p-table [value]="balances()" [loading]="isLoading()" size="small">
       <ng-template #header>
         <tr>
           <th scope="col">Account</th>

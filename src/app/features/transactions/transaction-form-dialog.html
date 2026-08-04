@@ -91,3 +91,10 @@
     </div>
   </form>
 </p-dialog>
+
+<fintrack-recurrence-scope-dialog
+  [(visible)]="scopeOpen"
+  [mode]="scopeMode()"
+  [installment]="isInstallmentSeries()"
+  (confirmed)="onScopeConfirmed($event)"
+/>

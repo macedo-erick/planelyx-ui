@@ -1,6 +1,5 @@
 import { IsoDate, IsoInstant, Money, Uuid } from './common';
 import { InvoiceStatus } from './enums';
-import { Transaction } from './transaction';
 
 /**
  * Invoices are created implicitly by the API when a CARD_CHARGE is posted — there is no
@@ -21,11 +20,6 @@ export interface Invoice {
   readonly status: InvoiceStatus;
   readonly paidAt: IsoInstant | null;
   readonly createdAt: IsoInstant;
-}
-
-/** `GET /api/invoices/{id}` — the list payload plus the charges that make up the total. */
-export interface InvoiceDetail extends Invoice {
-  readonly transactions: readonly Transaction[];
 }
 
 export interface InvoiceFilters {

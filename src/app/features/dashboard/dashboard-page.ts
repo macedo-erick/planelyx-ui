@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { UIChart } from 'primeng/chart';
@@ -8,123 +8,96 @@ import { Tag } from 'primeng/tag';
 
 import { environment } from '../../../environments/environment';
 import { IsoDate, Uuid } from '../../shared/models/common';
+import { Dashboard } from '../../shared/models/dashboard';
 import { InvoiceStatus } from '../../shared/models/enums';
-import { Transaction } from '../../shared/models/transaction';
 import { FintrackEmptyState } from '../../shared/ui/empty-state';
+import { FintrackMonthNav } from '../../shared/ui/month-nav';
 import { FintrackPageHeader } from '../../shared/ui/page-header';
-import { currentMonthRange, daysUntil, fromIsoDate } from '../../shared/util/date';
+import { daysUntil, fromIsoDate, startOfMonth, toIsoDate } from '../../shared/util/date';
 import { INVOICE_STATUS_LABELS, INVOICE_STATUS_SEVERITY } from '../../shared/util/enum-labels';
-import { formatMoney, roundCents, sumMoney } from '../../shared/util/money';
-import { BankAccountService } from '../bank-accounts/bank-account.service';
-import { CategoryService } from '../categories/category.service';
+import { formatMoney } from '../../shared/util/money';
 import { CreditCardService } from '../credit-cards/credit-card.service';
-import { InvoiceService } from '../invoices/invoice.service';
 
 @Component({
   selector: 'fintrack-dashboard-page',
-  imports: [TableModule, Tag, UIChart, Button, RouterLink, FintrackPageHeader, FintrackEmptyState],
+  imports: [
+    TableModule,
+    Tag,
+    UIChart,
+    Button,
+    RouterLink,
+    FintrackMonthNav,
+    FintrackPageHeader,
+    FintrackEmptyState,
+  ],
   templateUrl: './dashboard-page.html',
 })
 export class DashboardPage {
-  protected readonly accounts = inject(BankAccountService);
-  protected readonly invoices = inject(InvoiceService);
   private readonly cards = inject(CreditCardService);
-  private readonly categories = inject(CategoryService);
 
-  private readonly month = currentMonthRange();
+  /** Drives the whole page; stepping it is what makes past and future months viewable. */
+  protected readonly month = signal(startOfMonth(new Date()));
 
   /**
-   * Unfiltered: balances need the full history, and the current month is derived from the
-   * same list. The API has no aggregate or balance endpoint, so the maths happens here.
+   * Every figure is computed server-side. Balances come back cumulative as of the end of the
+   * selected month, so stepping forward reads as a forecast over the installments and recurring
+   * occurrences already scheduled — no projection needed, those rows exist.
    */
-  private readonly allTransactions = httpResource<Transaction[]>(
-    () => `${environment.apiUrl}/transactions`,
-    { defaultValue: [] },
+  private readonly resource = httpResource<Dashboard>(() => ({
+    url: `${environment.apiUrl}/dashboard`,
+    params: { month: monthParam(this.month()) },
+  }));
+
+  protected readonly isLoading = computed(() => this.resource.isLoading());
+
+  protected readonly data = computed<Dashboard | null>(() =>
+    this.resource.hasValue() ? this.resource.value() : null,
   );
 
   protected readonly monthLabel = computed(() =>
-    new Date().toLocaleDateString(undefined, { month: 'long', year: 'numeric' }),
+    this.month().toLocaleDateString(undefined, { month: 'long', year: 'numeric' }),
   );
 
-  private readonly monthTransactions = computed(() =>
-    this.allTransactions
-      .value()
-      .filter((t) => t.transactionDate >= this.month.from && t.transactionDate <= this.month.to),
+  /** True once the selected month is later than the one we are actually in. */
+  protected readonly isFuture = computed(
+    () => this.month().getTime() > startOfMonth(new Date()).getTime(),
   );
 
-  protected readonly monthIncome = computed(() =>
-    sumMoney(
-      this.monthTransactions()
-        .filter((t) => t.kind === 'ACCOUNT_CREDIT')
-        .map((t) => t.amount),
-    ),
+  protected readonly totalBalance = computed(() => this.data()?.totalBalance ?? 0);
+  protected readonly income = computed(() => this.data()?.income ?? 0);
+  protected readonly expense = computed(() => this.data()?.expense ?? 0);
+  protected readonly outstandingInvoices = computed(
+    () => this.data()?.outstandingInvoiceTotal ?? 0,
   );
+  // Spread rather than passed through: p-table's `value` input is a mutable array.
+  protected readonly balances = computed(() => [...(this.data()?.accountBalances ?? [])]);
+  protected readonly upcomingInvoices = computed(() => [...(this.data()?.upcomingInvoices ?? [])]);
+  protected readonly accountCount = computed(() => this.balances().length);
+  protected readonly openInvoiceCount = computed(() => this.upcomingInvoices().length);
 
-  protected readonly monthExpense = computed(() =>
-    sumMoney(
-      this.monthTransactions()
-        .filter((t) => t.kind !== 'ACCOUNT_CREDIT')
-        .map((t) => t.amount),
-    ),
+  protected readonly incomplete = computed(
+    () => this.isFuture() && (this.data()?.beyondGeneratedOccurrences ?? false),
   );
-
-  /** initialBalance + account credits − account debits. Card charges never touch it. */
-  protected readonly balances = computed(() => {
-    const transactions = this.allTransactions.value();
-    return this.accounts.sorted().map((account) => {
-      const mine = transactions.filter((t) => t.bankAccountId === account.id);
-      const credits = sumMoney(
-        mine.filter((t) => t.kind === 'ACCOUNT_CREDIT').map((t) => t.amount),
-      );
-      const debits = sumMoney(mine.filter((t) => t.kind === 'ACCOUNT_DEBIT').map((t) => t.amount));
-      return {
-        name: account.name,
-        bankName: account.bankName,
-        currency: account.currency,
-        balance: roundCents(account.initialBalance + credits - debits),
-      };
-    });
-  });
-
-  protected readonly totalBalance = computed(() =>
-    sumMoney(this.balances().map((row) => row.balance)),
-  );
-
-  protected readonly outstandingInvoices = computed(() =>
-    sumMoney(this.invoices.unpaid().map((i) => i.totalAmount)),
-  );
-
-  protected readonly upcomingInvoices = computed(() =>
-    [...this.invoices.unpaid()].sort((a, b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 5),
-  );
-
-  protected readonly categoryChart = computed(() => {
-    const totals = new Map<Uuid, number>();
-    for (const tx of this.monthTransactions()) {
-      if (tx.kind === 'ACCOUNT_CREDIT') {
-        continue;
-      }
-      totals.set(tx.categoryId, (totals.get(tx.categoryId) ?? 0) + tx.amount);
-    }
-
-    const ranked = [...totals.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
-    return {
-      labels: ranked.map(([id]) => this.categories.byIdMap().get(id)?.name ?? 'Uncategorised'),
-      values: ranked.map(([, total]) => roundCents(total)),
-      colors: ranked.map(
-        ([id], index) =>
-          this.categories.byIdMap().get(id)?.color ?? PALETTE[index % PALETTE.length],
-      ),
-    };
-  });
 
   protected readonly chartData = computed(() => {
-    const chart = this.categoryChart();
+    const breakdown = this.data()?.categoryBreakdown ?? [];
     return {
-      labels: chart.labels,
-      datasets: [{ data: chart.values, backgroundColor: chart.colors, borderWidth: 0 }],
+      labels: breakdown.map((row) => row.name),
+      datasets: [
+        {
+          data: breakdown.map((row) => row.total),
+          backgroundColor: breakdown.map(
+            (row, index) => row.color ?? PALETTE[index % PALETTE.length],
+          ),
+          borderWidth: 0,
+        },
+      ],
     };
   });
+
+  protected readonly hasBreakdown = computed(
+    () => (this.data()?.categoryBreakdown ?? []).length > 0,
+  );
 
   protected readonly chartOptions = {
     responsive: true,
@@ -167,6 +140,11 @@ export class DashboardPage {
     }
     return days === 0 ? 'Due today' : `in ${days} days`;
   }
+}
+
+/** `YYYY-MM`, taken off the local calendar so the month never drifts across a timezone. */
+function monthParam(month: Date): string {
+  return toIsoDate(month).slice(0, 7);
 }
 
 const PALETTE = [

@@ -24,15 +24,30 @@
       hint="Three-letter ISO code."
     />
 
-    <div class="mt-2 flex justify-end gap-2">
-      <p-button
-        type="button"
-        severity="secondary"
-        [text]="true"
-        label="Cancel"
-        (onClick)="visible.set(false)"
-      />
-      <p-button type="submit" [label]="editing() ? 'Save' : 'Create'" [loading]="saving()" />
+    <div class="mt-2 flex items-center justify-between gap-2">
+      @if (editing()) {
+        <p-button
+          type="button"
+          icon="pi pi-trash"
+          severity="danger"
+          [text]="true"
+          label="Delete"
+          (onClick)="confirmDelete()"
+        />
+      } @else {
+        <span></span>
+      }
+
+      <span class="flex gap-2">
+        <p-button
+          type="button"
+          severity="secondary"
+          [text]="true"
+          label="Cancel"
+          (onClick)="visible.set(false)"
+        />
+        <p-button type="submit" [label]="editing() ? 'Save' : 'Create'" [loading]="saving()" />
+      </span>
     </div>
   </form>
 </p-dialog>
