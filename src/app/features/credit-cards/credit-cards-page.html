@@ -1,7 +1,7 @@
 <fintrack-page-header title="Credit cards" subtitle="Each one bills against an account.">
   <p-button
     icon="pi pi-plus"
-    label="New card"
+    label="New credit card"
     [disabled]="!hasAccounts()"
     (onClick)="openCreate()"
   />
@@ -13,64 +13,84 @@
     title="Add a bank account first"
     message="Cards must be attached to an account, so create one before adding a card."
   />
+} @else if (service.isLoading()) {
+  <p class="text-[var(--p-text-muted-color)]">Loading…</p>
+} @else if (cards().length === 0) {
+  <fintrack-empty-state
+    icon="pi-credit-card"
+    title="No cards yet"
+    message="Add a card to start tracking charges and invoices."
+  />
 } @else {
-  <p-table
-    [value]="cards()"
-    [loading]="service.isLoading()"
-    pStyleClass="p-datatable-sm"
-    [tableStyle]="{ 'min-width': '48rem' }"
-  >
-    <ng-template #header>
-      <tr>
-        <th scope="col">Card</th>
-        <th scope="col">Brand</th>
-        <th scope="col">Account</th>
-        <th scope="col" style="width: 10rem" class="text-right">Limit</th>
-        <th scope="col" style="width: 7rem" class="text-right">Closes</th>
-        <th scope="col" style="width: 7rem" class="text-right">Due</th>
-        <th scope="col" style="width: 7rem" class="text-right">Actions</th>
-      </tr>
-    </ng-template>
+  <div class="grid gap-4 md:grid-cols-2">
+    @for (card of cards(); track card.id) {
+      <fintrack-card>
+        <div class="flex flex-col gap-3 p-4">
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <h2 class="truncate text-lg font-medium text-[var(--p-text-color)]">
+                {{ card.name }}
+              </h2>
+              <p class="truncate text-sm text-[var(--p-text-muted-color)]">{{ card.brand }}</p>
+            </div>
+            <div class="flex shrink-0">
+              <p-button
+                icon="pi pi-pencil"
+                severity="secondary"
+                [text]="true"
+                [rounded]="true"
+                [ariaLabel]="'Edit ' + card.name"
+                (onClick)="openEdit(card)"
+              />
+              <p-button
+                icon="pi pi-trash"
+                severity="danger"
+                [text]="true"
+                [rounded]="true"
+                [ariaLabel]="'Delete ' + card.name"
+                (onClick)="confirmDelete(card)"
+              />
+            </div>
+          </div>
 
-    <ng-template #body let-card>
-      <tr>
-        <td class="font-medium">{{ card.name }}</td>
-        <td>{{ card.brand }}</td>
-        <td class="text-[var(--p-text-muted-color)]">{{ accountName(card.bankAccountId) }}</td>
-        <td class="text-right tabular-nums">{{ money(card.creditLimit) }}</td>
-        <td class="text-right tabular-nums">day {{ card.closingDay }}</td>
-        <td class="text-right tabular-nums">day {{ card.dueDay }}</td>
-        <td class="text-right">
-          <p-button
-            icon="pi pi-pencil"
-            severity="secondary"
-            [text]="true"
-            [ariaLabel]="'Edit ' + card.name"
-            (onClick)="openEdit(card)"
-          />
-          <p-button
-            icon="pi pi-trash"
-            severity="danger"
-            [text]="true"
-            [ariaLabel]="'Delete ' + card.name"
-            (onClick)="confirmDelete(card)"
-          />
-        </td>
-      </tr>
-    </ng-template>
+          <div class="flex items-baseline justify-between gap-2 text-sm">
+            <span class="text-[var(--p-text-muted-color)]">Bank account</span>
+            <span class="truncate">{{ accountName(card.bankAccountId) }}</span>
+          </div>
 
-    <ng-template #emptymessage>
-      <tr>
-        <td colspan="7">
-          <fintrack-empty-state
-            icon="pi-credit-card"
-            title="No cards yet"
-            message="Add a card to start tracking charges and invoices."
-          />
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
+          <div>
+            <div class="mb-1 flex items-baseline justify-between gap-2 text-sm">
+              <span class="text-[var(--p-text-muted-color)]">Limit used</span>
+              <span
+                class="font-medium tabular-nums"
+                [class.text-red-500]="usedPercent(card) > 100"
+                >{{ usedPercentLabel(card) }}</span
+              >
+            </div>
+            <p-progressbar
+              [value]="barValue(card)"
+              [showValue]="false"
+              [color]="barColor(card)"
+              [style]="{ height: '0.75rem' }"
+              [attr.aria-label]="'Limit used on ' + card.name"
+            />
+          </div>
+
+          <div class="flex items-baseline justify-between gap-2 text-sm">
+            <span class="text-[var(--p-text-muted-color)]">Available limit</span>
+            <span class="font-medium tabular-nums" [class.text-red-500]="card.availableLimit < 0">
+              {{ money(card.availableLimit) }}
+            </span>
+          </div>
+
+          <p class="text-xs text-[var(--p-text-muted-color)]">
+            {{ money(card.usedLimit) }} of {{ money(card.creditLimit) }} used · closes day
+            {{ card.closingDay }} · due day {{ card.dueDay }}
+          </p>
+        </div>
+      </fintrack-card>
+    }
+  </div>
 }
 
 <fintrack-credit-card-form-dialog [(visible)]="dialogOpen" [card]="selected()" />

@@ -3,7 +3,6 @@ import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
-import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 
 import { environment } from '../../../environments/environment';
@@ -11,28 +10,27 @@ import { Category } from '../../shared/models/category';
 import { IsoDate, Uuid } from '../../shared/models/common';
 import { InvoiceStatus } from '../../shared/models/enums';
 import { InvoiceDetail } from '../../shared/models/invoice';
-import { FintrackCategoryBadge } from '../../shared/ui/category-badge';
+import { FintrackCard } from '../../shared/ui/card';
 import { FintrackEmptyState } from '../../shared/ui/empty-state';
 import { FintrackPageHeader } from '../../shared/ui/page-header';
+import { FintrackTransactionRow } from '../../shared/ui/transaction-row';
 import { fromIsoDate } from '../../shared/util/date';
 import { INVOICE_STATUS_LABELS, INVOICE_STATUS_SEVERITY } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
 import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
 import { InvoiceService } from './invoice.service';
-import { StyleClass } from 'primeng/styleclass';
 
 @Component({
   selector: 'fintrack-invoice-detail-page',
   imports: [
-    FintrackCategoryBadge,
-    TableModule,
     Tag,
     Button,
     RouterLink,
+    FintrackCard,
     FintrackPageHeader,
     FintrackEmptyState,
-    StyleClass,
+    FintrackTransactionRow,
   ],
   templateUrl: './invoice-detail-page.html',
 })
@@ -109,7 +107,6 @@ export class InvoiceDetailPage {
       acceptButtonProps: { label: 'Mark paid' },
       rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
       accept: () => {
-
         this.invoices.pay(inv.id).subscribe(() => this.resource.reload());
       },
     });

@@ -1,0 +1,35 @@
+@let tx = transaction();
+
+<button
+  type="button"
+  class="flex w-full items-center gap-3 border-b border-[var(--p-content-border-color)] px-4 py-3 text-left last:border-b-0 enabled:hover:bg-[var(--p-content-hover-background)]"
+  [disabled]="!clickable()"
+  [attr.aria-label]="clickable() ? 'Edit ' + tx.description : null"
+  (click)="edit.emit(tx)"
+>
+  <fintrack-category-badge [category]="category()" size="md" />
+
+  <span class="min-w-0 flex-1">
+    <span class="block truncate font-medium text-[var(--p-text-color)]">
+      {{ tx.description }}
+      @if (installment(); as label) {
+        <span class="font-normal text-[var(--p-text-muted-color)]">({{ label }})</span>
+      }
+    </span>
+    <span class="block truncate text-sm text-[var(--p-text-muted-color)]">
+      {{ categoryName() }}
+      @if (secondary()) {
+        <span> | {{ secondary() }}</span>
+      }
+      @if (tx.templateId && !tx.installmentNumber) {
+        <i class="pi pi-replay ml-1 text-xs" title="Recurring" aria-hidden="true"></i>
+        <span class="sr-only">Recurring</span>
+      }
+    </span>
+  </span>
+
+  <span class="shrink-0 text-right">
+    <span class="block font-medium tabular-nums" [class]="amountClasses()">{{ amount() }}</span>
+    <span class="block text-sm text-[var(--p-text-muted-color)]">{{ date() }}</span>
+  </span>
+</button>

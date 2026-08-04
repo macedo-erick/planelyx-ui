@@ -21,7 +21,7 @@ import {
   min,
   required,
 } from '@angular/forms/signals';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 
@@ -109,12 +109,14 @@ export class TransactionFormDialog {
   private readonly cards = inject(CreditCardService);
   private readonly categories = inject(CategoryService);
   private readonly messages = inject(MessageService);
+  private readonly confirm = inject(ConfirmationService);
   private readonly invoice = inject(InvoiceService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly visible = model.required<boolean>();
   readonly transaction = input<Transaction | null>(null);
   readonly saved = output<void>();
+  readonly deleted = output<Transaction>();
 
   protected readonly kindOptions = TRANSACTION_KIND_OPTIONS;
   protected readonly repeatOptions = REPEAT_OPTIONS;
@@ -262,6 +264,36 @@ export class TransactionFormDialog {
     return TRANSACTION_KIND_LABELS[kind];
   }
 
+  /**
+   * Delete lives in here rather than on the row because the rows are click-to-edit — this
+   * dialog is the only place a single transaction is ever the subject of an action.
+   */
+  protected confirmDelete(): void {
+    const current = this.transaction();
+    if (!current) {
+      return;
+    }
+
+    this.confirm.confirm({
+      header: 'Delete transaction',
+      message: `Delete "${current.description}"? If it is a card charge, the invoice total will be recalculated.`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Delete', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
+      accept: () => {
+        this.service
+          .remove(current.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe(() => {
+            this.visible.set(false);
+            this.deleted.emit(current);
+            this.invoice.reload();
+            this.cards.reload();
+          });
+      },
+    });
+  }
+
   protected onSubmit(): void {
     this.f().markAsTouched();
     if (this.f().invalid()) {
@@ -327,6 +359,8 @@ export class TransactionFormDialog {
         this.visible.set(false);
         this.saved.emit();
         this.invoice.reload();
+        // A card charge moves the invoice total, and with it the card's available limit.
+        this.cards.reload();
       },
       error: () => this.saving.set(false),
     });

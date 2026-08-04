@@ -1,21 +1,20 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { DatePicker } from 'primeng/datepicker';
+import { Paginator } from 'primeng/paginator';
 import { Select } from 'primeng/select';
-import { TableModule } from 'primeng/table';
-import { Tag } from 'primeng/tag';
 
 import { Category } from '../../shared/models/category';
 import { IsoDate, Uuid } from '../../shared/models/common';
 import { TransactionKind } from '../../shared/models/enums';
 import { Transaction } from '../../shared/models/transaction';
-import { FintrackCategoryBadge } from '../../shared/ui/category-badge';
+import { FintrackCard } from '../../shared/ui/card';
 import { FintrackEmptyState } from '../../shared/ui/empty-state';
 import { FintrackPageHeader } from '../../shared/ui/page-header';
+import { FintrackTransactionRow } from '../../shared/ui/transaction-row';
 import { currentMonthRange, fromIsoDate, toIsoDate } from '../../shared/util/date';
-import { TRANSACTION_KIND_LABELS, TRANSACTION_KIND_OPTIONS } from '../../shared/util/enum-labels';
+import { TRANSACTION_KIND_OPTIONS } from '../../shared/util/enum-labels';
 import { formatMoney, sumMoney } from '../../shared/util/money';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
 import { CategoryService } from '../categories/category.service';
@@ -27,15 +26,15 @@ import { TransactionService } from './transaction.service';
 @Component({
   selector: 'fintrack-transactions-page',
   imports: [
-    FintrackCategoryBadge,
-    TableModule,
-    Tag,
     Button,
     Select,
     DatePicker,
+    Paginator,
     FormsModule,
+    FintrackCard,
     FintrackPageHeader,
     FintrackEmptyState,
+    FintrackTransactionRow,
     TransactionFormDialog,
     RecurringRulesDialog,
   ],
@@ -46,11 +45,12 @@ export class TransactionsPage {
   private readonly accounts = inject(BankAccountService);
   private readonly cards = inject(CreditCardService);
   private readonly categories = inject(CategoryService);
-  private readonly confirm = inject(ConfirmationService);
 
   protected readonly kindOptions = TRANSACTION_KIND_OPTIONS;
+  protected readonly pageSize = 25;
   protected dialogOpen = signal(false);
   protected rulesOpen = signal(false);
+  protected readonly first = signal(0);
   protected readonly selected = signal<Transaction | null>(null);
 
   /** Server-side filters live on the service; these two are client-side only. */
@@ -73,6 +73,10 @@ export class TransactionsPage {
     return this.service.sorted().filter((tx) => kind === null || tx.kind === kind);
   });
 
+  protected readonly pagedRows = computed(() =>
+    this.rows().slice(this.first(), this.first() + this.pageSize),
+  );
+
   /** Income minus everything else, over the rows currently shown. */
   protected readonly net = computed(() => {
     const inflow = sumMoney(
@@ -92,6 +96,13 @@ export class TransactionsPage {
     const month = currentMonthRange();
     this.range.set(month);
     this.service.setFilters({ from: month.from, to: month.to });
+
+    // A narrower filter can leave fewer rows than the current offset, which would show an
+    // empty page with no obvious way back. Go to the first page whenever the set changes.
+    effect(() => {
+      this.rows();
+      this.first.set(0);
+    });
   }
 
   protected onRangeChange(value: Date[] | null): void {
@@ -131,23 +142,6 @@ export class TransactionsPage {
     });
   }
 
-  protected kindLabel(kind: TransactionKind): string {
-    return TRANSACTION_KIND_LABELS[kind];
-  }
-
-  /**
-   * "1/12" for an installment. The transaction only knows its own position, so the total
-   * comes from the template that generated it; fall back to the bare number if that
-   * template is not loaded.
-   */
-  protected installmentLabel(tx: Transaction): string | null {
-    if (!tx.installmentNumber) {
-      return null;
-    }
-
-    return `${tx.installmentNumber}/${tx.totalInstallments}`;
-  }
-
   protected category(id: Uuid): Category | undefined {
     return this.categories.byIdMap().get(id);
   }
@@ -163,11 +157,6 @@ export class TransactionsPage {
     return formatMoney(Math.abs(value));
   }
 
-  protected shortDate(iso: IsoDate): string {
-    const date = fromIsoDate(iso);
-    return date ? date.toLocaleDateString(undefined, { day: '2-digit', month: 'short' }) : iso;
-  }
-
   protected openCreate(): void {
     this.selected.set(null);
     this.dialogOpen.set(true);
@@ -176,18 +165,5 @@ export class TransactionsPage {
   protected openEdit(tx: Transaction): void {
     this.selected.set(tx);
     this.dialogOpen.set(true);
-  }
-
-  protected confirmDelete(tx: Transaction): void {
-    this.confirm.confirm({
-      header: 'Delete transaction',
-      message: `Delete "${tx.description}"? If it is a card charge, the invoice total will be recalculated.`,
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Delete', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
-      accept: () => {
-        this.service.remove(tx.id).subscribe();
-      },
-    });
   }
 }

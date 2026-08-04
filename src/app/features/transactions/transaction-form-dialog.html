@@ -8,7 +8,6 @@
 >
   <form class="flex flex-col gap-4" novalidate (ngSubmit)="onSubmit()">
     @if (editing()) {
-
       <div class="rounded-md bg-[var(--p-content-hover-background)] px-3 py-2 text-sm">
         <span class="font-medium">{{ kindLabel(f.kind().value()) }}</span>
         <span class="text-[var(--p-text-muted-color)]"> · {{ sourceName() }}</span>
@@ -65,15 +64,30 @@
       </div>
     }
 
-    <div class="mt-2 flex justify-end gap-2">
-      <p-button
-        type="button"
-        severity="secondary"
-        [text]="true"
-        label="Cancel"
-        (onClick)="visible.set(false)"
-      />
-      <p-button type="submit" [label]="editing() ? 'Save' : 'Create'" [loading]="saving()" />
+    <div class="mt-2 flex items-center justify-between gap-2">
+      @if (editing()) {
+        <p-button
+          type="button"
+          icon="pi pi-trash"
+          severity="danger"
+          [text]="true"
+          label="Delete"
+          (onClick)="confirmDelete()"
+        />
+      } @else {
+        <span></span>
+      }
+
+      <span class="flex gap-2">
+        <p-button
+          type="button"
+          severity="secondary"
+          [text]="true"
+          label="Cancel"
+          (onClick)="visible.set(false)"
+        />
+        <p-button type="submit" [label]="editing() ? 'Save' : 'Create'" [loading]="saving()" />
+      </span>
     </div>
   </form>
 </p-dialog>

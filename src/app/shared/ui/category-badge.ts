@@ -14,7 +14,8 @@ import { Category } from '../models/category';
   template: `
     <span class="inline-flex items-center gap-2" [attr.title]="name()">
       <span
-        class="grid size-7 shrink-0 place-items-center rounded-full text-xs"
+        class="grid shrink-0 place-items-center rounded-full"
+        [class]="sizeClasses()"
         [style.background]="background()"
         [style.color]="foreground()"
       >
@@ -38,9 +39,15 @@ export class FintrackCategoryBadge {
   /** Undefined when the category was deleted but transactions still reference it. */
   readonly category = input<Category | undefined>(undefined);
   readonly showName = input(false);
+  /** `md` is the list-row circle; `sm` is the dense inline one. */
+  readonly size = input<'sm' | 'md'>('sm');
 
   protected readonly name = computed(() => this.category()?.name ?? 'Uncategorised');
   protected readonly icon = computed(() => this.category()?.icon ?? 'pi-circle');
+
+  protected readonly sizeClasses = computed(() =>
+    this.size() === 'md' ? 'size-10 text-base' : 'size-7 text-xs',
+  );
 
   protected readonly background = computed(
     () => this.category()?.color ?? 'var(--p-content-hover-background)',
