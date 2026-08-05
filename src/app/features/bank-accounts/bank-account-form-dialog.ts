@@ -19,9 +19,11 @@ import { environment } from '../../../environments/environment';
 import { PlanelyxMoneyInput } from '../../shared/controls/money-input';
 import { PlanelyxSelect } from '../../shared/controls/select';
 import { PlanelyxTextInput } from '../../shared/controls/text-input';
+import { injectTranslate } from '../../core/i18n/translate';
 import { BankAccount, BankAccountRequest } from '../../shared/models/bank-account';
 import { AccountType } from '../../shared/models/enums';
-import { ACCOUNT_TYPE_OPTIONS } from '../../shared/util/enum-labels';
+import { accountTypeOptions } from '../../shared/util/enum-labels';
+import { AdjustBalanceDialog } from './adjust-balance-dialog';
 import { BankAccountService } from './bank-account.service';
 import { FormsModule } from '@angular/forms';
 
@@ -51,6 +53,7 @@ const empty = (): BankAccountFormModel => ({
     PlanelyxSelect,
     PlanelyxMoneyInput,
     FormsModule,
+    AdjustBalanceDialog,
   ],
   templateUrl: './bank-account-form-dialog.html',
 })
@@ -65,23 +68,25 @@ export class BankAccountFormDialog {
   readonly saved = output<void>();
   readonly deleted = output<BankAccount>();
 
-  protected readonly typeOptions = ACCOUNT_TYPE_OPTIONS;
+  protected readonly t = injectTranslate();
+  protected readonly typeOptions = accountTypeOptions();
   protected readonly defaultCurrency = environment.defaultCurrency;
   protected readonly saving = signal(false);
+  protected readonly adjustOpen = signal(false);
   protected readonly editing = computed(() => this.account() !== null);
 
   protected readonly model = signal<BankAccountFormModel>(empty());
 
   protected readonly f = form(this.model, (path) => {
-    required(path.name, { message: 'Give the account a name.' });
+    required(path.name, { message: this.t('validation.accountName') });
     maxLength(path.name, 255);
-    required(path.bankName, { message: 'Which bank is it with?' });
+    required(path.bankName, { message: this.t('validation.bankName') });
     maxLength(path.bankName, 255);
-    required(path.accountType, { message: 'Pick a type.' });
-    required(path.currency, { message: 'Currency is required.' });
-    minLength(path.currency, 3, { message: 'Use a 3-letter code, e.g. BRL.' });
-    maxLength(path.currency, 3, { message: 'Use a 3-letter code, e.g. BRL.' });
-    min(path.initialBalance, 0, { message: 'Initial balance cannot be negative.' });
+    required(path.accountType, { message: this.t('validation.accountType') });
+    required(path.currency, { message: this.t('validation.currency') });
+    minLength(path.currency, 3, { message: this.t('validation.currencyCode') });
+    maxLength(path.currency, 3, { message: this.t('validation.currencyCode') });
+    min(path.initialBalance, 0, { message: this.t('validation.balanceNegative') });
   });
 
   constructor() {
@@ -106,6 +111,16 @@ export class BankAccountFormDialog {
   }
 
   /**
+   * Hands off to the adjustment dialog, closing this one so the two are never stacked.
+   *
+   * The account stays selected on the page, so the adjustment dialog still has it.
+   */
+  protected openAdjust(): void {
+    this.visible.set(false);
+    this.adjustOpen.set(true);
+  }
+
+  /**
    * Delete lives in here rather than on the card because the cards are click-to-edit —
    * this dialog is the only place a single account is ever the subject of an action.
    */
@@ -116,11 +131,11 @@ export class BankAccountFormDialog {
     }
 
     this.confirm.confirm({
-      header: 'Delete account',
-      message: `Permanently delete "${current.name}"? This cannot be undone, and any cards or transactions attached to it will be affected.`,
+      header: this.t('accounts.deleteHeader'),
+      message: this.t('accounts.deleteMessage', { name: current.name }),
       icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Delete', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
+      acceptButtonProps: { label: this.t('common.delete'), severity: 'danger' },
+      rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },
       accept: () => {
         this.service
           .remove(current.id)
@@ -141,15 +156,17 @@ export class BankAccountFormDialog {
     }
 
     const value = this.model();
+    const existing = this.account();
     const request: BankAccountRequest = {
       name: value.name.trim(),
       bankName: value.bankName.trim(),
       accountType: value.accountType as AccountType,
-      initialBalance: value.initialBalance,
+      // The API still requires it, but editing must never move it — the balance is derived
+      // from it and correcting one is what "Adjust balance" is for.
+      initialBalance: existing ? existing.initialBalance : value.initialBalance,
       currency: value.currency.trim().toUpperCase(),
     };
 
-    const existing = this.account();
     const call = existing
       ? this.service.update(existing.id, request)
       : this.service.create(request);
@@ -160,7 +177,7 @@ export class BankAccountFormDialog {
         this.saving.set(false);
         this.messages.add({
           severity: 'success',
-          summary: existing ? 'Account updated' : 'Account created',
+          summary: this.t(existing ? 'accounts.updated' : 'accounts.created'),
           detail: request.name,
           life: 3000,
         });

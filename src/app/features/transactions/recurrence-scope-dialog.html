@@ -3,11 +3,11 @@
   (visibleChange)="visible.set($event)"
   [header]="heading()"
   [modal]="true"
-  [style]="{ width: '28rem' }"
+  [style]="{ width: '28rem', maxWidth: 'calc(100vw - 2rem)' }"
   [draggable]="false"
 >
   <p class="mb-4 text-sm text-[var(--p-text-muted-color)]">
-    This transaction is part of a series. Which ones should this apply to?
+    {{ t('transactions.scope.intro') }}
   </p>
 
   <div class="flex flex-col gap-3" role="radiogroup" [attr.aria-label]="heading()">
@@ -19,9 +19,9 @@
     <div class="flex items-start gap-3">
       <p-radiobutton name="scope" value="SINGLE" inputId="scope-single" [(ngModel)]="scope" />
       <label for="scope-single" class="cursor-pointer">
-        <span class="block font-medium">Only this one</span>
+        <span class="block font-medium">{{ t('transactions.scope.single') }}</span>
         <span class="block text-sm text-[var(--p-text-muted-color)]">
-          The rest of the series is left alone.
+          {{ t('transactions.scope.singleHint') }}
         </span>
       </label>
     </div>
@@ -29,9 +29,9 @@
     <div class="flex items-start gap-3">
       <p-radiobutton name="scope" value="FUTURE" inputId="scope-future" [(ngModel)]="scope" />
       <label for="scope-future" class="cursor-pointer">
-        <span class="block font-medium">This and future {{ unit() }}s</span>
+        <span class="block font-medium">{{ t('transactions.scope.future', unitParams()) }}</span>
         <span class="block text-sm text-[var(--p-text-muted-color)]">
-          Earlier {{ unit() }}s stay as they are.
+          {{ t('transactions.scope.futureHint', unitParams()) }}
         </span>
       </label>
     </div>
@@ -39,9 +39,9 @@
     <div class="flex items-start gap-3">
       <p-radiobutton name="scope" value="ALL" inputId="scope-all" [(ngModel)]="scope" />
       <label for="scope-all" class="cursor-pointer">
-        <span class="block font-medium">All {{ unit() }}s</span>
+        <span class="block font-medium">{{ t('transactions.scope.all', unitParams()) }}</span>
         <span class="block text-sm text-[var(--p-text-muted-color)]">
-          Every {{ unit() }} in the series, including past ones.
+          {{ t('transactions.scope.allHint', unitParams()) }}
         </span>
       </label>
     </div>
@@ -49,7 +49,7 @@
 
   @if (mode() === 'delete' && scope() !== 'SINGLE') {
     <p class="mt-4 rounded-md bg-[var(--p-content-hover-background)] px-3 py-2 text-xs">
-      The rule stops generating new {{ unit() }}s as well.
+      {{ t('transactions.scope.stopsRule', unitParams()) }}
     </p>
   }
 
@@ -58,7 +58,7 @@
       type="button"
       severity="secondary"
       [text]="true"
-      label="Cancel"
+      [label]="t('common.cancel')"
       (onClick)="visible.set(false)"
     />
     <p-button

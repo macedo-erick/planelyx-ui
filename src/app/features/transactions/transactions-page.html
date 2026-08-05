@@ -1,18 +1,18 @@
-<planelyx-page-header title="Transactions" subtitle="Debits, credits and card charges.">
+<planelyx-page-header [title]="t('transactions.title')" [subtitle]="t('transactions.subtitle')">
   <p-button
     icon="pi pi-replay"
-    label="Recurring rules"
+    [label]="t('transactions.recurringRules')"
     severity="secondary"
     [outlined]="true"
     (onClick)="rulesOpen.set(true)"
   />
-  <p-button icon="pi pi-plus" label="Add a transaction" (onClick)="openCreate()" />
+  <p-button icon="pi pi-plus" [label]="t('transactions.add')" (onClick)="openCreate()" />
 </planelyx-page-header>
 
 <div class="mb-4 flex flex-wrap items-end gap-3">
   <div class="flex flex-col gap-1">
     <label for="filter-range" class="text-xs font-medium text-[var(--p-text-muted-color)]">
-      Date range
+      {{ t('transactions.dateRange') }}
     </label>
     <p-datepicker
       inputId="filter-range"
@@ -20,25 +20,25 @@
       [ngModel]="rangeValue()"
       (ngModelChange)="onRangeChange($event)"
       [showButtonBar]="true"
-      dateFormat="dd/mm/yy"
-      placeholder="Any date"
+      [dateFormat]="dateFormat()"
+      [placeholder]="t('transactions.filters.anyDate')"
       appendTo="body"
     />
   </div>
 
   <div class="flex flex-col gap-1">
     <label for="filter-kind" class="text-xs font-medium text-[var(--p-text-muted-color)]">
-      Type
+      {{ t('common.type') }}
     </label>
 
     <p-select
       inputId="filter-kind"
-      [options]="kindOptions"
+      [options]="kindOptions()"
       optionLabel="label"
       optionValue="value"
       [ngModel]="kindFilter()"
       (ngModelChange)="onKindChange($event)"
-      placeholder="Any type"
+      [placeholder]="t('transactions.filters.anyType')"
       [showClear]="true"
       appendTo="body"
     />
@@ -46,7 +46,7 @@
 
   <div class="flex flex-col gap-1">
     <label for="filter-category" class="text-xs font-medium text-[var(--p-text-muted-color)]">
-      Category
+      {{ t('common.category') }}
     </label>
     <p-select
       inputId="filter-category"
@@ -55,7 +55,7 @@
       optionValue="value"
       [ngModel]="categoryFilter()"
       (ngModelChange)="onCategoryChange($event)"
-      placeholder="Any category"
+      [placeholder]="t('transactions.filters.anyCategory')"
       [showClear]="true"
       appendTo="body"
     />
@@ -65,12 +65,14 @@
     severity="secondary"
     [text]="true"
     icon="pi pi-filter-slash"
-    label="Clear"
+    [label]="t('transactions.filters.clear')"
     (onClick)="clearFilters()"
   />
 
   <div class="ml-auto text-right">
-    <div class="text-xs text-[var(--p-text-muted-color)]">Net for this selection</div>
+    <div class="text-xs text-[var(--p-text-muted-color)]">
+      {{ t('transactions.netForSelection') }}
+    </div>
     <div class="text-lg font-semibold tabular-nums" [class.text-red-500]="net() < 0">
       {{ money(net()) }}
     </div>
@@ -79,12 +81,12 @@
 
 <planelyx-card>
   @if (service.isLoading()) {
-    <p class="px-4 py-12 text-center text-[var(--p-text-muted-color)]">Loading…</p>
+    <p class="px-4 py-12 text-center text-[var(--p-text-muted-color)]">{{ t('common.loading') }}</p>
   } @else if (rows().length === 0) {
     <planelyx-empty-state
       icon="pi-arrow-right-arrow-left"
-      title="Nothing here"
-      message="No transactions match the current filters."
+      [title]="t('transactions.empty')"
+      [message]="t('transactions.emptyMessage')"
     />
   } @else {
     @for (tx of rows(); track tx.id) {

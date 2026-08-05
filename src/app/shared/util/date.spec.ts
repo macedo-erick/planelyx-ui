@@ -8,7 +8,7 @@ import {
   isSameMonth,
   startOfMonth,
   todayIso,
-  toIsoDate
+  toIsoDate,
 } from './date';
 
 describe('date utils', () => {

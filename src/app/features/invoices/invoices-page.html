@@ -1,18 +1,15 @@
-<planelyx-page-header
-  title="Invoices"
-  subtitle="Created automatically when you post a card charge."
-/>
+<planelyx-page-header [title]="t('invoices.title')" [subtitle]="t('invoices.subtitle')" />
 
 @if (cardOptions().length === 0) {
   <planelyx-empty-state
     icon="pi-credit-card"
-    title="No credit cards yet"
-    message="Add a card and its invoices will show up here."
+    [title]="t('invoices.noCards')"
+    [message]="t('invoices.noCardsMessage')"
   />
 } @else {
   <div class="mb-4 flex flex-col gap-1">
     <label for="filter-card" class="text-xs font-medium text-[var(--p-text-muted-color)]">
-      Card
+      {{ t('dashboard.card') }}
     </label>
     <p-select
       inputId="filter-card"
@@ -37,7 +34,7 @@
           <span class="flex items-center gap-1">
             <p-button
               icon="pi pi-plus"
-              label="Add charge"
+              [label]="t('invoices.addCharge')"
               severity="secondary"
               [text]="true"
               size="small"
@@ -55,14 +52,14 @@
               severity="secondary"
               [text]="true"
               [rounded]="true"
-              ariaLabel="Invoice actions"
+              [ariaLabel]="t('invoices.actions')"
               (onClick)="actions.toggle($event)"
             />
             <p-popover #actions>
               <div class="flex w-52 flex-col">
                 @if (inv.status === 'PAID') {
                   <p-button
-                    label="Undo payment"
+                    [label]="t('invoices.undoPayment')"
                     icon="pi pi-undo"
                     severity="secondary"
                     [text]="true"
@@ -71,13 +68,22 @@
                   />
                 } @else {
                   <p-button
-                    label="Mark as paid"
+                    [label]="t('invoices.markAsPaid')"
                     icon="pi pi-check-circle"
                     severity="secondary"
                     [text]="true"
                     styleClass="justify-start w-full"
                     [disabled]="inv.totalAmount === 0"
                     (onClick)="actions.hide(); confirmPay(inv)"
+                  />
+                  <!-- Absent once paid: the charges are settled, so the total is history. -->
+                  <p-button
+                    [label]="t('invoices.adjust.action')"
+                    icon="pi pi-sliders-h"
+                    severity="secondary"
+                    [text]="true"
+                    styleClass="justify-start w-full"
+                    (onClick)="actions.hide(); adjustOpen.set(true)"
                   />
                 }
               </div>
@@ -87,11 +93,11 @@
 
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
           <div>
-            <dt class="text-[var(--p-text-muted-color)]">Cut off date</dt>
+            <dt class="text-[var(--p-text-muted-color)]">{{ t('invoices.cutOffDate') }}</dt>
             <dd class="tabular-nums">{{ shortDate(inv.billingPeriodEnd) }}</dd>
           </div>
           <div class="text-right">
-            <dt class="text-[var(--p-text-muted-color)]">Due date</dt>
+            <dt class="text-[var(--p-text-muted-color)]">{{ t('invoices.dueDate') }}</dt>
             <dd class="tabular-nums">
               {{ shortDate(inv.dueDate) }}
               @if (dueHint(inv); as hint) {
@@ -100,7 +106,7 @@
             </dd>
           </div>
           <div>
-            <dt class="text-[var(--p-text-muted-color)]">Status</dt>
+            <dt class="text-[var(--p-text-muted-color)]">{{ t('common.status') }}</dt>
             <dd class="mt-1">
               <p-tag
                 [value]="statusLabel(inv.status)"
@@ -110,7 +116,7 @@
             </dd>
           </div>
           <div class="text-right">
-            <dt class="text-[var(--p-text-muted-color)]">Amount</dt>
+            <dt class="text-[var(--p-text-muted-color)]">{{ t('common.amount') }}</dt>
             <dd class="text-lg font-semibold tabular-nums text-red-500">
               {{ money(inv.totalAmount) }}
             </dd>
@@ -119,9 +125,11 @@
       </div>
 
       @if (detail.isLoading()) {
-        <p class="px-4 py-12 text-center text-[var(--p-text-muted-color)]">Loading charges…</p>
+        <p class="px-4 py-12 text-center text-[var(--p-text-muted-color)]">
+          {{ t('common.loadingCharges') }}
+        </p>
       } @else if (charges().length === 0) {
-        <planelyx-empty-state icon="pi-receipt" title="No charges on this invoice" />
+        <planelyx-empty-state icon="pi-receipt" [title]="t('invoices.noCharges')" />
       } @else {
         @for (tx of charges(); track tx.id) {
           <planelyx-transaction-row
@@ -146,8 +154,8 @@
   } @else {
     <planelyx-empty-state
       icon="pi-receipt"
-      title="No invoice this month"
-      message="Nothing was billed on this card in the selected month."
+      [title]="t('invoices.empty')"
+      [message]="t('invoices.emptyMessage')"
     />
   }
 }
@@ -158,4 +166,10 @@
   [prefill]="prefill()"
   (saved)="detail.reload()"
   (deleted)="detail.reload()"
+/>
+
+<planelyx-adjust-invoice-dialog
+  [(visible)]="adjustOpen"
+  [invoice]="invoice()"
+  (adjusted)="detail.reload()"
 />

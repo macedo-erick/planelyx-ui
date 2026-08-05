@@ -1,31 +1,30 @@
 <p-dialog
   [visible]="visible()"
   (visibleChange)="visible.set($event)"
-  [header]="editing() ? 'Edit category' : 'New category'"
+  [header]="editing() ? t('categories.editHeader') : t('categories.newHeader')"
   [modal]="true"
-  [style]="{ width: '28rem' }"
+  [style]="{ width: '28rem', maxWidth: 'calc(100vw - 2rem)' }"
   [draggable]="false"
 >
   <form class="flex flex-col gap-4" novalidate (ngSubmit)="onSubmit()">
-    <planelyx-text-input [formField]="f.name" label="Name" placeholder="Groceries" />
+    <planelyx-text-input [formField]="f.name" [label]="t('common.name')" placeholder="Groceries" />
 
     <planelyx-select
       [formField]="f.type"
-      label="Type"
-      [options]="typeOptions"
-      hint="Income categories are for money coming in."
+      [label]="t('common.type')"
+      [options]="typeOptions()"
+      [hint]="t('categories.typeHint')"
     />
 
     <planelyx-select
       [formField]="f.icon"
-      label="Icon"
-      [options]="iconOptions"
+      [label]="t('categories.icon')"
+      [options]="iconOptions()"
       [showClear]="true"
-      placeholder="No icon"
     />
 
     <div class="flex flex-col gap-1.5">
-      <label for="category-color" class="text-sm font-medium">Colour</label>
+      <label for="category-color" class="text-sm font-medium">{{ t('categories.color') }}</label>
       <div class="flex items-center gap-3">
         <input
           id="category-color"
@@ -40,7 +39,7 @@
             severity="secondary"
             [text]="true"
             size="small"
-            label="Clear"
+            [label]="t('common.clear')"
             (onClick)="f.color().value.set(null)"
           />
         }
@@ -54,7 +53,7 @@
           icon="pi pi-trash"
           severity="danger"
           [text]="true"
-          label="Delete"
+          [label]="t('common.delete')"
           (onClick)="confirmDelete()"
         />
       } @else {
@@ -66,10 +65,14 @@
           type="button"
           severity="secondary"
           [text]="true"
-          label="Cancel"
+          [label]="t('common.cancel')"
           (onClick)="visible.set(false)"
         />
-        <p-button type="submit" [label]="editing() ? 'Save' : 'Create'" [loading]="saving()" />
+        <p-button
+          type="submit"
+          [label]="editing() ? t('common.save') : t('common.create')"
+          [loading]="saving()"
+        />
       </span>
     </div>
   </form>

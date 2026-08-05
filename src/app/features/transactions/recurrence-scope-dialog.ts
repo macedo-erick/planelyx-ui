@@ -4,6 +4,7 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { RadioButton } from 'primeng/radiobutton';
 
+import { injectTranslate } from '../../core/i18n/translate';
 import { TransactionScope } from '../../shared/models/enums';
 
 /**
@@ -26,15 +27,34 @@ export class RecurrenceScopeDialog {
 
   readonly confirmed = output<TransactionScope>();
 
+  protected readonly t = injectTranslate();
+
   protected readonly scope = signal<TransactionScope>('SINGLE');
 
   protected readonly heading = computed(() =>
-    this.mode() === 'delete' ? 'Delete from the series' : 'Save to the series',
+    this.t(
+      this.mode() === 'delete'
+        ? 'transactions.scope.deleteHeading'
+        : 'transactions.scope.saveHeading',
+    ),
   );
 
-  protected readonly unit = computed(() => (this.installment() ? 'installment' : 'occurrence'));
+  /**
+   * Singular and plural both, because "occurrence" + "s" only works in English — Portuguese
+   * needs the two forms spelled out, and the agreeing article with them.
+   */
+  protected readonly unitParams = computed(() => {
+    const suffix = this.installment() ? 'Installment' : 'Occurrence';
 
-  protected readonly confirmLabel = computed(() => (this.mode() === 'delete' ? 'Delete' : 'Save'));
+    return {
+      unit: this.t(`transactions.scope.unit${suffix}`),
+      units: this.t(`transactions.scope.unit${suffix}s`),
+    };
+  });
+
+  protected readonly confirmLabel = computed(() =>
+    this.t(this.mode() === 'delete' ? 'common.delete' : 'common.save'),
+  );
 
   protected readonly confirmSeverity = computed(() =>
     this.mode() === 'delete' ? 'danger' : 'primary',

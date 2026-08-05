@@ -5,6 +5,7 @@ import { DatePicker } from 'primeng/datepicker';
 import { Paginator, PaginatorState } from 'primeng/paginator';
 import { Select } from 'primeng/select';
 
+import { injectTranslate } from '../../core/i18n/translate';
 import { Category } from '../../shared/models/category';
 import { IsoDate, Uuid } from '../../shared/models/common';
 import { TransactionKind } from '../../shared/models/enums';
@@ -14,7 +15,8 @@ import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
 import { PlanelyxPageHeader } from '../../shared/ui/page-header';
 import { PlanelyxTransactionRow } from '../../shared/ui/transaction-row';
 import { currentMonthRange, fromIsoDate, toIsoDate } from '../../shared/util/date';
-import { TRANSACTION_KIND_OPTIONS } from '../../shared/util/enum-labels';
+import { datePickerFormat } from '../../shared/util/date-format';
+import { transactionKindOptions } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
 import { CategoryService } from '../categories/category.service';
@@ -46,7 +48,10 @@ export class TransactionsPage {
   private readonly cards = inject(CreditCardService);
   private readonly categories = inject(CategoryService);
 
-  protected readonly kindOptions = TRANSACTION_KIND_OPTIONS;
+  protected readonly t = injectTranslate();
+  protected readonly kindOptions = transactionKindOptions();
+  /** The picker's own token format, which differs between the two locales. */
+  protected readonly dateFormat = computed(() => datePickerFormat());
   protected dialogOpen = signal(false);
   protected rulesOpen = signal(false);
   protected readonly selected = signal<Transaction | null>(null);

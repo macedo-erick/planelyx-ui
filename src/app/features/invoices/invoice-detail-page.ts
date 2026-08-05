@@ -7,6 +7,7 @@ import { Paginator, PaginatorState } from 'primeng/paginator';
 import { Tag } from 'primeng/tag';
 
 import { environment } from '../../../environments/environment';
+import { injectTranslate } from '../../core/i18n/translate';
 import { Category } from '../../shared/models/category';
 import { IsoDate, Uuid } from '../../shared/models/common';
 import { InvoiceStatus } from '../../shared/models/enums';
@@ -17,11 +18,12 @@ import { PlanelyxCard } from '../../shared/ui/card';
 import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
 import { PlanelyxPageHeader } from '../../shared/ui/page-header';
 import { PlanelyxTransactionRow } from '../../shared/ui/transaction-row';
-import { fromIsoDate } from '../../shared/util/date';
-import { INVOICE_STATUS_LABELS, INVOICE_STATUS_SEVERITY } from '../../shared/util/enum-labels';
+import { dateTime, longDate, shortDate } from '../../shared/util/date-format';
+import { INVOICE_STATUS_SEVERITY, invoiceStatusLabels } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
 import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
+import { AdjustInvoiceDialog } from './adjust-invoice-dialog';
 import { InvoiceService } from './invoice.service';
 
 @Component({
@@ -35,6 +37,7 @@ import { InvoiceService } from './invoice.service';
     PlanelyxPageHeader,
     PlanelyxEmptyState,
     PlanelyxTransactionRow,
+    AdjustInvoiceDialog,
   ],
   templateUrl: './invoice-detail-page.html',
 })
@@ -55,6 +58,11 @@ export class InvoiceDetailPage {
     this.resource.hasValue() ? this.resource.value() : null,
   );
 
+  protected readonly t = injectTranslate();
+  private readonly statusLabels = invoiceStatusLabels();
+
+  protected readonly adjustOpen = signal(false);
+
   /** Zero-based page of the charge list, independent of the invoice summary above it. */
   protected readonly chargePage = signal(0);
   protected readonly chargeSize = signal(25);
@@ -74,6 +82,12 @@ export class InvoiceDetailPage {
   protected readonly charges = computed(() => this.chargesResource.value().content);
   protected readonly chargeTotal = computed(() => this.chargesResource.value().totalElements);
 
+  /** The adjustment lands as a charge, so both the total and the charge list have moved. */
+  protected onAdjusted(): void {
+    this.resource.reload();
+    this.chargesResource.reload();
+  }
+
   protected onChargePage(event: PaginatorState): void {
     this.chargeSize.set(event.rows ?? this.chargeSize());
     this.chargePage.set(event.page ?? 0);
@@ -81,18 +95,23 @@ export class InvoiceDetailPage {
 
   protected readonly heading = computed(() => {
     const inv = this.invoice();
-    return inv ? `${this.cardName(inv.creditCardId)} invoice` : 'Invoice';
+    return inv
+      ? this.t('invoices.cardInvoice', { card: this.cardName(inv.creditCardId) })
+      : this.t('titles.invoice');
   });
 
   protected readonly periodText = computed(() => {
     const inv = this.invoice();
     return inv
-      ? `Billing period ${this.shortDate(inv.billingPeriodStart)} – ${this.shortDate(inv.billingPeriodEnd)}`
+      ? this.t('invoices.billingPeriod', {
+          from: this.shortDate(inv.billingPeriodStart),
+          to: this.shortDate(inv.billingPeriodEnd),
+        })
       : '';
   });
 
   protected cardName(id: Uuid): string {
-    return this.cards.byIdMap().get(id)?.name ?? 'Card';
+    return this.cards.byIdMap().get(id)?.name ?? this.t('dashboard.card');
   }
 
   protected category(id: Uuid): Category | undefined {
@@ -100,7 +119,7 @@ export class InvoiceDetailPage {
   }
 
   protected statusLabel(status: InvoiceStatus): string {
-    return INVOICE_STATUS_LABELS[status];
+    return this.statusLabels()[status];
   }
 
   protected statusSeverity(status: InvoiceStatus): 'success' | 'warn' | 'info' {
@@ -112,26 +131,24 @@ export class InvoiceDetailPage {
   }
 
   protected shortDate(iso: IsoDate): string {
-    const date = fromIsoDate(iso);
-    return date ? date.toLocaleDateString(undefined, { day: '2-digit', month: 'short' }) : iso;
+    return shortDate(iso);
   }
 
   protected longDate(iso: IsoDate): string {
-    const date = fromIsoDate(iso);
-    return date ? date.toLocaleDateString(undefined, { day: '2-digit', month: 'short' }) : iso;
+    return longDate(iso);
   }
 
   protected instant(value: string): string {
-    return new Date(value).toLocaleString();
+    return dateTime(value);
   }
 
   protected confirmPay(inv: Invoice): void {
     this.confirm.confirm({
-      header: 'Mark invoice as paid',
-      message: `Mark this invoice of ${formatMoney(inv.totalAmount)} as paid?`,
+      header: this.t('invoices.payHeader'),
+      message: this.t('invoices.payMessage', { amount: formatMoney(inv.totalAmount) }),
       icon: 'pi pi-check-circle',
-      acceptButtonProps: { label: 'Mark paid' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
+      acceptButtonProps: { label: this.t('invoices.markPaid') },
+      rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },
       accept: () => {
         this.invoices.pay(inv.id).subscribe(() => this.resource.reload());
       },
@@ -140,11 +157,11 @@ export class InvoiceDetailPage {
 
   protected confirmUnpay(inv: Invoice): void {
     this.confirm.confirm({
-      header: 'Undo payment',
-      message: 'Reopen this invoice? Its status goes back to open and the paid date is cleared.',
+      header: this.t('invoices.unpayHeader'),
+      message: this.t('invoices.unpayMessage'),
       icon: 'pi pi-undo',
-      acceptButtonProps: { label: 'Reopen', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
+      acceptButtonProps: { label: this.t('invoices.reopen'), severity: 'danger' },
+      rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },
       accept: () => {
         this.invoices.unpay(inv.id).subscribe(() => this.resource.reload());
       },

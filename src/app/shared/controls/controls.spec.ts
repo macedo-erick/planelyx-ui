@@ -4,7 +4,7 @@ import { form, FormField, min, minLength, required } from '@angular/forms/signal
 import { providePrimeNG } from 'primeng/config';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { ACCOUNT_TYPE_OPTIONS } from '../util/enum-labels';
+import { accountTypeOptions } from '../util/enum-labels';
 import { AccountType } from '../models/enums';
 import { PlanelyxDatePicker } from './date-picker';
 import { PlanelyxMoneyInput } from './money-input';
@@ -13,6 +13,7 @@ import { PlanelyxSelect } from './select';
 import { PlanelyxSwitch } from './switch';
 import { PlanelyxTextInput } from './text-input';
 import { PlanelyxTextarea } from './textarea';
+import { provideTestingTransloco } from '../../../testing/transloco';
 
 /**
  * Every wrapper bound through `[formField]` at once.
@@ -39,12 +40,12 @@ import { PlanelyxTextarea } from './textarea';
     <planelyx-number-input [formField]="f.day" label="Day" />
     <planelyx-money-input [formField]="f.amount" label="Amount" />
     <planelyx-date-picker [formField]="f.date" label="Date" />
-    <planelyx-select [formField]="f.accountType" label="Type" [options]="accountTypes" />
+    <planelyx-select [formField]="f.accountType" label="Type" [options]="accountTypes()" />
     <planelyx-switch [formField]="f.enabled" label="Enabled" />
   `,
 })
 class AllControlsHost {
-  readonly accountTypes = ACCOUNT_TYPE_OPTIONS;
+  readonly accountTypes = accountTypeOptions();
 
   readonly model = signal({
     name: '',
@@ -67,7 +68,10 @@ class AllControlsHost {
 
 describe('planelyx control wrappers', () => {
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [providePrimeNG({})] });
+    TestBed.configureTestingModule({
+      imports: [provideTestingTransloco()],
+      providers: [providePrimeNG({})],
+    });
   });
 
   it('all seven bind through [formField] without error', () => {

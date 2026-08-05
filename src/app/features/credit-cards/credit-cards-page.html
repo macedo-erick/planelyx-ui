@@ -1,7 +1,7 @@
-<planelyx-page-header title="Credit cards" subtitle="Each one bills against an account.">
+<planelyx-page-header [title]="t('cards.title')" [subtitle]="t('cards.subtitle')">
   <p-button
     icon="pi pi-plus"
-    label="New credit card"
+    [label]="t('cards.new')"
     [disabled]="!hasAccounts()"
     (onClick)="openCreate()"
   />
@@ -10,16 +10,16 @@
 @if (!hasAccounts()) {
   <planelyx-empty-state
     icon="pi-building-columns"
-    title="Add a bank account first"
-    message="Cards must be attached to an account, so create one before adding a card."
+    [title]="t('cards.noAccounts')"
+    [message]="t('cards.noAccountsMessage')"
   />
 } @else if (service.isLoading()) {
-  <p class="text-[var(--p-text-muted-color)]">Loading…</p>
+  <p class="text-[var(--p-text-muted-color)]">{{ t('common.loading') }}</p>
 } @else if (cards().length === 0) {
   <planelyx-empty-state
     icon="pi-credit-card"
-    title="No cards yet"
-    message="Add a card to start tracking charges and invoices."
+    [title]="t('cards.empty')"
+    [message]="t('cards.emptyMessage')"
   />
 } @else {
   <div class="grid gap-4 md:grid-cols-2">
@@ -33,7 +33,7 @@
         <button
           type="button"
           class="absolute inset-0 z-10 rounded-xl enabled:hover:cursor-pointer"
-          [attr.aria-label]="'Edit ' + card.name"
+          [attr.aria-label]="t('cards.editAria', { name: card.name })"
           (click)="openEdit(card)"
         ></button>
 
@@ -46,13 +46,13 @@
           </div>
 
           <div class="flex items-baseline justify-between gap-2 text-sm">
-            <span class="text-[var(--p-text-muted-color)]">Bank account</span>
+            <span class="text-[var(--p-text-muted-color)]">{{ t('cards.bankAccount') }}</span>
             <span class="truncate">{{ accountName(card.bankAccountId) }}</span>
           </div>
 
           <div>
             <div class="mb-1 flex items-baseline justify-between gap-2 text-sm">
-              <span class="text-[var(--p-text-muted-color)]">Limit used</span>
+              <span class="text-[var(--p-text-muted-color)]">{{ t('cards.limitUsed') }}</span>
               <span
                 class="font-medium tabular-nums"
                 [class.text-red-500]="usedPercent(card) > 100"
@@ -64,20 +64,19 @@
               [showValue]="false"
               [color]="barColor(card)"
               [style]="{ height: '0.75rem' }"
-              [attr.aria-label]="'Limit used on ' + card.name"
+              [attr.aria-label]="t('cards.limitUsedAria', { name: card.name })"
             />
           </div>
 
           <div class="flex items-baseline justify-between gap-2 text-sm">
-            <span class="text-[var(--p-text-muted-color)]">Available limit</span>
+            <span class="text-[var(--p-text-muted-color)]">{{ t('cards.availableLimit') }}</span>
             <span class="font-medium tabular-nums" [class.text-red-500]="card.availableLimit < 0">
               {{ money(card.availableLimit) }}
             </span>
           </div>
 
           <p class="text-xs text-[var(--p-text-muted-color)]">
-            {{ money(card.usedLimit) }} of {{ money(card.creditLimit) }} used · closes day
-            {{ card.closingDay }} · due day {{ card.dueDay }}
+            {{ usedSummary(card) }}
           </p>
         </div>
       </planelyx-card>

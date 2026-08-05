@@ -11,7 +11,8 @@ import { Uuid } from '../../shared/models/common';
  *
  * Reads go through `httpResource` so the list is a signal the templates can read
  * directly. Mutations use `HttpClient` and return Observables — never promises — and
- * refresh the list via `tap`.
+ * refresh the list via `tap` — through `reload()` rather than the resource directly, so a
+ * subclass holding a second resource can keep it in step by overriding that one method.
  *
  * Transactions, templates and invoices deviate from this shape (filters, no PUT,
  * pay/unpay) and are written out explicitly instead.
@@ -39,17 +40,15 @@ export abstract class CrudService<TModel, TRequest> {
   }
 
   create(request: TRequest): Observable<TModel> {
-    return this.http.post<TModel>(this.baseUrl, request).pipe(tap(() => this.resource.reload()));
+    return this.http.post<TModel>(this.baseUrl, request).pipe(tap(() => this.reload()));
   }
 
   update(id: Uuid, request: TRequest): Observable<TModel> {
-    return this.http
-      .put<TModel>(`${this.baseUrl}/${id}`, request)
-      .pipe(tap(() => this.resource.reload()));
+    return this.http.put<TModel>(`${this.baseUrl}/${id}`, request).pipe(tap(() => this.reload()));
   }
 
   remove(id: Uuid): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`).pipe(tap(() => this.resource.reload()));
+    return this.http.delete<void>(`${this.baseUrl}/${id}`).pipe(tap(() => this.reload()));
   }
 
   reload(): void {

@@ -4,7 +4,9 @@
   type="button"
   class="flex w-full items-center gap-3 border-b border-[var(--p-content-border-color)] px-4 py-3 text-left last:border-b-0 enabled:hover:bg-[var(--p-content-hover-background)] enabled:hover:cursor-pointer"
   [disabled]="!clickable()"
-  [attr.aria-label]="clickable() ? 'Edit ' + tx.description : null"
+  [attr.aria-label]="
+    clickable() ? t('transactions.editAria', { description: tx.description }) : null
+  "
   (click)="edit.emit(tx)"
 >
   <planelyx-category-badge [category]="category()" size="md" />
@@ -22,8 +24,12 @@
         <span> | {{ secondary() }}</span>
       }
       @if (tx.templateId && !tx.installmentNumber) {
-        <i class="pi pi-replay ml-1 text-xs" title="Recurring" aria-hidden="true"></i>
-        <span class="sr-only">Recurring</span>
+        <i
+          class="pi pi-replay ml-1 text-xs"
+          [attr.title]="t('transactions.recurring')"
+          aria-hidden="true"
+        ></i>
+        <span class="sr-only">{{ t('transactions.recurring') }}</span>
       }
     </span>
   </span>

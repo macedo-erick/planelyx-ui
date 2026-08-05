@@ -1,11 +1,11 @@
-import { Component, linkedSignal, model } from '@angular/core';
+import { Component, computed, linkedSignal, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import type { FormValueControl } from '@angular/forms/signals';
 import { DatePicker } from 'primeng/datepicker';
 
-import { environment } from '../../../environments/environment';
 import { IsoDate } from '../models/common';
 import { fromIsoDate, toIsoDate } from '../util/date';
+import { datePickerFormat } from '../util/date-format';
 import { generateControlId, PlanelyxControlBase } from './control-base';
 import { PlanelyxFieldShell } from './field-shell';
 
@@ -41,7 +41,7 @@ import { PlanelyxFieldShell } from './field-shell';
         [invalid]="invalid() && touched()"
         [showIcon]="true"
         [showButtonBar]="true"
-        dateFormat="dd/mm/yy"
+        [dateFormat]="dateFormat()"
         appendTo="body"
         [fluid]="true"
       />
@@ -54,7 +54,8 @@ export class PlanelyxDatePicker
 {
   readonly value = model<IsoDate | null>(null);
 
-  protected readonly locale = environment.defaultLocale;
+  /** `dd/mm/yy` or `mm/dd/yy` depending on the language — PrimeNG's own token syntax. */
+  protected readonly dateFormat = computed(() => datePickerFormat());
   protected readonly inputId = generateControlId('planelyx-date');
 
   /** Follows `value()` but is what the picker actually binds to. */
