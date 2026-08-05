@@ -7,8 +7,8 @@ import {
   fromIsoDate,
   isSameMonth,
   startOfMonth,
-  toIsoDate,
   todayIso,
+  toIsoDate
 } from './date';
 
 describe('date utils', () => {
@@ -44,7 +44,6 @@ describe('date utils', () => {
     });
 
     it('does not shift a date late in the local day', () => {
-
       expect(toIsoDate(new Date(2026, 7, 3, 23, 30))).toBe('2026-08-03');
     });
   });

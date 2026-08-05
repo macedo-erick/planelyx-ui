@@ -1,16 +1,17 @@
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { ApplicationRef } from '@angular/core';
+import { ApplicationRef, WritableSignal } from '@angular/core';
+import type { FieldTree } from '@angular/forms/signals';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { environment } from '../../../environments/environment';
-import { TransactionFormDialog } from './transaction-form-dialog';
+import { TransactionFormDialog, TransactionFormModel } from './transaction-form-dialog';
 
 interface TransactionFormDialogInternals {
-  f: any;
+  f: FieldTree<TransactionFormModel>;
   previewSummary(): string;
   onSubmit(): void;
 }
@@ -53,14 +54,18 @@ describe('TransactionFormDialog', () => {
     form = fixture.componentInstance as unknown as TransactionFormDialogInternals;
   });
 
-  function fill(overrides: Record<string, unknown> = {}): void {
+  function fill(overrides: Partial<TransactionFormModel> = {}): void {
     const f = form.f;
     f.categoryId().value.set(CATEGORY);
     f.amount().value.set(120);
     f.transactionDate().value.set('2026-08-03');
     f.description().value.set('PS5');
     for (const [key, value] of Object.entries(overrides)) {
-      f[key]().value.set(value);
+      /** Each key writes a different value type, so the write side is narrowed structurally. */
+      const field = f[key as keyof TransactionFormModel]() as unknown as {
+        value: WritableSignal<unknown>;
+      };
+      field.value.set(value);
     }
     fixture.detectChanges();
   }

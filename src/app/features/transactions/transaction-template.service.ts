@@ -1,13 +1,10 @@
 import { HttpClient, httpResource } from '@angular/common/http';
-import { Service, computed, inject } from '@angular/core';
+import { computed, inject, Service } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { Uuid } from '../../shared/models/common';
-import {
-  TransactionTemplate,
-  TransactionTemplateRequest,
-} from '../../shared/models/transaction-template';
+import { TransactionTemplate, TransactionTemplateRequest } from '../../shared/models/transaction-template';
 
 /**
  * Recurring rules — both "fixed" entries and installment purchases.
@@ -40,7 +37,6 @@ export class TransactionTemplateService {
   readonly byIdMap = computed(() => new Map(this.items().map((t) => [t.id, t])));
 
   create(request: TransactionTemplateRequest): Observable<TransactionTemplate> {
-
     return this.http
       .post<TransactionTemplate>(this.baseUrl, request)
       .pipe(tap(() => this.resource.reload()));

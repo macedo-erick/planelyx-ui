@@ -22,5 +22,4 @@ import { Button } from 'primeng/button';
     }
   `,
 })
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class NotFoundPage {}
