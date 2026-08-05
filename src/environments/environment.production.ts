@@ -1,5 +1,5 @@
 /**
- * Production environment — served from https://planelyx.com.br under a /ui/ base href.
+ * Production environment — served from https://planelyx.com under a /ui/ base href.
  *
  * All three services share one origin, so API calls are same-origin and CORS never fires.
  * These values are baked in at build time: a different target needs a different build,
@@ -11,11 +11,11 @@ export const environment: Environment = {
   production: true,
   // No trailing slash — this string is also compiled into the bearer-token interceptor's
   // regex in core/auth/keycloak.providers.ts.
-  apiUrl: 'https://planelyx.com.br/api',
+  apiUrl: 'https://planelyx.com/api',
   keycloak: {
     // Must line up with KC_HTTP_RELATIVE_PATH=/auth so that tokens carry an `iss` of
-    // https://planelyx.com.br/auth/realms/planelyx — the exact string the API validates.
-    url: 'https://planelyx.com.br/auth',
+    // https://planelyx.com/auth/realms/planelyx — the exact string the API validates.
+    url: 'https://planelyx.com/auth',
     realm: 'planelyx',
     clientId: 'planelyx-api',
   },
