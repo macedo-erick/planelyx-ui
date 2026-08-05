@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { computed, inject, Service, signal } from '@angular/core';
 import Keycloak from 'keycloak-js';
 
@@ -13,6 +14,12 @@ interface PlanelyxTokenClaims {
 @Service()
 export class AuthService {
   private readonly keycloak = inject(Keycloak);
+
+  /**
+   * Redirect URIs must carry the deployed base href — production serves the app under
+   * /ui/, and Keycloak rejects redirect URIs it has not been registered with.
+   */
+  private readonly location = inject(Location);
 
   /**
    * Keycloak mutates its own instance rather than emitting signals, so we snapshot the
@@ -47,11 +54,16 @@ export class AuthService {
   );
 
   login(redirectPath = '/'): void {
-    void this.keycloak.login({ redirectUri: `${window.location.origin}${redirectPath}` });
+    void this.keycloak.login({ redirectUri: this.absoluteUrl(redirectPath) });
   }
 
   logout(): void {
-    void this.keycloak.logout({ redirectUri: window.location.origin });
+    void this.keycloak.logout({ redirectUri: this.absoluteUrl('/') });
+  }
+
+  /** Turns an app-relative route into an absolute URL that includes the base href. */
+  private absoluteUrl(path: string): string {
+    return `${window.location.origin}${this.location.prepareExternalUrl(path)}`;
   }
 
   openAccountManagement(): void {

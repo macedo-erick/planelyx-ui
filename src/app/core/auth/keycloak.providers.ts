@@ -6,7 +6,7 @@ import {
   IncludeBearerTokenCondition,
   provideKeycloak,
   UserActivityService,
-  withAutoRefreshToken,
+  withAutoRefreshToken
 } from 'keycloak-angular';
 
 import { environment } from '../../../environments/environment';
@@ -36,7 +36,9 @@ export const provideKeycloakAuth = (): EnvironmentProviders =>
     initOptions: {
       onLoad: 'check-sso',
       pkceMethod: 'S256',
-      silentCheckSsoRedirectUri: `${window.location.origin}/silent-check-sso.html`,
+      // Resolved against <base href>, not the bare origin: production serves the app
+      // under /ui/, where `${origin}/silent-check-sso.html` would 404.
+      silentCheckSsoRedirectUri: new URL('silent-check-sso.html', document.baseURI).href,
     },
     features: [
       withAutoRefreshToken({
