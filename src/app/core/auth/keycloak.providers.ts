@@ -6,7 +6,7 @@ import {
   IncludeBearerTokenCondition,
   provideKeycloak,
   UserActivityService,
-  withAutoRefreshToken
+  withAutoRefreshToken,
 } from 'keycloak-angular';
 
 import { environment } from '../../../environments/environment';

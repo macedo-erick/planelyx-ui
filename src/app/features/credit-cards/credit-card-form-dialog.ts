@@ -15,6 +15,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 
+import { injectTranslate } from '../../core/i18n/translate';
 import { PlanelyxMoneyInput } from '../../shared/controls/money-input';
 import { PlanelyxNumberInput } from '../../shared/controls/number-input';
 import { PlanelyxSelect } from '../../shared/controls/select';
@@ -70,24 +71,25 @@ export class CreditCardFormDialog {
   readonly deleted = output<CreditCard>();
 
   protected readonly accountOptions = computed(() => this.accounts.options());
+  protected readonly t = injectTranslate();
   protected readonly saving = signal(false);
   protected readonly editing = computed(() => this.card() !== null);
 
   protected readonly model = signal<CreditCardFormModel>(empty());
 
   protected readonly f = form(this.model, (path) => {
-    required(path.bankAccountId, { message: 'Pick the account this card belongs to.' });
-    required(path.name, { message: 'Give the card a name.' });
+    required(path.bankAccountId, { message: this.t('validation.cardAccount') });
+    required(path.name, { message: this.t('validation.cardName') });
     maxLength(path.name, 255);
-    required(path.brand, { message: 'Which brand is it?' });
+    required(path.brand, { message: this.t('validation.cardBrand') });
     maxLength(path.brand, 50);
-    min(path.creditLimit, 0, { message: 'Limit cannot be negative.' });
-    required(path.closingDay, { message: 'Closing day is required.' });
-    min(path.closingDay, 1, { message: 'Must be between 1 and 31.' });
-    max(path.closingDay, 31, { message: 'Must be between 1 and 31.' });
-    required(path.dueDay, { message: 'Due day is required.' });
-    min(path.dueDay, 1, { message: 'Must be between 1 and 31.' });
-    max(path.dueDay, 31, { message: 'Must be between 1 and 31.' });
+    min(path.creditLimit, 0, { message: this.t('validation.limitNegative') });
+    required(path.closingDay, { message: this.t('validation.closingDay') });
+    min(path.closingDay, 1, { message: this.t('validation.dayRange') });
+    max(path.closingDay, 31, { message: this.t('validation.dayRange') });
+    required(path.dueDay, { message: this.t('validation.dueDay') });
+    min(path.dueDay, 1, { message: this.t('validation.dayRange') });
+    max(path.dueDay, 31, { message: this.t('validation.dayRange') });
   });
 
   constructor() {
@@ -123,11 +125,11 @@ export class CreditCardFormDialog {
     }
 
     this.confirm.confirm({
-      header: 'Delete card',
-      message: `Permanently delete "${current.name}"? Its charges and invoices will be affected.`,
+      header: this.t('cards.deleteHeader'),
+      message: this.t('cards.deleteMessage', { name: current.name }),
       icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Delete', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
+      acceptButtonProps: { label: this.t('common.delete'), severity: 'danger' },
+      rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },
       accept: () => {
         this.service
           .remove(current.id)
@@ -168,7 +170,7 @@ export class CreditCardFormDialog {
         this.saving.set(false);
         this.messages.add({
           severity: 'success',
-          summary: existing ? 'Card updated' : 'Card created',
+          summary: this.t(existing ? 'cards.updated' : 'cards.created'),
           detail: request.name,
           life: 3000,
         });

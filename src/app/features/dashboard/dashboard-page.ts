@@ -6,14 +6,20 @@ import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 
 import { environment } from '../../../environments/environment';
+import { injectTranslate } from '../../core/i18n/translate';
 import { IsoDate, Uuid } from '../../shared/models/common';
 import { Dashboard } from '../../shared/models/dashboard';
 import { InvoiceStatus } from '../../shared/models/enums';
 import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
 import { PlanelyxMonthNav } from '../../shared/ui/month-nav';
 import { PlanelyxPageHeader } from '../../shared/ui/page-header';
-import { daysUntil, fromIsoDate, startOfMonth, toIsoDate } from '../../shared/util/date';
-import { INVOICE_STATUS_LABELS, INVOICE_STATUS_SEVERITY } from '../../shared/util/enum-labels';
+import { daysUntil, startOfMonth, toIsoDate } from '../../shared/util/date';
+import { monthYear, shortDate } from '../../shared/util/date-format';
+import {
+  defaultCategoryNames,
+  INVOICE_STATUS_SEVERITY,
+  invoiceStatusLabels,
+} from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
 import { CreditCardService } from '../credit-cards/credit-card.service';
 
@@ -46,14 +52,23 @@ export class DashboardPage {
     params: { month: monthParam(this.month()) },
   }));
 
+  protected readonly t = injectTranslate();
+  private readonly statusLabels = invoiceStatusLabels();
+  private readonly translateCategory = defaultCategoryNames();
+
   protected readonly isLoading = computed(() => this.resource.isLoading());
 
   protected readonly data = computed<Dashboard | null>(() =>
     this.resource.hasValue() ? this.resource.value() : null,
   );
 
-  protected readonly monthLabel = computed(() =>
-    this.month().toLocaleDateString(undefined, { month: 'long', year: 'numeric' }),
+  protected readonly monthLabel = computed(() => monthYear(this.month()));
+
+  /** e.g. "Across 3 account(s), end of month" — the tail only when reading a future month. */
+  protected readonly accountsLabel = computed(() =>
+    this.t(this.isFuture() ? 'dashboard.acrossAccountsEom' : 'dashboard.acrossAccounts', {
+      count: this.accountCount(),
+    }),
   );
 
   /** True once the selected month is later than the one we are actually in. */
@@ -82,7 +97,7 @@ export class DashboardPage {
   protected readonly chartData = computed(() => {
     const breakdown = this.data()?.categoryBreakdown ?? [];
     return {
-      labels: breakdown.map((row) => row.name),
+      labels: breakdown.map((row) => this.translateCategory()(row.name)),
       datasets: [
         {
           data: breakdown.map((row) => row.total),
@@ -106,11 +121,11 @@ export class DashboardPage {
   };
 
   protected cardName(id: Uuid): string {
-    return this.cards.byIdMap().get(id)?.name ?? 'Card';
+    return this.cards.byIdMap().get(id)?.name ?? this.t('dashboard.card');
   }
 
   protected statusLabel(status: InvoiceStatus): string {
-    return INVOICE_STATUS_LABELS[status];
+    return this.statusLabels()[status];
   }
 
   protected statusSeverity(status: InvoiceStatus): 'success' | 'warn' | 'info' {
@@ -126,8 +141,7 @@ export class DashboardPage {
   }
 
   protected shortDate(iso: IsoDate): string {
-    const date = fromIsoDate(iso);
-    return date ? date.toLocaleDateString(undefined, { day: '2-digit', month: 'short' }) : iso;
+    return shortDate(iso);
   }
 
   protected dueText(iso: IsoDate): string | null {
@@ -136,9 +150,9 @@ export class DashboardPage {
       return null;
     }
     if (days < 0) {
-      return `${Math.abs(days)} days overdue`;
+      return this.t('invoices.overdue', { days: Math.abs(days) });
     }
-    return days === 0 ? 'Due today' : `in ${days} days`;
+    return days === 0 ? this.t('invoices.dueToday') : this.t('invoices.dueInDays', { days });
   }
 }
 

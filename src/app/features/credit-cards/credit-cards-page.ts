@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { ProgressBar } from 'primeng/progressbar';
 
+import { injectTranslate } from '../../core/i18n/translate';
 import { Uuid } from '../../shared/models/common';
 import { CreditCard } from '../../shared/models/credit-card';
 import { PlanelyxCard } from '../../shared/ui/card';
@@ -27,11 +28,22 @@ import { CreditCardService } from './credit-card.service';
 export class CreditCardsPage {
   protected readonly service = inject(CreditCardService);
   private readonly accounts = inject(BankAccountService);
+  protected readonly t = injectTranslate();
 
   protected dialogOpen = signal(false);
   protected readonly selected = signal<CreditCard | null>(null);
   protected readonly cards = computed(() => this.service.sorted());
   protected readonly hasAccounts = computed(() => this.accounts.items().length > 0);
+
+  /** e.g. "R$ 400 of R$ 5.000 used · closes day 10 · due day 17". */
+  protected usedSummary(card: CreditCard): string {
+    return this.t('cards.usedSummary', {
+      used: formatMoney(card.usedLimit),
+      limit: formatMoney(card.creditLimit),
+      closing: card.closingDay,
+      due: card.dueDay,
+    });
+  }
 
   protected accountName(id: Uuid): string {
     return this.accounts.byIdMap().get(id)?.name ?? '—';

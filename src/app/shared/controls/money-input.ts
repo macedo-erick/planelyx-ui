@@ -5,6 +5,7 @@ import { InputNumber } from 'primeng/inputnumber';
 
 import { environment } from '../../../environments/environment';
 import { Money } from '../models/common';
+import { currentLocale } from '../util/locale';
 import { generateControlId, PlanelyxControlBase } from './control-base';
 import { PlanelyxFieldShell } from './field-shell';
 
@@ -36,7 +37,7 @@ import { PlanelyxFieldShell } from './field-shell';
         (onBlur)="touch.emit()"
         mode="currency"
         [currency]="currency()"
-        [locale]="locale"
+        [locale]="locale()"
         [disabled]="disabled()"
         [readonly]="readonly()"
         [min]="min()"
@@ -56,7 +57,8 @@ export class PlanelyxMoneyInput extends PlanelyxControlBase implements FormValue
   readonly min = input<number | undefined>(undefined);
   readonly max = input<number | undefined>(undefined);
 
-  protected readonly locale = environment.defaultLocale;
+  /** Drives the thousands and decimal separators, so it follows the language switch. */
+  protected readonly locale = currentLocale;
   protected readonly inputId = generateControlId('planelyx-money');
   protected readonly describedBy = `${this.inputId}-hint ${this.inputId}-error`;
 

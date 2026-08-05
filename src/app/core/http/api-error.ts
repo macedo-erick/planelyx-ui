@@ -13,19 +13,25 @@ export interface ApiError {
   readonly message: string;
 }
 
-/** A shape the UI can always rely on, whichever error shape actually arrived. */
+/**
+ * A shape the UI can always rely on, whichever error shape actually arrived.
+ *
+ * `titleKey` and `detailKey` are translation keys rather than text: this runs outside an
+ * injection context, and the interceptor that shows the toast is the one holding `t()`. The
+ * server's own `message` cannot be translated — it arrives already worded — so `detail` stays
+ * literal and `detailKey` is only set when there is nothing better to show.
+ */
 export interface NormalizedApiError {
   readonly status: number;
-  readonly title: string;
+  readonly titleKey: string;
   readonly detail: string;
+  readonly detailKey?: string;
   /**
    * Bean-validation failures arrive as `"field: msg; field2: msg2"`. Split out so a form
    * can map them back onto individual fields.
    */
   readonly fieldErrors: ReadonlyMap<string, string>;
 }
-
-const GENERIC_DETAIL = 'Something went wrong. Please try again.';
 
 function parseFieldErrors(message: string): ReadonlyMap<string, string> {
   const result = new Map<string, string>();
@@ -55,35 +61,42 @@ function parseFieldErrors(message: string): ReadonlyMap<string, string> {
   return result;
 }
 
-function titleFor(status: number, fallback: string): string {
+function titleKeyFor(status: number): string {
   switch (status) {
     case 0:
-      return 'Cannot reach the server';
+      return 'errors.offline';
     case 400:
-      return 'Invalid data';
+      return 'errors.badRequest';
     case 401:
-      return 'Session expired';
+      return 'errors.unauthorized';
     case 403:
-      return 'Not allowed';
+      return 'errors.forbidden';
     case 404:
-      return 'Not found';
+      return 'errors.notFound';
     case 409:
-      return 'Conflict';
+      return 'errors.conflict';
     default:
-      return fallback || (status >= 500 ? 'Server error' : 'Request failed');
+      return 'errors.server';
   }
 }
 
 export function normalizeApiError(error: unknown): NormalizedApiError {
   if (!(error instanceof HttpErrorResponse)) {
-    return { status: 0, title: 'Unexpected error', detail: GENERIC_DETAIL, fieldErrors: new Map() };
+    return {
+      status: 0,
+      titleKey: 'errors.server',
+      detail: '',
+      detailKey: 'errors.generic',
+      fieldErrors: new Map(),
+    };
   }
 
   if (error.status === 0) {
     return {
       status: 0,
-      title: titleFor(0, ''),
-      detail: 'Check that the API is running and that CORS allows this origin.',
+      titleKey: 'errors.offline',
+      detail: '',
+      detailKey: 'errors.offlineDetail',
       fieldErrors: new Map(),
     };
   }
@@ -98,10 +111,13 @@ export function normalizeApiError(error: unknown): NormalizedApiError {
 
   const fieldErrors = error.status === 400 ? parseFieldErrors(message) : new Map<string, string>();
 
+  const detail = fieldErrors.size > 0 ? [...fieldErrors.values()].join(', ') : message;
+
   return {
     status: error.status,
-    title: titleFor(error.status, typeof body === 'object' ? (body?.error ?? '') : ''),
-    detail: fieldErrors.size > 0 ? [...fieldErrors.values()].join(', ') : message || GENERIC_DETAIL,
+    titleKey: titleKeyFor(error.status),
+    detail,
+    detailKey: detail ? undefined : 'errors.generic',
     fieldErrors,
   };
 }

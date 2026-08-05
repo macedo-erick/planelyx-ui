@@ -1,6 +1,8 @@
 import { Component, computed, input } from '@angular/core';
 import type { ValidationError, WithOptionalFieldTree } from '@angular/forms/signals';
 
+import { injectTranslate } from '../../core/i18n/translate';
+
 /**
  * Label + control + error chrome shared by every `planelyx-*` control.
  *
@@ -16,7 +18,7 @@ import type { ValidationError, WithOptionalFieldTree } from '@angular/forms/sign
         {{ label() }}
         @if (required()) {
           <span class="text-[var(--p-red-500)]" aria-hidden="true">*</span>
-          <span class="sr-only">(required)</span>
+          <span class="sr-only">{{ t('validation.requiredMark') }}</span>
         }
       </label>
 
@@ -58,29 +60,31 @@ export class PlanelyxFieldShell {
   readonly hintId = computed(() => `${this.inputId()}-hint`);
   readonly errorId = computed(() => `${this.inputId()}-error`);
 
-  /** `message` is optional on ValidationError, so fall back to the rule name. */
+  protected readonly t = injectTranslate();
+
+  /** `message` is optional on ValidationError, so fall back to a generic one per rule. */
   readonly messages = computed(() =>
-    this.errors().map((error) => error.message ?? defaultMessage(error.kind)),
+    this.errors().map((error) => error.message ?? this.t(defaultMessageKey(error.kind))),
   );
 }
 
-function defaultMessage(kind: string): string {
+function defaultMessageKey(kind: string): string {
   switch (kind) {
     case 'required':
-      return 'This field is required.';
+      return 'validation.required';
     case 'min':
-      return 'Value is too small.';
+      return 'validation.min';
     case 'max':
-      return 'Value is too large.';
+      return 'validation.max';
     case 'minLength':
-      return 'Too short.';
+      return 'validation.minLength';
     case 'maxLength':
-      return 'Too long.';
+      return 'validation.maxLength';
     case 'email':
-      return 'Enter a valid email address.';
+      return 'validation.email';
     case 'pattern':
-      return 'Value has an unexpected format.';
+      return 'validation.pattern';
     default:
-      return 'This value is not valid.';
+      return 'validation.invalid';
   }
 }

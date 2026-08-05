@@ -1,4 +1,4 @@
-<planelyx-page-header title="Dashboard" [subtitle]="monthLabel()" />
+<planelyx-page-header [title]="t('dashboard.title')" [subtitle]="monthLabel()" />
 
 <planelyx-month-nav class="mb-4" [(month)]="month" />
 
@@ -7,42 +7,48 @@
     class="mb-4 rounded-md border border-[var(--p-content-border-color)] px-3 py-2 text-xs text-[var(--p-text-muted-color)]"
   >
     <i class="pi pi-info-circle mr-1" aria-hidden="true"></i>
-    This month is past the last generated occurrence of an open-ended recurring rule, so it shows
-    only what has been scheduled so far. Those rules are extended a month at a time.
+    {{ t('dashboard.incomplete') }}
   </p>
 }
 
 <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
   <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
     <div class="text-xs text-[var(--p-text-muted-color)]">
-      {{ isFuture() ? 'Projected balance' : 'Total balance' }}
+      {{ t(isFuture() ? 'dashboard.projectedBalance' : 'dashboard.totalBalance') }}
     </div>
     <div class="text-2xl font-semibold tabular-nums" [class.text-red-500]="totalBalance() < 0">
       {{ money(totalBalance()) }}
     </div>
     <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
-      Across {{ accountCount() }} account(s){{ isFuture() ? ', end of month' : '' }}
+      {{ accountsLabel() }}
     </div>
     @if (invoicesDueCount() > 0) {
       <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
-        less {{ invoicesDueCount() }} invoice(s) due, {{ money(invoicesDueTotal()) }}
+        {{
+          t('dashboard.lessInvoicesDue', {
+            count: invoicesDueCount(),
+            amount: money(invoicesDueTotal()),
+          })
+        }}
       </div>
     }
   </div>
   <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
-    <div class="text-xs text-[var(--p-text-muted-color)]">Income this month</div>
+    <div class="text-xs text-[var(--p-text-muted-color)]">{{ t('dashboard.income') }}</div>
     <div class="text-2xl font-semibold tabular-nums text-green-600">{{ money(income()) }}</div>
   </div>
   <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
-    <div class="text-xs text-[var(--p-text-muted-color)]">Spent this month</div>
+    <div class="text-xs text-[var(--p-text-muted-color)]">{{ t('dashboard.expense') }}</div>
     <div class="text-2xl font-semibold tabular-nums">{{ money(expense()) }}</div>
-    <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">Accounts and cards combined</div>
+    <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
+      {{ t('dashboard.expenseHint') }}
+    </div>
   </div>
   <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
-    <div class="text-xs text-[var(--p-text-muted-color)]">Unpaid invoices</div>
+    <div class="text-xs text-[var(--p-text-muted-color)]">{{ t('dashboard.unpaidInvoices') }}</div>
     <div class="text-2xl font-semibold tabular-nums">{{ money(outstandingInvoices()) }}</div>
     <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
-      {{ openInvoiceCount() }} due soonest
+      {{ t('dashboard.dueSoonest', { count: openInvoiceCount() }) }}
     </div>
   </div>
 </div>
@@ -50,32 +56,30 @@
 <p
   class="mb-6 rounded-md bg-[var(--p-content-hover-background)] px-3 py-2 text-xs text-[var(--p-text-muted-color)]"
 >
-  Balances are your initial balance plus account transactions up to the end of the selected month.
-  The total also has any unpaid invoice due by then taken off it, so it will not match the per
-  account figures below — a card invoice is money committed but not yet drawn from one account.
+  {{ t('dashboard.balancesNote') }}
 </p>
 
 <div class="grid gap-6 lg:grid-cols-2">
   <section>
-    <h2 class="mb-2 text-lg font-medium">Spending by category</h2>
+    <h2 class="mb-2 text-lg font-medium">{{ t('dashboard.spendingByCategory') }}</h2>
     @if (hasBreakdown()) {
       <p-chart type="doughnut" [data]="chartData()" [options]="chartOptions" height="300px" />
     } @else {
       <planelyx-empty-state
         icon="pi-chart-pie"
-        title="Nothing spent this month"
-        message="Add a transaction to see the breakdown."
+        [title]="t('dashboard.noSpending')"
+        [message]="t('dashboard.noSpendingMessage')"
       />
     }
   </section>
 
   <section>
-    <h2 class="mb-2 text-lg font-medium">Account balances</h2>
+    <h2 class="mb-2 text-lg font-medium">{{ t('dashboard.accountBalances') }}</h2>
     <p-table [value]="balances()" [loading]="isLoading()" size="small">
       <ng-template #header>
         <tr>
-          <th scope="col">Account</th>
-          <th scope="col" class="text-right">Balance</th>
+          <th scope="col">{{ t('dashboard.account') }}</th>
+          <th scope="col" class="text-right">{{ t('common.balance') }}</th>
         </tr>
       </ng-template>
       <ng-template #body let-row>
@@ -94,22 +98,22 @@
           <td colspan="2">
             <planelyx-empty-state
               icon="pi-building-columns"
-              title="No accounts yet"
-              message="Add one to start tracking."
+              [title]="t('dashboard.noAccounts')"
+              [message]="t('dashboard.noAccountsMessage')"
             />
           </td>
         </tr>
       </ng-template>
     </p-table>
 
-    <h2 class="mb-2 mt-6 text-lg font-medium">Invoices due soon</h2>
+    <h2 class="mb-2 mt-6 text-lg font-medium">{{ t('dashboard.invoicesDueSoon') }}</h2>
     <p-table [value]="upcomingInvoices()" size="small">
       <ng-template #header>
         <tr>
-          <th scope="col">Card</th>
-          <th scope="col" style="width: 9rem">Due</th>
-          <th scope="col" style="width: 7rem">Status</th>
-          <th scope="col" class="text-right">Amount</th>
+          <th scope="col">{{ t('dashboard.card') }}</th>
+          <th scope="col" style="width: 9rem">{{ t('dashboard.due') }}</th>
+          <th scope="col" style="width: 7rem">{{ t('common.status') }}</th>
+          <th scope="col" class="text-right">{{ t('common.amount') }}</th>
         </tr>
       </ng-template>
       <ng-template #body let-invoice>
@@ -137,7 +141,7 @@
       <ng-template #emptymessage>
         <tr>
           <td colspan="4">
-            <planelyx-empty-state icon="pi-check-circle" title="Nothing due" />
+            <planelyx-empty-state icon="pi-check-circle" [title]="t('dashboard.nothingDue')" />
           </td>
         </tr>
       </ng-template>

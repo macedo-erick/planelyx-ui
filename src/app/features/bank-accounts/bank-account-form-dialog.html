@@ -1,39 +1,70 @@
 <p-dialog
   [visible]="visible()"
   (visibleChange)="visible.set($event)"
-  [header]="editing() ? 'Edit account' : 'New account'"
+  [header]="editing() ? t('accounts.editHeader') : t('accounts.newHeader')"
   [modal]="true"
-  [style]="{ width: '30rem' }"
+  [style]="{ width: '30rem', maxWidth: 'calc(100vw - 2rem)' }"
   [draggable]="false"
 >
   <form class="flex flex-col gap-4" novalidate (ngSubmit)="onSubmit()">
-    <planelyx-text-input [formField]="f.name" label="Account name" placeholder="Everyday" />
-    <planelyx-text-input [formField]="f.bankName" label="Bank" placeholder="Nubank" />
-    <planelyx-select [formField]="f.accountType" label="Type" [options]="typeOptions" />
-    <planelyx-money-input
-      [formField]="f.initialBalance"
-      label="Initial balance"
-      [currency]="f.currency().value() || defaultCurrency"
-      hint="The starting point. Transactions are applied on top of it."
+    <planelyx-text-input
+      [formField]="f.name"
+      [label]="t('accounts.accountName')"
+      placeholder="Everyday"
     />
+    <planelyx-text-input
+      [formField]="f.bankName"
+      [label]="t('accounts.bank')"
+      placeholder="Nubank"
+    />
+    <planelyx-select
+      [formField]="f.accountType"
+      [label]="t('common.type')"
+      [options]="typeOptions()"
+    />
+
+    <!--
+      Only on create, where the account has no transactions yet and the balance and the
+      starting figure are the same number. Once there are transactions the balance is derived
+      from them, so editing it here would silently contradict the ledger — "Adjust balance"
+      below records the difference instead.
+    -->
+    @if (!editing()) {
+      <planelyx-money-input
+        [formField]="f.initialBalance"
+        [label]="t('common.balance')"
+        [currency]="f.currency().value() || defaultCurrency"
+        [hint]="t('accounts.balanceHint')"
+      />
+    }
 
     <planelyx-text-input
       [formField]="f.currency"
-      label="Currency"
+      [label]="t('common.currency')"
       placeholder="BRL"
-      hint="Three-letter ISO code."
+      [hint]="t('accounts.currencyHint')"
     />
 
-    <div class="mt-2 flex items-center justify-between gap-2">
+    <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
       @if (editing()) {
-        <p-button
-          type="button"
-          icon="pi pi-trash"
-          severity="danger"
-          [text]="true"
-          label="Delete"
-          (onClick)="confirmDelete()"
-        />
+        <span class="flex gap-2">
+          <p-button
+            type="button"
+            icon="pi pi-trash"
+            severity="danger"
+            [text]="true"
+            [label]="t('common.delete')"
+            (onClick)="confirmDelete()"
+          />
+          <p-button
+            type="button"
+            icon="pi pi-sliders-h"
+            severity="secondary"
+            [text]="true"
+            [label]="t('accounts.adjust.action')"
+            (onClick)="openAdjust()"
+          />
+        </span>
       } @else {
         <span></span>
       }
@@ -43,11 +74,17 @@
           type="button"
           severity="secondary"
           [text]="true"
-          label="Cancel"
+          [label]="t('common.cancel')"
           (onClick)="visible.set(false)"
         />
-        <p-button type="submit" [label]="editing() ? 'Save' : 'Create'" [loading]="saving()" />
+        <p-button
+          type="submit"
+          [label]="editing() ? t('common.save') : t('common.create')"
+          [loading]="saving()"
+        />
       </span>
     </div>
   </form>
 </p-dialog>
+
+<planelyx-adjust-balance-dialog [(visible)]="adjustOpen" [account]="account()" />

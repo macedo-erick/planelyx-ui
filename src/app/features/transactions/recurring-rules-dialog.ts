@@ -2,17 +2,18 @@ import { Component, computed, inject, model } from '@angular/core';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
-import { TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 
+import { injectTranslate } from '../../core/i18n/translate';
 import { Category } from '../../shared/models/category';
 import { IsoDate, Uuid } from '../../shared/models/common';
 import { RecurrenceType } from '../../shared/models/enums';
 import { TransactionTemplate } from '../../shared/models/transaction-template';
+import { PlanelyxCard } from '../../shared/ui/card';
 import { PlanelyxCategoryBadge } from '../../shared/ui/category-badge';
 import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
-import { fromIsoDate } from '../../shared/util/date';
-import { RECURRENCE_TYPE_LABELS } from '../../shared/util/enum-labels';
+import { shortDate } from '../../shared/util/date-format';
+import { recurrenceTypeLabels } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
 import { CategoryService } from '../categories/category.service';
@@ -28,7 +29,7 @@ import { TransactionTemplateService } from './transaction-template.service';
  */
 @Component({
   selector: 'planelyx-recurring-rules-dialog',
-  imports: [Dialog, TableModule, Tag, Button, PlanelyxEmptyState, PlanelyxCategoryBadge],
+  imports: [Dialog, Tag, Button, PlanelyxCard, PlanelyxEmptyState, PlanelyxCategoryBadge],
   templateUrl: './recurring-rules-dialog.html',
 })
 export class RecurringRulesDialog {
@@ -40,10 +41,13 @@ export class RecurringRulesDialog {
 
   readonly visible = model.required<boolean>();
 
+  protected readonly t = injectTranslate();
+  private readonly recurrenceLabels = recurrenceTypeLabels();
+
   protected readonly templates = computed(() => this.service.sorted());
 
   protected recurrenceLabel(type: RecurrenceType): string {
-    return RECURRENCE_TYPE_LABELS[type];
+    return this.recurrenceLabels()[type];
   }
 
   protected category(id: Uuid): Category | undefined {
@@ -52,9 +56,11 @@ export class RecurringRulesDialog {
 
   protected sourceName(tpl: TransactionTemplate): string {
     if (tpl.creditCardId) {
-      return this.cards.byIdMap().get(tpl.creditCardId)?.name ?? 'Card';
+      return this.cards.byIdMap().get(tpl.creditCardId)?.name ?? this.t('dashboard.card');
     }
-    return this.accounts.byIdMap().get(tpl.bankAccountId ?? '')?.name ?? 'Account';
+    return (
+      this.accounts.byIdMap().get(tpl.bankAccountId ?? '')?.name ?? this.t('dashboard.account')
+    );
   }
 
   protected money(value: number): string {
@@ -62,17 +68,26 @@ export class RecurringRulesDialog {
   }
 
   protected shortDate(iso: IsoDate): string {
-    const date = fromIsoDate(iso);
-    return date ? date.toLocaleDateString(undefined, { day: '2-digit', month: 'short' }) : iso;
+    return shortDate(iso);
+  }
+
+  /** "3 / 12 generated" for a bounded rule, "3 generated" for an open-ended one. */
+  protected generatedLabel(tpl: TransactionTemplate): string {
+    return tpl.totalOccurrences
+      ? this.t('recurring.generatedOf', {
+          done: tpl.occurrencesGenerated,
+          total: tpl.totalOccurrences,
+        })
+      : this.t('recurring.generated', { done: tpl.occurrencesGenerated });
   }
 
   protected confirmDeactivate(tpl: TransactionTemplate): void {
     this.confirm.confirm({
-      header: 'Stop this rule',
-      message: `Stop generating "${tpl.description}"? Transactions already created are kept.`,
+      header: this.t('recurring.stopHeader'),
+      message: this.t('recurring.stopMessage', { description: tpl.description }),
       icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Stop', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
+      acceptButtonProps: { label: this.t('recurring.stop'), severity: 'danger' },
+      rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },
       accept: () => {
         this.service.deactivate(tpl.id).subscribe();
       },

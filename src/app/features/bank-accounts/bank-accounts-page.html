@@ -1,14 +1,14 @@
-<planelyx-page-header title="Bank accounts" subtitle="Where your money actually sits.">
-  <p-button icon="pi pi-plus" label="New account" (onClick)="openCreate()" />
+<planelyx-page-header [title]="t('accounts.title')" [subtitle]="t('accounts.subtitle')">
+  <p-button icon="pi pi-plus" [label]="t('accounts.new')" (onClick)="openCreate()" />
 </planelyx-page-header>
 
 @if (service.isLoading()) {
-  <p class="text-[var(--p-text-muted-color)]">Loading…</p>
+  <p class="text-[var(--p-text-muted-color)]">{{ t('common.loading') }}</p>
 } @else if (accounts().length === 0) {
   <planelyx-empty-state
     icon="pi-building-columns"
-    title="No accounts yet"
-    message="Add an account before recording transactions or cards."
+    [title]="t('accounts.empty')"
+    [message]="t('accounts.emptyMessage')"
   />
 } @else {
   <div class="grid gap-4 md:grid-cols-2">
@@ -23,7 +23,7 @@
         <button
           type="button"
           class="absolute inset-0 z-10 rounded-xl enabled:hover:cursor-pointer"
-          [attr.aria-label]="'Edit ' + account.name"
+          [attr.aria-label]="t('accounts.editAria', { name: account.name })"
           (click)="openEdit(account)"
         ></button>
 
@@ -38,17 +38,23 @@
           </div>
 
           <div class="flex items-center justify-between gap-2 text-sm">
-            <span class="text-[var(--p-text-muted-color)]">Type</span>
+            <span class="text-[var(--p-text-muted-color)]">{{ t('common.type') }}</span>
             <p-tag [value]="typeLabel(account.accountType)" severity="secondary" />
           </div>
 
+          <!--
+            The live balance, not the account's starting figure: initial balance plus every
+            transaction dated to the end of this month. The same number the dashboard shows.
+          -->
           <div class="flex items-baseline justify-between gap-2 text-sm">
-            <span class="text-[var(--p-text-muted-color)]">Initial balance</span>
-            <span
-              class="font-medium tabular-nums"
-              [class.text-red-500]="account.initialBalance < 0"
-            >
-              {{ money(account.initialBalance, account.currency) }}
+            <span class="text-[var(--p-text-muted-color)]">{{ t('common.balance') }}</span>
+            <span class="text-right">
+              <span class="font-medium tabular-nums" [class.text-red-500]="balance(account) < 0">
+                {{ money(balance(account), account.currency) }}
+              </span>
+              @if (asOfLabel(); as asOf) {
+                <span class="block text-xs text-[var(--p-text-muted-color)]">{{ asOf }}</span>
+              }
             </span>
           </div>
 

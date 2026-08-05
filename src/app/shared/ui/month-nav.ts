@@ -1,7 +1,9 @@
 import { Component, computed, model } from '@angular/core';
 import { Button } from 'primeng/button';
 
+import { injectTranslate } from '../../core/i18n/translate';
 import { startOfMonth } from '../util/date';
+import { monthYear } from '../util/date-format';
 
 /** `‹ Jun 2025 ›` — steps the bound date one calendar month at a time. */
 @Component({
@@ -16,7 +18,7 @@ import { startOfMonth } from '../util/date';
         severity="secondary"
         [text]="true"
         [rounded]="true"
-        ariaLabel="Previous month"
+        [ariaLabel]="t('common.previousMonth')"
         (onClick)="step(-1)"
       />
       <span class="font-semibold text-[var(--p-text-color)]" aria-live="polite">{{ label() }}</span>
@@ -25,7 +27,7 @@ import { startOfMonth } from '../util/date';
         severity="secondary"
         [text]="true"
         [rounded]="true"
-        ariaLabel="Next month"
+        [ariaLabel]="t('common.nextMonth')"
         (onClick)="step(1)"
       />
     </div>
@@ -40,9 +42,9 @@ export class PlanelyxMonthNav {
   /** Always normalised to the first of the month so equality checks stay simple. */
   readonly month = model.required<Date>();
 
-  protected readonly label = computed(() =>
-    this.month().toLocaleDateString(undefined, { month: 'short', year: 'numeric' }),
-  );
+  protected readonly t = injectTranslate();
+
+  protected readonly label = computed(() => monthYear(this.month(), 'short'));
 
   protected step(offset: number): void {
     const current = this.month();

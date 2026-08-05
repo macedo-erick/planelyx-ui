@@ -9,6 +9,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { environment } from '../../../environments/environment';
 import { TransactionFormDialog, TransactionFormModel } from './transaction-form-dialog';
+import { provideTestingTransloco } from '../../../testing/transloco';
 
 interface TransactionFormDialogInternals {
   f: FieldTree<TransactionFormModel>;
@@ -33,6 +34,7 @@ describe('TransactionFormDialog', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [provideTestingTransloco()],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),

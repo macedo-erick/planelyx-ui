@@ -53,6 +53,18 @@ export class AuthService {
       .join(''),
   );
 
+  /**
+   * Re-reads the claims after the profile has been edited elsewhere.
+   *
+   * The snapshot above is taken once, so a saved name or email would otherwise keep showing
+   * the old value in the header until the next sign-in. Forcing a token refresh is what makes
+   * Keycloak reissue the token with the updated claims.
+   */
+  async refreshClaims(): Promise<void> {
+    await this.keycloak.updateToken(-1);
+    this.claims.set((this.keycloak.tokenParsed ?? {}) as PlanelyxTokenClaims);
+  }
+
   login(redirectPath = '/'): void {
     void this.keycloak.login({ redirectUri: this.absoluteUrl(redirectPath) });
   }

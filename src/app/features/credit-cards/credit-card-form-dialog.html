@@ -1,7 +1,7 @@
 <p-dialog
   [visible]="visible()"
   (visibleChange)="visible.set($event)"
-  [header]="editing() ? 'Edit card' : 'New credit card'"
+  [header]="editing() ? t('cards.editHeader') : t('cards.newHeader')"
   [modal]="true"
   [style]="{ width: '32rem', maxWidth: 'calc(100vw - 2rem)' }"
   [draggable]="false"
@@ -9,13 +9,21 @@
   <form class="flex flex-col gap-4" novalidate (ngSubmit)="onSubmit()">
     <planelyx-select
       [formField]="f.bankAccountId"
-      label="Bank account"
+      [label]="t('cards.bankAccount')"
       [options]="accountOptions()"
-      hint="Every card is attached to an account."
+      [hint]="t('cards.bankAccountHint')"
     />
-    <planelyx-text-input [formField]="f.name" label="Card name" placeholder="Nubank Ultravioleta" />
-    <planelyx-text-input [formField]="f.brand" label="Brand" placeholder="Mastercard" />
-    <planelyx-money-input [formField]="f.creditLimit" label="Credit limit" />
+    <planelyx-text-input
+      [formField]="f.name"
+      [label]="t('cards.cardName')"
+      placeholder="Nubank Ultravioleta"
+    />
+    <planelyx-text-input
+      [formField]="f.brand"
+      [label]="t('cards.brand')"
+      placeholder="Mastercard"
+    />
+    <planelyx-money-input [formField]="f.creditLimit" [label]="t('cards.creditLimit')" />
 
     <!--
       Two day fields fit side by side on a full-width dialog and stack once the dialog is
@@ -25,17 +33,17 @@
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <planelyx-number-input
         [formField]="f.closingDay"
-        label="Closing day"
+        [label]="t('cards.closingDay')"
         [showButtons]="false"
         placeholder="1–31"
-        hint="Day the bill closes."
+        [hint]="t('cards.closingDayHint')"
       />
       <planelyx-number-input
         [formField]="f.dueDay"
-        label="Due day"
+        [label]="t('cards.dueDay')"
         [showButtons]="false"
         placeholder="1–31"
-        hint="Rolls to the next month when on or before the closing day."
+        [hint]="t('cards.dueDayHint')"
       />
     </div>
 
@@ -46,7 +54,7 @@
           icon="pi pi-trash"
           severity="danger"
           [text]="true"
-          label="Delete"
+          [label]="t('common.delete')"
           (onClick)="confirmDelete()"
         />
       } @else {
@@ -58,10 +66,14 @@
           type="button"
           severity="secondary"
           [text]="true"
-          label="Cancel"
+          [label]="t('common.cancel')"
           (onClick)="visible.set(false)"
         />
-        <p-button type="submit" [label]="editing() ? 'Save' : 'Create'" [loading]="saving()" />
+        <p-button
+          type="submit"
+          [label]="editing() ? t('common.save') : t('common.create')"
+          [loading]="saving()"
+        />
       </span>
     </div>
   </form>

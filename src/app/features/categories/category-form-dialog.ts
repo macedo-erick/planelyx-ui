@@ -15,12 +15,13 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 
+import { injectTranslate } from '../../core/i18n/translate';
 import { PlanelyxSelect } from '../../shared/controls/select';
 import { PlanelyxTextInput } from '../../shared/controls/text-input';
 import { Category, CategoryRequest } from '../../shared/models/category';
 import { CategoryType } from '../../shared/models/enums';
-import { CATEGORY_TYPE_OPTIONS } from '../../shared/util/enum-labels';
-import { CATEGORY_ICON_OPTIONS } from './category-icons';
+import { categoryTypeOptions } from '../../shared/util/enum-labels';
+import { categoryIconOptions } from './category-icons';
 import { CategoryService } from './category.service';
 import { FormsModule } from '@angular/forms';
 
@@ -50,17 +51,18 @@ export class CategoryFormDialog {
   readonly saved = output<void>();
   readonly deleted = output<Category>();
 
-  protected readonly typeOptions = CATEGORY_TYPE_OPTIONS;
-  protected readonly iconOptions = CATEGORY_ICON_OPTIONS;
+  protected readonly t = injectTranslate();
+  protected readonly typeOptions = categoryTypeOptions();
+  protected readonly iconOptions = categoryIconOptions();
   protected readonly saving = signal(false);
   protected readonly editing = computed(() => this.category() !== null);
 
   protected readonly model = signal<CategoryFormModel>({ ...EMPTY });
 
   protected readonly f = form(this.model, (path) => {
-    required(path.name, { message: 'Give the category a name.' });
-    maxLength(path.name, 255, { message: 'Keep the name under 255 characters.' });
-    required(path.type, { message: 'Pick a type.' });
+    required(path.name, { message: this.t('validation.categoryName') });
+    maxLength(path.name, 255, { message: this.t('validation.nameLength') });
+    required(path.type, { message: this.t('validation.categoryType') });
   });
 
   constructor() {
@@ -93,11 +95,11 @@ export class CategoryFormDialog {
     }
 
     this.confirm.confirm({
-      header: 'Delete category',
-      message: `Delete "${current.name}"? Transactions using it will be left without a valid category.`,
+      header: this.t('categories.deleteHeader'),
+      message: this.t('categories.deleteMessage', { name: current.name }),
       icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Delete', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
+      acceptButtonProps: { label: this.t('common.delete'), severity: 'danger' },
+      rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },
       accept: () => {
         this.service
           .remove(current.id)
@@ -136,7 +138,7 @@ export class CategoryFormDialog {
         this.saving.set(false);
         this.messages.add({
           severity: 'success',
-          summary: existing ? 'Category updated' : 'Category created',
+          summary: this.t(existing ? 'categories.updated' : 'categories.created'),
           detail: request.name,
           life: 3000,
         });

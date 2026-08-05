@@ -3,13 +3,13 @@
     class="hidden w-64 shrink-0 flex-col border-r border-[var(--p-content-border-color)] bg-[var(--p-content-background)] lg:flex"
   >
     <ng-container *ngTemplateOutlet="brand" />
-    <nav class="flex-1 overflow-y-auto p-3" aria-label="Main">
+    <nav class="flex-1 overflow-y-auto p-3" [attr.aria-label]="t('common.mainNavigation')">
       <ng-container *ngTemplateOutlet="navLinks" />
     </nav>
   </aside>
 
   <p-drawer [(visible)]="mobileNavOpen" header="Planelyx" styleClass="w-72">
-    <nav aria-label="Main">
+    <nav [attr.aria-label]="t('common.mainNavigation')">
       <ng-container *ngTemplateOutlet="navLinks" />
     </nav>
   </p-drawer>
@@ -22,7 +22,7 @@
         type="button"
         class="rounded p-2 hover:bg-[var(--p-content-hover-background)] lg:hidden"
         (click)="mobileNavOpen.set(true)"
-        aria-label="Open navigation"
+        [attr.aria-label]="t('common.openNavigation')"
       >
         <i class="pi pi-bars" aria-hidden="true"></i>
       </button>
@@ -38,7 +38,7 @@
           class="rounded p-2 hover:bg-[var(--p-content-hover-background)]"
           (click)="theme.toggle()"
           [attr.aria-pressed]="theme.isDark()"
-          [attr.aria-label]="theme.isDark() ? 'Switch to light theme' : 'Switch to dark theme'"
+          [attr.aria-label]="theme.isDark() ? t('common.switchToLight') : t('common.switchToDark')"
         >
           <i
             class="pi"
@@ -48,23 +48,75 @@
           ></i>
         </button>
 
-        <span
-          class="grid size-9 place-items-center rounded-full bg-[var(--p-primary-color)] text-sm font-semibold text-[var(--p-primary-contrast-color)]"
-          [attr.title]="auth.displayName()"
-          aria-hidden="true"
-        >
-          {{ auth.initials() }}
-        </span>
-        <span class="hidden text-sm sm:inline">{{ auth.displayName() }}</span>
-
+        <!--
+          A p-popover of plain buttons rather than a p-menu: PrimeNG 22.0.0's Menu template
+          tracks its @for by a template context variable, which Angular hoists into a
+          context-free function, so rendering any item throws
+          "ReferenceError: parentId_r3 is not defined". Same workaround as the invoices page.
+        -->
         <button
           type="button"
-          class="rounded p-2 hover:bg-[var(--p-content-hover-background)]"
-          (click)="auth.logout()"
-          aria-label="Sign out"
+          class="flex items-center gap-2 rounded p-1 hover:bg-[var(--p-content-hover-background)]"
+          (click)="userMenu.toggle($event)"
+          [attr.aria-label]="t('common.accountMenu', { name: auth.displayName() })"
         >
-          <i class="pi pi-sign-out" aria-hidden="true"></i>
+          <span
+            class="grid size-9 place-items-center rounded-full bg-[var(--p-primary-color)] text-sm font-semibold text-[var(--p-primary-contrast-color)]"
+            aria-hidden="true"
+          >
+            {{ auth.initials() }}
+          </span>
+          <span class="hidden text-sm sm:inline">{{ auth.displayName() }}</span>
+          <i class="pi pi-angle-down text-xs" aria-hidden="true"></i>
         </button>
+
+        <p-popover #userMenu>
+          <div class="flex w-56 flex-col">
+            <div class="border-b border-[var(--p-content-border-color)] px-3 pt-1 pb-2">
+              <p class="truncate text-sm font-medium">{{ auth.displayName() }}</p>
+              <p class="truncate text-xs text-[var(--p-text-muted-color)]">{{ auth.email() }}</p>
+            </div>
+
+            <p-button
+              [label]="t('common.profile')"
+              icon="pi pi-user"
+              severity="secondary"
+              [text]="true"
+              styleClass="justify-start w-full"
+              routerLink="/profile"
+              (onClick)="userMenu.hide()"
+            />
+
+            <!--
+              Each language is written in its own name rather than translated, which is the
+              one label a speaker of the other language still recognises.
+            -->
+            <div class="border-t border-[var(--p-content-border-color)] pt-1">
+              <p class="px-3 py-1 text-xs text-[var(--p-text-muted-color)]">
+                {{ t('common.language') }}
+              </p>
+              @for (option of locale.available; track option) {
+                <p-button
+                  [label]="locale.label(option)"
+                  [icon]="option === locale.locale() ? 'pi pi-check' : 'pi pi-fw'"
+                  severity="secondary"
+                  [text]="true"
+                  styleClass="justify-start w-full"
+                  (onClick)="locale.set(option)"
+                />
+              }
+            </div>
+
+            <p-button
+              [label]="t('common.signOut')"
+              icon="pi pi-sign-out"
+              severity="secondary"
+              [text]="true"
+              styleClass="justify-start w-full border-t border-[var(--p-content-border-color)]"
+              (onClick)="userMenu.hide(); auth.logout()"
+            />
+          </div>
+        </p-popover>
       </div>
     </header>
 
@@ -103,7 +155,7 @@
           (click)="mobileNavOpen.set(false)"
         >
           <i [class]="item.icon" aria-hidden="true"></i>
-          {{ item.label }}
+          {{ t(item.label) }}
         </a>
       </li>
     }

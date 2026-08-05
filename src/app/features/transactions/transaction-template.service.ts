@@ -4,7 +4,10 @@ import { Observable, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { Uuid } from '../../shared/models/common';
-import { TransactionTemplate, TransactionTemplateRequest } from '../../shared/models/transaction-template';
+import {
+  TransactionTemplate,
+  TransactionTemplateRequest,
+} from '../../shared/models/transaction-template';
 
 /**
  * Recurring rules — both "fixed" entries and installment purchases.

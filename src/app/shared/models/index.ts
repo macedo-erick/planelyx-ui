@@ -6,5 +6,6 @@ export * from './credit-card';
 export * from './dashboard';
 export * from './invoice';
 export * from './page';
+export * from './profile';
 export * from './transaction';
 export * from './transaction-template';
