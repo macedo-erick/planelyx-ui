@@ -34,7 +34,8 @@ export class LocaleService {
     effect(() => {
       const locale = this.locale();
 
-      this.transloco.setActiveLang(locale);
+      this.transloco.load(locale).subscribe(() => this.transloco.setActiveLang(locale));
+
       currentLocale.set(locale);
       document.documentElement.lang = locale;
       this.primeng.setTranslation(PRIMENG_TRANSLATIONS[locale]);

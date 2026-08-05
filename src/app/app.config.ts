@@ -1,9 +1,14 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import {
+  ApplicationConfig,
+  inject,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideRouter, TitleStrategy, withComponentInputBinding } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { provideTransloco } from '@jsverse/transloco';
+import { provideTransloco, TranslocoService } from '@jsverse/transloco';
 import { includeBearerTokenInterceptor } from 'keycloak-angular';
 import Aura from '@primeuix/themes/aura';
 
@@ -35,8 +40,6 @@ export const appConfig: ApplicationConfig = {
     provideTransloco({
       config: {
         availableLangs: [...APP_LOCALES],
-        // Already resolved from storage or the browser, so the first paint is in the right
-        // language rather than flashing the default and correcting itself.
         defaultLang: currentLocale(),
         fallbackLang: 'en-US',
         reRenderOnLangChange: true,
@@ -44,6 +47,7 @@ export const appConfig: ApplicationConfig = {
       },
       loader: TranslationLoader,
     }),
+    provideAppInitializer(() => inject(TranslocoService).load(currentLocale())),
     { provide: TitleStrategy, useClass: TranslatedTitleStrategy },
     MessageService,
     ConfirmationService,
