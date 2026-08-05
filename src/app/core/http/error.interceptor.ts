@@ -1,6 +1,7 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { MessageService } from 'primeng/api';
+import { TranslocoService } from '@jsverse/transloco';
 import { catchError, throwError } from 'rxjs';
 
 import { normalizeApiError } from './api-error';
@@ -13,6 +14,10 @@ import { normalizeApiError } from './api-error';
  */
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const messages = inject(MessageService);
+  // TranslocoService directly rather than `injectTranslate()`: this runs once per request, and
+  // that helper opens a language subscription bound to the root injector — one per request,
+  // never released. A toast is read once and never re-rendered, so it gains nothing from it.
+  const transloco = inject(TranslocoService);
 
   return next(req).pipe(
     catchError((error: unknown) => {
@@ -20,8 +25,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         const normalized = normalizeApiError(error);
         messages.add({
           severity: 'error',
-          summary: normalized.title,
-          detail: normalized.detail,
+          summary: transloco.translate(normalized.titleKey),
+          // The server's own wording when it sent any; otherwise our generic fallback.
+          detail: normalized.detailKey
+            ? transloco.translate(normalized.detailKey)
+            : normalized.detail,
           life: 6000,
         });
       }

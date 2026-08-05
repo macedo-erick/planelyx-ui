@@ -1,6 +1,8 @@
 import { Component, computed, input } from '@angular/core';
 
+import { injectTranslate } from '../../core/i18n/translate';
 import { Category } from '../models/category';
+import { defaultCategoryNames } from '../util/enum-labels';
 
 /**
  * A category rendered as its coloured icon.
@@ -42,7 +44,21 @@ export class PlanelyxCategoryBadge {
   /** `md` is the list-row circle; `sm` is the dense inline one. */
   readonly size = input<'sm' | 'md'>('sm');
 
-  protected readonly name = computed(() => this.category()?.name ?? 'Uncategorised');
+  private readonly t = injectTranslate();
+
+  /**
+   * Every category name in the app goes through this badge, which makes it the one place the
+   * seeded English names have to be translated. A category the user named themselves has no
+   * entry and comes through as typed.
+   */
+  private readonly translateName = defaultCategoryNames();
+
+  protected readonly name = computed(() => {
+    const category = this.category();
+    return category
+      ? this.translateName()(category.name)
+      : this.t('categoryDefaults.Uncategorised');
+  });
   protected readonly icon = computed(() => this.category()?.icon ?? 'pi-circle');
 
   protected readonly sizeClasses = computed(() =>

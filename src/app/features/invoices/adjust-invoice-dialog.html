@@ -1,0 +1,55 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [header]="t('invoices.adjust.header')"
+  [modal]="true"
+  [style]="{ width: '28rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [draggable]="false"
+>
+  <form class="flex flex-col gap-4" novalidate (ngSubmit)="onSubmit()">
+    <div class="flex items-baseline justify-between gap-2 text-sm">
+      <span class="text-[var(--p-text-muted-color)]">{{ t('invoices.adjust.current') }}</span>
+      <span class="font-medium tabular-nums">{{ currentLabel() }}</span>
+    </div>
+
+    <planelyx-money-input
+      [formField]="f.targetAmount"
+      [label]="t('invoices.adjust.newTotal')"
+      [hint]="t('invoices.adjust.newTotalHint')"
+    />
+
+    <!--
+      The total is the sum of the charges, so the difference has to land somewhere the owner
+      can find it. Said before the fact rather than discovered afterwards.
+    -->
+    <div
+      class="flex gap-3 rounded-md border border-[var(--p-content-border-color)] bg-[var(--p-content-hover-background)] p-3 text-sm"
+    >
+      <i class="pi pi-info-circle mt-0.5 shrink-0" aria-hidden="true"></i>
+      <p class="text-[var(--p-text-muted-color)]">
+        {{ t('invoices.adjust.notice') }}
+        @if (!unchanged()) {
+          <span class="mt-1 block font-medium tabular-nums text-[var(--p-text-color)]">
+            {{ deltaLabel() }}
+          </span>
+        }
+      </p>
+    </div>
+
+    <div class="mt-2 flex items-center justify-end gap-2">
+      <p-button
+        type="button"
+        severity="secondary"
+        [text]="true"
+        [label]="t('common.cancel')"
+        (onClick)="visible.set(false)"
+      />
+      <p-button
+        type="submit"
+        [label]="t('common.adjust')"
+        [loading]="saving()"
+        [disabled]="unchanged()"
+      />
+    </div>
+  </form>
+</p-dialog>

@@ -25,6 +25,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 
+import { injectTranslate } from '../../core/i18n/translate';
 import { PlanelyxDatePicker } from '../../shared/controls/date-picker';
 import { PlanelyxMoneyInput } from '../../shared/controls/money-input';
 import { PlanelyxNumberInput } from '../../shared/controls/number-input';
@@ -41,8 +42,8 @@ import { TransactionTemplateRequest } from '../../shared/models/transaction-temp
 import { todayIso } from '../../shared/util/date';
 import {
   SelectOption,
-  TRANSACTION_KIND_LABELS,
-  TRANSACTION_KIND_OPTIONS,
+  transactionKindLabels,
+  transactionKindOptions,
 } from '../../shared/util/enum-labels';
 import { formatMoney, splitInstallments } from '../../shared/util/money';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
@@ -57,11 +58,12 @@ import { InvoiceService } from '../invoices/invoice.service';
 /** `NONE` posts a plain transaction; anything else posts a recurring template. */
 type Repeat = 'NONE' | RecurrenceType;
 
-const REPEAT_OPTIONS: SelectOption<Repeat>[] = [
-  { label: 'Does not repeat', value: 'NONE' },
-  { label: 'Every month, no end date', value: 'FIXED_INDEFINITE' },
-  { label: 'Every month, set number of times', value: 'FIXED_COUNT' },
-  { label: 'Split into installments', value: 'INSTALLMENT' },
+/** Keys, resolved per language where the options are built. */
+const REPEAT_OPTIONS: readonly { readonly key: string; readonly value: Repeat }[] = [
+  { key: 'transactions.repeatNone', value: 'NONE' },
+  { key: 'transactions.repeatIndefinite', value: 'FIXED_INDEFINITE' },
+  { key: 'transactions.repeatCount', value: 'FIXED_COUNT' },
+  { key: 'transactions.repeatInstallment', value: 'INSTALLMENT' },
 ];
 
 export interface TransactionFormModel {
@@ -125,8 +127,12 @@ export class TransactionFormDialog {
   readonly saved = output<void>();
   readonly deleted = output<Transaction>();
 
-  protected readonly kindOptions = TRANSACTION_KIND_OPTIONS;
-  protected readonly repeatOptions = REPEAT_OPTIONS;
+  protected readonly t = injectTranslate();
+  private readonly kindLabels = transactionKindLabels();
+  protected readonly kindOptions = transactionKindOptions();
+  protected readonly repeatOptions = computed<SelectOption<Repeat>[]>(() =>
+    REPEAT_OPTIONS.map(({ key, value }) => ({ label: this.t(key), value })),
+  );
   protected readonly accountOptions = computed(() => this.accounts.options());
   protected readonly cardOptions = computed(() => this.cards.options());
   protected readonly saving = signal(false);
@@ -151,30 +157,30 @@ export class TransactionFormDialog {
     hidden(path.bankAccountId, { when: ({ valueOf }) => valueOf(path.kind) === 'CARD_CHARGE' });
     hidden(path.creditCardId, { when: ({ valueOf }) => valueOf(path.kind) !== 'CARD_CHARGE' });
 
-    required(path.bankAccountId, { message: 'Pick the account.' });
-    required(path.creditCardId, { message: 'Pick the card.' });
+    required(path.bankAccountId, { message: this.t('validation.transactionAccount') });
+    required(path.creditCardId, { message: this.t('validation.transactionCard') });
 
-    required(path.categoryId, { message: 'Every transaction needs a category.' });
-    min(path.amount, 0.01, { message: 'Amount must be greater than zero.' });
-    required(path.transactionDate, { message: 'Pick a date.' });
-    required(path.description, { message: 'Add a short description.' });
+    required(path.categoryId, { message: this.t('validation.transactionCategory') });
+    min(path.amount, 0.01, { message: this.t('validation.amountPositive') });
+    required(path.transactionDate, { message: this.t('validation.dateRequired') });
+    required(path.description, { message: this.t('validation.descriptionRequired') });
     maxLength(path.description, 255);
 
     hidden(path.totalOccurrences, {
       when: ({ valueOf }) =>
         valueOf(path.repeats) === 'NONE' || valueOf(path.repeats) === 'FIXED_INDEFINITE',
     });
-    required(path.totalOccurrences, { message: 'How many times?' });
+    required(path.totalOccurrences, { message: this.t('validation.occurrenceCount') });
 
     applyWhen(
       path,
       ({ valueOf }) => valueOf(path.repeats) === 'FIXED_COUNT',
-      (p) => min(p.totalOccurrences, 1, { message: 'At least 1.' }),
+      (p) => min(p.totalOccurrences, 1, { message: this.t('validation.occurrenceMin') }),
     );
     applyWhen(
       path,
       ({ valueOf }) => valueOf(path.repeats) === 'INSTALLMENT',
-      (p) => min(p.totalOccurrences, 2, { message: 'Installments need at least 2.' }),
+      (p) => min(p.totalOccurrences, 2, { message: this.t('validation.installmentMin') }),
     );
   });
 
@@ -182,20 +188,26 @@ export class TransactionFormDialog {
   protected readonly isInstallment = computed(() => this.f.repeats().value() === 'INSTALLMENT');
 
   protected readonly amountLabel = computed(() =>
-    this.isInstallment() ? 'Total amount' : 'Amount',
+    this.t(this.isInstallment() ? 'transactions.totalAmount' : 'common.amount'),
   );
 
   protected readonly amountHint = computed(() => {
     if (this.isInstallment()) {
-      return 'The full purchase price. It is split across the installments.';
+      return this.t('transactions.installmentAmountHint');
     }
-    return this.isRecurring() ? 'Charged every month.' : '';
+    return this.isRecurring() ? this.t('transactions.recurringAmountHint') : '';
   });
 
-  protected readonly dateLabel = computed(() => (this.isRecurring() ? 'Starts on' : 'Date'));
+  protected readonly dateLabel = computed(() =>
+    this.t(this.isRecurring() ? 'transactions.startsOn' : 'common.date'),
+  );
 
   protected readonly occurrencesLabel = computed(() =>
-    this.isInstallment() ? 'Number of installments' : 'Number of times',
+    this.t(
+      this.isInstallment()
+        ? 'transactions.occurrencesInstallments'
+        : 'transactions.occurrencesTimes',
+    ),
   );
 
   /**
@@ -228,7 +240,7 @@ export class TransactionFormDialog {
 
     const source = list.length > 0 ? list : this.categories.sorted();
     return source.map((category) => ({
-      label: category.name,
+      label: this.categories.displayName(category),
       value: category.id,
       icon: category.icon ?? undefined,
     }));
@@ -279,7 +291,7 @@ export class TransactionFormDialog {
   }
 
   protected kindLabel(kind: TransactionKind): string {
-    return TRANSACTION_KIND_LABELS[kind];
+    return this.kindLabels()[kind];
   }
 
   /**
@@ -302,11 +314,11 @@ export class TransactionFormDialog {
     }
 
     this.confirm.confirm({
-      header: 'Delete transaction',
-      message: `Delete "${current.description}"? If it is a card charge, the invoice total will be recalculated.`,
+      header: this.t('transactions.deleteHeader'),
+      message: this.t('transactions.deleteMessage', { description: current.description }),
       icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Delete', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
+      acceptButtonProps: { label: this.t('common.delete'), severity: 'danger' },
+      rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },
       accept: () => this.performDelete('SINGLE'),
     });
   }
@@ -402,13 +414,9 @@ export class TransactionFormDialog {
         this.messages.add({
           severity: 'success',
           summary: existing
-            ? 'Transaction updated'
-            : recurring
-              ? 'Recurring rule created'
-              : 'Transaction created',
-          detail: recurring
-            ? 'The transactions it generates are now in your list.'
-            : value.description,
+            ? this.t('transactions.updated')
+            : this.t(recurring ? 'transactions.ruleCreated' : 'transactions.created'),
+          detail: recurring ? this.t('transactions.ruleCreatedDetail') : value.description,
           life: recurring ? 4000 : 3000,
         });
         this.visible.set(false);

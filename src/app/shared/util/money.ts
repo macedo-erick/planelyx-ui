@@ -1,5 +1,6 @@
 import { environment } from '../../../environments/environment';
 import { Money } from '../models/common';
+import { currentLocale } from './locale';
 
 /**
  * Money arrives as a JSON number with two decimal places. Repeated float addition can
@@ -19,8 +20,12 @@ export function sumMoney(values: Iterable<Money>): Money {
   return roundCents(total);
 }
 
+/**
+ * Reads `currentLocale()`, so every amount on screen reformats when the language changes —
+ * templates calling this through a component method re-run as a matter of course.
+ */
 export function formatMoney(value: Money, currency = environment.defaultCurrency): string {
-  return new Intl.NumberFormat(environment.defaultLocale, {
+  return new Intl.NumberFormat(currentLocale(), {
     style: 'currency',
     currency,
   }).format(value);

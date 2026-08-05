@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { toIsoDate } from '../util/date';
 import { PlanelyxDatePicker } from './date-picker';
+import { provideTestingTransloco } from '../../../testing/transloco';
 
 @Component({
   imports: [FormField, PlanelyxDatePicker],
@@ -20,7 +21,10 @@ class Host {
 
 describe('PlanelyxDatePicker', () => {
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [providePrimeNG({})] });
+    TestBed.configureTestingModule({
+      imports: [provideTestingTransloco()],
+      providers: [providePrimeNG({})],
+    });
   });
 
   it('binds the field value through [formField]', () => {

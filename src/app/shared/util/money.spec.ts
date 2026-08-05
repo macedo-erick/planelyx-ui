@@ -1,8 +1,38 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
-import { roundCents, splitInstallments, sumMoney } from './money';
+import { currentLocale } from './locale';
+import { formatMoney, roundCents, splitInstallments, sumMoney } from './money';
 
 describe('money utils', () => {
+  /**
+   * The one thing tying money to the language switch: `formatMoney` reads `currentLocale`, so
+   * a template calling it re-renders when the language changes. Refactoring that back to a
+   * constant would silently leave every amount in the old locale.
+   */
+  describe('formatMoney', () => {
+    const original = currentLocale();
+
+    afterEach(() => currentLocale.set(original));
+
+    it('follows the active locale', () => {
+      currentLocale.set('pt-BR');
+      const brazilian = formatMoney(1234.56, 'BRL');
+
+      currentLocale.set('en-US');
+      const american = formatMoney(1234.56, 'USD');
+
+      // Non-breaking spaces vary by runtime, so the separators are what is asserted.
+      expect(brazilian).toContain('1.234,56');
+      expect(american).toContain('1,234.56');
+    });
+
+    it('formats the currency it is given, not the locale default', () => {
+      currentLocale.set('pt-BR');
+
+      expect(formatMoney(10, 'USD')).toContain('US$');
+    });
+  });
+
   describe('roundCents', () => {
     it('corrects float representation error', () => {
       expect(roundCents(0.1 + 0.2)).toBe(0.3);

@@ -2,54 +2,74 @@
   <p-button
     routerLink="/invoices"
     icon="pi pi-arrow-left"
-    label="All invoices"
+    [label]="t('invoices.allInvoices')"
     severity="secondary"
     [text]="true"
   />
   @if (invoice(); as inv) {
     @if (inv.status === 'PAID') {
-      <p-button label="Unpay" severity="secondary" (onClick)="confirmUnpay(inv)" />
+      <p-button [label]="t('invoices.unpay')" severity="secondary" (onClick)="confirmUnpay(inv)" />
     } @else {
-      <p-button label="Mark paid" [disabled]="inv.totalAmount === 0" (onClick)="confirmPay(inv)" />
+      <!-- Absent once paid: the charges have been settled, so the total is history. -->
+      <p-button
+        icon="pi pi-sliders-h"
+        [label]="t('invoices.adjust.action')"
+        severity="secondary"
+        [text]="true"
+        (onClick)="adjustOpen.set(true)"
+      />
+      <p-button
+        [label]="t('invoices.markPaid')"
+        [disabled]="inv.totalAmount === 0"
+        (onClick)="confirmPay(inv)"
+      />
     }
   }
 </planelyx-page-header>
 
+<planelyx-adjust-invoice-dialog
+  [(visible)]="adjustOpen"
+  [invoice]="invoice()"
+  (adjusted)="onAdjusted()"
+/>
+
 @if (resource.isLoading()) {
-  <p class="text-[var(--p-text-muted-color)]">Loading…</p>
+  <p class="text-[var(--p-text-muted-color)]">{{ t('common.loading') }}</p>
 } @else if (invoice(); as inv) {
   <div class="mb-5 grid gap-4 sm:grid-cols-3">
     <planelyx-card [padded]="true">
       <div>
-        <div class="text-xs text-[var(--p-text-muted-color)]">Total</div>
+        <div class="text-xs text-[var(--p-text-muted-color)]">{{ t('common.total') }}</div>
         <div class="text-2xl font-semibold tabular-nums">{{ money(inv.totalAmount) }}</div>
       </div>
     </planelyx-card>
     <planelyx-card [padded]="true">
       <div>
-        <div class="text-xs text-[var(--p-text-muted-color)]">Due date</div>
+        <div class="text-xs text-[var(--p-text-muted-color)]">{{ t('invoices.dueDate') }}</div>
         <div class="text-2xl font-semibold tabular-nums">{{ longDate(inv.dueDate) }}</div>
       </div>
     </planelyx-card>
     <planelyx-card [padded]="true">
       <div>
-        <div class="mb-1 text-xs text-[var(--p-text-muted-color)]">Status</div>
+        <div class="mb-1 text-xs text-[var(--p-text-muted-color)]">{{ t('common.status') }}</div>
         <p-tag [value]="statusLabel(inv.status)" [severity]="statusSeverity(inv.status)" />
         @if (inv.paidAt) {
           <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
-            Paid {{ instant(inv.paidAt) }}
+            {{ t('invoices.paidAt', { when: instant(inv.paidAt) }) }}
           </div>
         }
       </div>
     </planelyx-card>
   </div>
 
-  <h2 class="mb-2 text-lg font-medium">Charges</h2>
+  <h2 class="mb-2 text-lg font-medium">{{ t('invoices.charges') }}</h2>
   <planelyx-card>
     @if (chargesResource.isLoading()) {
-      <p class="px-4 py-12 text-center text-[var(--p-text-muted-color)]">Loading charges…</p>
+      <p class="px-4 py-12 text-center text-[var(--p-text-muted-color)]">
+        {{ t('common.loadingCharges') }}
+      </p>
     } @else if (charges().length === 0) {
-      <planelyx-empty-state icon="pi-receipt" title="No charges on this invoice" />
+      <planelyx-empty-state icon="pi-receipt" [title]="t('invoices.noCharges')" />
     } @else {
       @for (tx of charges(); track tx.id) {
         <planelyx-transaction-row
@@ -74,7 +94,7 @@
 } @else {
   <planelyx-empty-state
     icon="pi-exclamation-circle"
-    title="Invoice not found"
-    message="It may have been removed."
+    [title]="t('invoices.notFound')"
+    [message]="t('invoices.notFoundMessage')"
   />
 }

@@ -1,0 +1,58 @@
+<planelyx-page-header [title]="t('profile.title')" [subtitle]="t('profile.subtitle')" />
+
+@if (service.isLoading()) {
+  <p class="text-[var(--p-text-muted-color)]">{{ t('common.loading') }}</p>
+} @else {
+  <div class="grid gap-4 lg:grid-cols-2">
+    <planelyx-card [padded]="true">
+      <form class="flex flex-col gap-4" novalidate (ngSubmit)="onSubmit()">
+        <planelyx-text-input
+          [formField]="f.firstName"
+          [label]="t('profile.firstName')"
+          placeholder="Erick"
+        />
+        <planelyx-text-input
+          [formField]="f.lastName"
+          [label]="t('profile.lastName')"
+          placeholder="Macedo"
+        />
+        <planelyx-text-input
+          [formField]="f.email"
+          [label]="t('profile.email')"
+          type="email"
+          placeholder="you@example.com"
+          [hint]="t('profile.emailHint')"
+        />
+
+        <!--
+          Shown rather than edited: the realm does not enable editUsername, so Keycloak would
+          reject a change. Saying why beats a field that fails on save.
+        -->
+        <planelyx-text-input
+          [value]="service.profile()?.username ?? ''"
+          [label]="t('profile.username')"
+          [disabled]="true"
+          [hint]="t('profile.usernameHint')"
+        />
+
+        <div class="mt-2 flex justify-end">
+          <p-button type="submit" [label]="t('common.save')" [loading]="saving()" />
+        </div>
+      </form>
+    </planelyx-card>
+
+    <planelyx-card [padded]="true">
+      <h2 class="text-lg font-medium text-[var(--p-text-color)]">{{ t('profile.password') }}</h2>
+      <p class="mt-1 mb-4 text-sm text-[var(--p-text-muted-color)]">
+        {{ t('profile.passwordMessage') }}
+      </p>
+      <p-button
+        type="button"
+        icon="pi pi-key"
+        [label]="t('profile.changePassword')"
+        severity="secondary"
+        (onClick)="openPasswordChange()"
+      />
+    </planelyx-card>
+  </div>
+}

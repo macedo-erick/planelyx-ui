@@ -1,8 +1,10 @@
 import { Component, computed, input, output } from '@angular/core';
 
+import { injectTranslate } from '../../core/i18n/translate';
 import { Category } from '../models/category';
 import { Transaction } from '../models/transaction';
-import { fromIsoDate } from '../util/date';
+import { longDate } from '../util/date-format';
+import { defaultCategoryNames } from '../util/enum-labels';
 import { formatMoney } from '../util/money';
 import { PlanelyxCategoryBadge } from './category-badge';
 
@@ -40,7 +42,15 @@ export class PlanelyxTransactionRow {
   /** Named `edit` rather than `select` — `select` is a native DOM event. */
   readonly edit = output<Transaction>();
 
-  protected readonly categoryName = computed(() => this.category()?.name ?? 'Uncategorised');
+  protected readonly t = injectTranslate();
+  private readonly translateCategory = defaultCategoryNames();
+
+  protected readonly categoryName = computed(() => {
+    const category = this.category();
+    return category
+      ? this.translateCategory()(category.name)
+      : this.t('categoryDefaults.Uncategorised');
+  });
 
   /** "2/6" for an installment, nothing otherwise. */
   protected readonly installment = computed(() => {
@@ -57,11 +67,5 @@ export class PlanelyxTransactionRow {
     this.transaction().kind === 'ACCOUNT_CREDIT' ? 'text-green-600' : 'text-red-500',
   );
 
-  protected readonly date = computed(() => {
-    const iso = this.transaction().transactionDate;
-    const date = fromIsoDate(iso);
-    return date
-      ? date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })
-      : iso;
-  });
+  protected readonly date = computed(() => longDate(this.transaction().transactionDate));
 }

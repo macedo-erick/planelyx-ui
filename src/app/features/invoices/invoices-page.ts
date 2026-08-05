@@ -9,6 +9,7 @@ import { Select } from 'primeng/select';
 import { Tag } from 'primeng/tag';
 
 import { environment } from '../../../environments/environment';
+import { injectTranslate } from '../../core/i18n/translate';
 import { Category } from '../../shared/models/category';
 import { IsoDate, Uuid } from '../../shared/models/common';
 import { InvoiceStatus } from '../../shared/models/enums';
@@ -21,7 +22,8 @@ import { PlanelyxMonthNav } from '../../shared/ui/month-nav';
 import { PlanelyxPageHeader } from '../../shared/ui/page-header';
 import { PlanelyxTransactionRow } from '../../shared/ui/transaction-row';
 import { daysUntil, fromIsoDate, startOfMonth, todayIso } from '../../shared/util/date';
-import { INVOICE_STATUS_LABELS, INVOICE_STATUS_SEVERITY } from '../../shared/util/enum-labels';
+import { shortDate } from '../../shared/util/date-format';
+import { INVOICE_STATUS_SEVERITY, invoiceStatusLabels } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
 import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
@@ -29,6 +31,7 @@ import {
   TransactionFormDialog,
   TransactionFormModel,
 } from '../transactions/transaction-form-dialog';
+import { AdjustInvoiceDialog } from './adjust-invoice-dialog';
 import { InvoiceService } from './invoice.service';
 
 /**
@@ -54,6 +57,7 @@ import { InvoiceService } from './invoice.service';
     PlanelyxPageHeader,
     PlanelyxTransactionRow,
     TransactionFormDialog,
+    AdjustInvoiceDialog,
   ],
   templateUrl: './invoices-page.html',
 })
@@ -63,12 +67,16 @@ export class InvoicesPage {
   private readonly categories = inject(CategoryService);
   private readonly confirm = inject(ConfirmationService);
 
+  protected readonly t = injectTranslate();
+  private readonly statusLabels = invoiceStatusLabels();
+
   protected readonly cardOptions = computed(() => this.cards.options());
 
   protected readonly selectedCardId = signal<Uuid | null>(null);
   protected readonly month = signal(startOfMonth(new Date()));
 
   protected dialogOpen = signal(false);
+  protected readonly adjustOpen = signal(false);
   protected readonly selected = signal<Transaction | null>(null);
   protected readonly prefill = signal<Partial<TransactionFormModel> | null>(null);
 
@@ -154,7 +162,7 @@ export class InvoicesPage {
   }
 
   protected cardName(id: Uuid): string {
-    return this.cards.byIdMap().get(id)?.name ?? 'Card';
+    return this.cards.byIdMap().get(id)?.name ?? this.t('dashboard.card');
   }
 
   protected category(id: Uuid): Category | undefined {
@@ -162,7 +170,7 @@ export class InvoicesPage {
   }
 
   protected statusLabel(status: InvoiceStatus): string {
-    return INVOICE_STATUS_LABELS[status];
+    return this.statusLabels()[status];
   }
 
   protected statusSeverity(status: InvoiceStatus): 'success' | 'warn' | 'info' {
@@ -174,8 +182,7 @@ export class InvoicesPage {
   }
 
   protected shortDate(iso: IsoDate): string {
-    const date = fromIsoDate(iso);
-    return date ? date.toLocaleDateString(undefined, { day: '2-digit', month: 'short' }) : iso;
+    return shortDate(iso);
   }
 
   protected dueHint(invoice: Invoice): { text: string; overdue: boolean } | null {
@@ -187,12 +194,12 @@ export class InvoicesPage {
       return null;
     }
     if (days < 0) {
-      return { text: `${Math.abs(days)} days overdue`, overdue: true };
+      return { text: this.t('invoices.overdue', { days: Math.abs(days) }), overdue: true };
     }
     if (days === 0) {
-      return { text: 'Due today', overdue: true };
+      return { text: this.t('invoices.dueToday'), overdue: true };
     }
-    return days <= 7 ? { text: `in ${days} days`, overdue: false } : null;
+    return days <= 7 ? { text: this.t('invoices.dueInDays', { days }), overdue: false } : null;
   }
 
   protected openEdit(tx: Transaction): void {
@@ -229,11 +236,11 @@ export class InvoicesPage {
 
   protected confirmPay(invoice: Invoice): void {
     this.confirm.confirm({
-      header: 'Mark invoice as paid',
-      message: `Mark the ${this.cardName(invoice.creditCardId)} invoice of ${formatMoney(invoice.totalAmount)} as paid?`,
+      header: this.t('invoices.payHeader'),
+      message: this.t('invoices.payMessage', { amount: formatMoney(invoice.totalAmount) }),
       icon: 'pi pi-check-circle',
-      acceptButtonProps: { label: 'Mark paid' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
+      acceptButtonProps: { label: this.t('invoices.markPaid') },
+      rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },
       accept: () => {
         this.service.pay(invoice.id).subscribe(() => this.cards.reload());
       },
@@ -242,11 +249,11 @@ export class InvoicesPage {
 
   protected confirmUnpay(invoice: Invoice): void {
     this.confirm.confirm({
-      header: 'Undo payment',
-      message: 'Reopen this invoice? Its status goes back to open and the paid date is cleared.',
+      header: this.t('invoices.unpayHeader'),
+      message: this.t('invoices.unpayMessage'),
       icon: 'pi pi-undo',
-      acceptButtonProps: { label: 'Reopen', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', text: true },
+      acceptButtonProps: { label: this.t('invoices.reopen'), severity: 'danger' },
+      rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },
       accept: () => {
         this.service.unpay(invoice.id).subscribe(() => this.cards.reload());
       },

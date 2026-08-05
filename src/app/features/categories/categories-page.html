@@ -1,14 +1,14 @@
-<planelyx-page-header title="Categories" subtitle="Every transaction needs one.">
-  <p-button icon="pi pi-plus" label="New category" (onClick)="openCreate()" />
+<planelyx-page-header [title]="t('categories.title')" [subtitle]="t('categories.subtitle')">
+  <p-button icon="pi pi-plus" [label]="t('categories.new')" (onClick)="openCreate()" />
 </planelyx-page-header>
 
 @if (service.isLoading()) {
-  <p class="text-[var(--p-text-muted-color)]">Loading…</p>
+  <p class="text-[var(--p-text-muted-color)]">{{ t('common.loading') }}</p>
 } @else if (categories().length === 0) {
   <planelyx-empty-state
     icon="pi-tags"
-    title="No categories yet"
-    message="Create one before adding transactions."
+    [title]="t('categories.empty')"
+    [message]="t('categories.emptyMessage')"
   />
 } @else {
   <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -21,7 +21,7 @@
         <button
           type="button"
           class="absolute inset-0 z-10 rounded-xl enabled:hover:cursor-pointer"
-          [attr.aria-label]="'Edit ' + category.name"
+          [attr.aria-label]="t('categories.editAria', { name: category.name })"
           (click)="openEdit(category)"
         ></button>
 

@@ -1,15 +1,15 @@
 import { HttpClient, httpResource } from '@angular/common/http';
-import { Service, computed, inject, signal } from '@angular/core';
+import { computed, inject, Service, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { Uuid } from '../../shared/models/common';
+import { Money, Uuid } from '../../shared/models/common';
 import { Invoice, InvoiceFilters } from '../../shared/models/invoice';
 import { toHttpParams } from '../../shared/util/http-params';
 
 /**
  * Invoices are system-generated when a card charge is posted — there is no create,
- * update or delete. The only mutations are pay and unpay.
+ * update or delete. The only mutations are pay, unpay, and adjusting the total.
  */
 @Service()
 export class InvoiceService {
@@ -40,6 +40,18 @@ export class InvoiceService {
   pay(id: Uuid): Observable<Invoice> {
     return this.http
       .post<Invoice>(`${this.baseUrl}/${id}/pay`, null)
+      .pipe(tap(() => this.resource.reload()));
+  }
+
+  /**
+   * Sets the invoice total to `targetAmount`.
+   *
+   * The total is the sum of the invoice's charges, so the server records the difference as a
+   * charge of its own rather than overwriting the figure. Refused once the invoice is paid.
+   */
+  adjust(id: Uuid, targetAmount: Money): Observable<Invoice> {
+    return this.http
+      .post<Invoice>(`${this.baseUrl}/${id}/adjust`, { targetAmount })
       .pipe(tap(() => this.resource.reload()));
   }
 
