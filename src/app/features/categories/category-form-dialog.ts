@@ -20,7 +20,7 @@ import { PlanelyxSelect } from '../../shared/controls/select';
 import { PlanelyxTextInput } from '../../shared/controls/text-input';
 import { Category, CategoryRequest } from '../../shared/models/category';
 import { CategoryType } from '../../shared/models/enums';
-import { categoryTypeOptions } from '../../shared/util/enum-labels';
+import { categoryTypeOptions, SelectOption } from '../../shared/util/enum-labels';
 import { categoryIconOptions } from './category-icons';
 import { CategoryService } from './category.service';
 import { FormsModule } from '@angular/forms';
@@ -53,7 +53,24 @@ export class CategoryFormDialog {
 
   protected readonly t = injectTranslate();
   protected readonly typeOptions = categoryTypeOptions();
-  protected readonly iconOptions = categoryIconOptions();
+  private readonly curatedIcons = categoryIconOptions();
+
+  /**
+   * The curated icons, plus the one the category already carries when that is not among them.
+   *
+   * PrimeNG matches the value against the options: with no entry for it the field renders empty,
+   * which reads as "no icon" — and a save from there writes the icon away. Keeping it listed
+   * means an icon set outside the picker survives an edit that never touched it.
+   */
+  protected readonly iconOptions = computed<SelectOption<string>[]>(() => {
+    const options = this.curatedIcons();
+    const current = this.category()?.icon;
+
+    if (!current || options.some((option) => option.value === current)) {
+      return options;
+    }
+    return [...options, { label: this.t('categories.currentIcon'), value: current, icon: current }];
+  });
   protected readonly saving = signal(false);
   protected readonly editing = computed(() => this.category() !== null);
 
