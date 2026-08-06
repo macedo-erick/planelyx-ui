@@ -51,7 +51,7 @@ class AllControlsHost {
     name: '',
     notes: '',
     day: null as number | null,
-    amount: 0,
+    amount: null as number | null,
     date: null as string | null,
     accountType: null as AccountType | null,
     enabled: false,
@@ -98,6 +98,23 @@ describe('planelyx control wrappers', () => {
     expect(host.model().name).toBe('Groceries');
     expect(host.model().amount).toBe(42.5);
     expect(host.model().enabled).toBe(true);
+  });
+
+  it('leaves a cleared money input empty instead of resetting it to zero', () => {
+    const fixture = TestBed.createComponent(AllControlsHost);
+    fixture.detectChanges();
+
+    const host = fixture.componentInstance;
+    const money = fixture.debugElement.children[3].componentInstance as PlanelyxMoneyInput;
+
+    expect(host.model().amount).toBeNull();
+
+    money.value.set(42.5);
+    fixture.detectChanges();
+    money.value.set(null);
+    fixture.detectChanges();
+
+    expect(host.model().amount).toBeNull();
   });
 
   it('pushes validation state from the schema down into each control', () => {

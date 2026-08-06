@@ -31,7 +31,7 @@ import { PlanelyxMoneyInput } from '../../shared/controls/money-input';
 import { PlanelyxNumberInput } from '../../shared/controls/number-input';
 import { PlanelyxSelect } from '../../shared/controls/select';
 import { PlanelyxTextInput } from '../../shared/controls/text-input';
-import { IsoDate, Uuid } from '../../shared/models/common';
+import { IsoDate, Money, Uuid } from '../../shared/models/common';
 import { RecurrenceType, TransactionKind, TransactionScope } from '../../shared/models/enums';
 import {
   Transaction,
@@ -71,7 +71,8 @@ export interface TransactionFormModel {
   bankAccountId: Uuid | null;
   creditCardId: Uuid | null;
   categoryId: Uuid | null;
-  amount: number;
+  /** Null until the user types one — the field opens empty rather than at `R$ 0,00`. */
+  amount: number | null;
   transactionDate: IsoDate | null;
   description: string;
   repeats: Repeat;
@@ -83,7 +84,7 @@ const empty = (): TransactionFormModel => ({
   bankAccountId: null,
   creditCardId: null,
   categoryId: null,
-  amount: 0,
+  amount: null,
   transactionDate: todayIso(),
   description: '',
   repeats: 'NONE',
@@ -161,6 +162,8 @@ export class TransactionFormDialog {
     required(path.creditCardId, { message: this.t('validation.transactionCard') });
 
     required(path.categoryId, { message: this.t('validation.transactionCategory') });
+    // `min` alone lets an empty field through, now that the amount starts out null.
+    required(path.amount, { message: this.t('validation.amountPositive') });
     min(path.amount, 0.01, { message: this.t('validation.amountPositive') });
     required(path.transactionDate, { message: this.t('validation.dateRequired') });
     required(path.description, { message: this.t('validation.descriptionRequired') });
@@ -223,7 +226,7 @@ export class TransactionFormDialog {
     }
     const count = this.f.totalOccurrences().value() ?? 0;
     const total = this.f.amount().value();
-    if (count < 2 || total <= 0) {
+    if (count < 2 || total === null || total <= 0) {
       return '';
     }
     const parts = splitInstallments(total, count);
@@ -370,11 +373,13 @@ export class TransactionFormDialog {
     const value = this.model();
     const existing = this.transaction();
     const recurring = value.repeats !== 'NONE';
+    // Nothing reaches here without a valid form, so the nullable fields are settled by now.
+    const amount = value.amount as Money;
 
     const call: Observable<unknown> = existing
       ? this.service.update(existing.id, {
           categoryId: value.categoryId as Uuid,
-          amount: value.amount,
+          amount,
           transactionDate: value.transactionDate as IsoDate,
           description: value.description.trim(),
           scope,
@@ -386,7 +391,7 @@ export class TransactionFormDialog {
             creditCardId: value.kind === 'CARD_CHARGE' ? value.creditCardId : null,
             categoryId: value.categoryId as Uuid,
             description: value.description.trim(),
-            totalAmount: value.amount,
+            totalAmount: amount,
             recurrenceType: value.repeats as RecurrenceType,
             startDate: value.transactionDate as IsoDate,
 
@@ -398,7 +403,7 @@ export class TransactionFormDialog {
             bankAccountId: value.kind === 'CARD_CHARGE' ? null : value.bankAccountId,
             creditCardId: value.kind === 'CARD_CHARGE' ? value.creditCardId : null,
             categoryId: value.categoryId as Uuid,
-            amount: value.amount,
+            amount,
             transactionDate: value.transactionDate as IsoDate,
             description: value.description.trim(),
           } satisfies TransactionRequest);
