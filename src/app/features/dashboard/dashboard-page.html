@@ -119,7 +119,16 @@
       <ng-template #body let-invoice>
         <tr>
           <td>
-            <a [routerLink]="['/invoices', invoice.id]" class="font-medium hover:underline">
+            <!--
+              Goes to the invoices screen already showing this invoice, rather than to a detail
+              page of its own — the two had drifted into disagreeing about which month an
+              invoice belonged to.
+            -->
+            <a
+              routerLink="/invoices"
+              [queryParams]="{ cardId: invoice.creditCardId, month: invoice.referenceMonth }"
+              class="font-medium hover:underline"
+            >
               {{ cardName(invoice.creditCardId) }}
             </a>
           </td>

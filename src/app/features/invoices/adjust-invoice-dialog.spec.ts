@@ -24,6 +24,7 @@ const INVOICE_ID = '44444444-4444-4444-4444-444444444444';
 const INVOICE: Invoice = {
   id: INVOICE_ID,
   creditCardId: '22222222-2222-2222-2222-222222222222',
+  referenceMonth: '2026-08',
   billingPeriodStart: '2026-07-11',
   billingPeriodEnd: '2026-08-10',
   dueDate: '2026-08-17',

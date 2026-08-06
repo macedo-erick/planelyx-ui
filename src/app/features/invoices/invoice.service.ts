@@ -8,8 +8,8 @@ import { Invoice, InvoiceFilters } from '../../shared/models/invoice';
 import { toHttpParams } from '../../shared/util/http-params';
 
 /**
- * Invoices are system-generated when a card charge is posted — there is no create,
- * update or delete. The only mutations are pay, unpay, and adjusting the total.
+ * Invoices are system-generated when a card charge is posted — there is no create or update.
+ * The mutations are pay, unpay, adjusting the total, and deleting the invoice outright.
  */
 @Service()
 export class InvoiceService {
@@ -26,9 +26,14 @@ export class InvoiceService {
   readonly items = computed(() => this.resource.value());
   readonly isLoading = computed(() => this.resource.isLoading());
 
-  /** Most recent billing period first. */
+  /**
+   * Newest first, by the month the invoice is known by.
+   *
+   * Sorted on `referenceMonth` rather than the billing period so this list runs in the same order
+   * as the dashboard, which has always gone by the due date.
+   */
   readonly sorted = computed(() =>
-    [...this.items()].sort((a, b) => b.billingPeriodStart.localeCompare(a.billingPeriodStart)),
+    [...this.items()].sort((a, b) => b.referenceMonth.localeCompare(a.referenceMonth)),
   );
 
   readonly unpaid = computed(() => this.sorted().filter((i) => i.status !== 'PAID'));
@@ -48,10 +53,13 @@ export class InvoiceService {
    *
    * The total is the sum of the invoice's charges, so the server records the difference as a
    * charge of its own rather than overwriting the figure. Refused once the invoice is paid.
+   *
+   * `description` names that charge. The API holds no translations, so the text has to come from
+   * here — without it the charge reads "Invoice adjustment" whatever language the user is in.
    */
-  adjust(id: Uuid, targetAmount: Money): Observable<Invoice> {
+  adjust(id: Uuid, targetAmount: Money, description: string): Observable<Invoice> {
     return this.http
-      .post<Invoice>(`${this.baseUrl}/${id}/adjust`, { targetAmount })
+      .post<Invoice>(`${this.baseUrl}/${id}/adjust`, { targetAmount, description })
       .pipe(tap(() => this.resource.reload()));
   }
 
@@ -59,6 +67,11 @@ export class InvoiceService {
     return this.http
       .post<Invoice>(`${this.baseUrl}/${id}/unpay`, null)
       .pipe(tap(() => this.resource.reload()));
+  }
+
+  /** Removes the invoice and every charge on it. */
+  remove(id: Uuid): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`).pipe(tap(() => this.resource.reload()));
   }
 
   reload(): void {

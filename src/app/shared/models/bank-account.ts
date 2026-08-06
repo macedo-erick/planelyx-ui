@@ -36,6 +36,11 @@ export interface BalanceAdjustmentRequest {
   targetBalance: Money;
   /** Null means today. The balance being corrected is the one as of this date. */
   transactionDate: IsoDate | null;
+  /**
+   * What to call the resulting transaction. The API holds no translations, so omitting this
+   * leaves the user reading "Balance adjustment" whatever language they are in.
+   */
+  description?: string;
 }
 
 export interface BankAccountRequest {

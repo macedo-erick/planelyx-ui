@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
@@ -11,7 +11,7 @@ import { Tag } from 'primeng/tag';
 import { environment } from '../../../environments/environment';
 import { injectTranslate } from '../../core/i18n/translate';
 import { Category } from '../../shared/models/category';
-import { IsoDate, Uuid } from '../../shared/models/common';
+import { IsoDate, MonthKey, Uuid } from '../../shared/models/common';
 import { InvoiceStatus } from '../../shared/models/enums';
 import { Invoice } from '../../shared/models/invoice';
 import { emptyPage, PageResponse } from '../../shared/models/page';
@@ -21,7 +21,13 @@ import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
 import { PlanelyxMonthNav } from '../../shared/ui/month-nav';
 import { PlanelyxPageHeader } from '../../shared/ui/page-header';
 import { PlanelyxTransactionRow } from '../../shared/ui/transaction-row';
-import { daysUntil, fromIsoDate, startOfMonth, todayIso } from '../../shared/util/date';
+import {
+  daysUntil,
+  fromMonthKey,
+  startOfMonth,
+  todayIso,
+  toMonthKey,
+} from '../../shared/util/date';
 import { shortDate } from '../../shared/util/date-format';
 import { INVOICE_STATUS_SEVERITY, invoiceStatusLabels } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
@@ -72,8 +78,18 @@ export class InvoicesPage {
 
   protected readonly cardOptions = computed(() => this.cards.options());
 
+  /**
+   * Optional query params naming the invoice to open, bound by `withComponentInputBinding`.
+   *
+   * The dashboard links here with both set, which is what replaced the separate detail page:
+   * clicking an invoice lands on this screen already showing it, rather than on whichever card
+   * and month the page would have picked for itself.
+   */
+  readonly cardId = input<Uuid | undefined>(undefined);
+  readonly month = input<MonthKey | undefined>(undefined);
+
   protected readonly selectedCardId = signal<Uuid | null>(null);
-  protected readonly month = signal(startOfMonth(new Date()));
+  protected readonly selectedMonth = signal(startOfMonth(new Date()));
 
   protected dialogOpen = signal(false);
   protected readonly adjustOpen = signal(false);
@@ -88,28 +104,27 @@ export class InvoicesPage {
   private readonly firstUnpaid = computed(() => this.service.unpaid().at(-1) ?? null);
 
   /**
-   * The invoice is keyed on the month it closes in, not the month it starts in — a period
-   * running 11 May to 10 Jun is the "Jun" invoice, which is how the due date reads.
+   * The invoice is keyed on `referenceMonth` — the month it falls due in.
+   *
+   * It used to be keyed on the month the period *closed* in, which is the same month only while
+   * the due day falls later in the month than the closing day. On a card closing the 28th and due
+   * the 5th, the period 29 Jul – 28 Aug closes in August but is paid in September, so it showed
+   * under "Ago" here while the dashboard listed it under its September due date. Both now read
+   * the one value the API derives.
    */
   protected readonly invoice = computed(() => {
     const cardId = this.selectedCardId();
-    const month = this.month();
+    const month = toMonthKey(this.selectedMonth());
     if (!cardId) {
       return null;
     }
 
     return (
-      this.service.sorted().find((candidate) => {
-        if (candidate.creditCardId !== cardId) {
-          return false;
-        }
-        const end = fromIsoDate(candidate.billingPeriodEnd);
-        return (
-          end !== null &&
-          end.getFullYear() === month.getFullYear() &&
-          end.getMonth() === month.getMonth()
-        );
-      }) ?? null
+      this.service
+        .sorted()
+        .find(
+          (candidate) => candidate.creditCardId === cardId && candidate.referenceMonth === month,
+        ) ?? null
     );
   });
 
@@ -149,11 +164,20 @@ export class InvoicesPage {
       }
       seeded = true;
 
+      // A link in from the dashboard names the invoice it meant; otherwise fall back to the
+      // oldest unpaid one.
+      const requestedCard = this.cardId();
+      const requestedMonth = fromMonthKey(this.month());
+
+      if (requestedCard && requestedMonth) {
+        this.selectedCardId.set(requestedCard);
+        this.selectedMonth.set(startOfMonth(requestedMonth));
+        return;
+      }
+
       const pending = this.firstUnpaid();
       this.selectedCardId.set(pending?.creditCardId ?? cards[0].id);
-
-      const end = pending ? fromIsoDate(pending.billingPeriodEnd) : null;
-      this.month.set(startOfMonth(end ?? new Date()));
+      this.selectedMonth.set(startOfMonth(fromMonthKey(pending?.referenceMonth) ?? new Date()));
     });
   }
 
@@ -256,6 +280,23 @@ export class InvoicesPage {
       rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },
       accept: () => {
         this.service.unpay(invoice.id).subscribe(() => this.cards.reload());
+      },
+    });
+  }
+
+  /**
+   * Deleting an invoice takes its charges with it, so the message says so — there is no way back
+   * from this one, and the amount is the clearest statement of what is about to go.
+   */
+  protected confirmDelete(invoice: Invoice): void {
+    this.confirm.confirm({
+      header: this.t('invoices.deleteHeader'),
+      message: this.t('invoices.deleteMessage', { amount: formatMoney(invoice.totalAmount) }),
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: this.t('common.delete'), severity: 'danger' },
+      rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },
+      accept: () => {
+        this.service.remove(invoice.id).subscribe(() => this.cards.reload());
       },
     });
   }
