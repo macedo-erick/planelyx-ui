@@ -12,7 +12,10 @@ export const environment: Environment = {
   production: false,
   apiUrl: 'http://localhost:8080/api',
   keycloak: {
-    url: 'http://localhost:8081',
+    // The /auth prefix is not an nginx artefact: local dev now runs the same image production
+    // does, and KC_HTTP_RELATIVE_PATH=/auth is baked into it. Dropping it here yields a 404 on
+    // the OIDC discovery document rather than an obvious misconfiguration.
+    url: 'http://localhost:8081/auth',
     realm: 'planelyx',
     clientId: 'planelyx-api',
   },
