@@ -45,6 +45,15 @@ export class PlanelyxTransactionRow {
   protected readonly t = injectTranslate();
   private readonly translateCategory = defaultCategoryNames();
 
+  /**
+   * Balance and invoice corrections are posted by the API against a system category. They only
+   * make sense next to the figure they correct, so they are not editable — the row refuses the
+   * click rather than opening a dialog that could not save.
+   */
+  protected readonly locked = computed(() => this.category()?.system === true);
+
+  protected readonly interactive = computed(() => this.clickable() && !this.locked());
+
   protected readonly categoryName = computed(() => {
     const category = this.category();
     return category

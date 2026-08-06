@@ -3,10 +3,11 @@
 <button
   type="button"
   class="flex w-full items-center gap-3 border-b border-[var(--p-content-border-color)] px-4 py-3 text-left last:border-b-0 enabled:hover:bg-[var(--p-content-hover-background)] enabled:hover:cursor-pointer"
-  [disabled]="!clickable()"
+  [disabled]="!interactive()"
   [attr.aria-label]="
-    clickable() ? t('transactions.editAria', { description: tx.description }) : null
+    interactive() ? t('transactions.editAria', { description: tx.description }) : null
   "
+  [attr.title]="locked() ? t('transactions.systemLocked') : null"
   (click)="edit.emit(tx)"
 >
   <planelyx-category-badge [category]="category()" size="md" />
