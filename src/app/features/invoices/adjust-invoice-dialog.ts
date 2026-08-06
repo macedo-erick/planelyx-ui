@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { form, FormField } from '@angular/forms/signals';
+import { form, FormField, required } from '@angular/forms/signals';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
@@ -24,7 +24,8 @@ import { formatMoney, roundCents } from '../../shared/util/money';
 import { InvoiceService } from './invoice.service';
 
 interface AdjustInvoiceFormModel {
-  targetAmount: Money;
+  /** Nullable because the money input can be cleared; seeded with the current total on open. */
+  targetAmount: Money | null;
 }
 
 /**
@@ -56,13 +57,15 @@ export class AdjustInvoiceDialog {
 
   protected readonly current = computed<Money>(() => this.invoice()?.totalAmount ?? 0);
 
-  protected readonly model = signal<AdjustInvoiceFormModel>({ targetAmount: 0 });
+  protected readonly model = signal<AdjustInvoiceFormModel>({ targetAmount: null });
 
-  protected readonly f = form(this.model);
+  protected readonly f = form(this.model, (path) => {
+    required(path.targetAmount, { message: this.t('validation.amountPositive') });
+  });
 
   /** Signed: positive is a charge to add, negative is one to take back off. */
   protected readonly delta = computed(() =>
-    roundCents(this.f.targetAmount().value() - this.current()),
+    roundCents((this.f.targetAmount().value() ?? this.current()) - this.current()),
   );
 
   protected readonly unchanged = computed(() => this.delta() === 0);
@@ -102,7 +105,8 @@ export class AdjustInvoiceDialog {
       return;
     }
 
-    const target = this.model().targetAmount;
+    // `unchanged()` already returned above for a cleared field, and the schema requires one.
+    const target = this.model().targetAmount as Money;
 
     this.confirm.confirm({
       header: this.t('invoices.adjust.header'),

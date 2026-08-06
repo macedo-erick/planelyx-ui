@@ -2,6 +2,7 @@ import { Component, computed, input, output } from '@angular/core';
 
 import { injectTranslate } from '../../core/i18n/translate';
 import { Category } from '../models/category';
+import { IsoDate } from '../models/common';
 import { Transaction } from '../models/transaction';
 import { longDate } from '../util/date-format';
 import { defaultCategoryNames } from '../util/enum-labels';
@@ -37,6 +38,14 @@ export class PlanelyxTransactionRow {
    * empty inside an invoice, where the card is already the heading.
    */
   readonly secondary = input('');
+  /**
+   * Shown in place of the transaction's own date.
+   *
+   * Set by the invoice screen: inside an invoice the occurrence date is just the month you are
+   * already looking at, whereas the date of the purchase is what identifies the charge. Left
+   * alone on the transactions page, where the date is what the period filter works on.
+   */
+  readonly purchaseDate = input<IsoDate | null>(null);
   readonly clickable = input(true);
 
   /** Named `edit` rather than `select` — `select` is a native DOM event. */
@@ -76,5 +85,7 @@ export class PlanelyxTransactionRow {
     this.transaction().kind === 'ACCOUNT_CREDIT' ? 'text-green-600' : 'text-red-500',
   );
 
-  protected readonly date = computed(() => longDate(this.transaction().transactionDate));
+  protected readonly date = computed(() =>
+    longDate(this.purchaseDate() ?? this.transaction().transactionDate),
+  );
 }
