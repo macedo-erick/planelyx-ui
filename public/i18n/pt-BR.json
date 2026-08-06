@@ -95,7 +95,8 @@
     "Gifts": "Presentes",
     "Other Income": "Outras receitas",
     "Adjustment": "Ajuste",
-    "Uncategorised": "Sem categoria"
+    "Uncategorised": "Sem categoria",
+    "Invoice payment": "Pagamento de fatura"
   },
   "dashboard": {
     "title": "Painel",
@@ -117,16 +118,17 @@
     "noInvoicesMessage": "Adicione um cartão e as faturas dele aparecerão aqui.",
     "incomplete": "Este mês está além da última ocorrência gerada de uma recorrência sem data final, então ele mostra apenas o que já foi agendado. Essas recorrências são estendidas um mês por vez.",
     "projectedBalance": "Saldo projetado",
-    "acrossAccounts": "Em {{count}} conta(s)",
-    "acrossAccountsEom": "Em {{count}} conta(s), fim do mês",
+    "acrossAccounts": "Em {{count}} conta(s), {{amount}}",
+    "acrossAccountsEom": "Em {{count}} conta(s) no fim do mês, {{amount}}",
     "lessInvoicesDue": "menos {{count}} fatura(s) a vencer, {{amount}}",
-    "expenseHint": "Contas e cartões somados",
+    "expenseHint": "Gastos em conta no mês, mais as faturas que vencem nele",
     "dueSoonest": "{{count}} a vencer primeiro",
-    "balancesNote": "Os saldos são o saldo inicial mais as transações da conta até o fim do mês selecionado. Do total também são descontadas as faturas em aberto que vencem até lá, então ele não bate com os valores por conta abaixo — uma fatura de cartão é dinheiro comprometido, mas ainda não retirado de nenhuma conta.",
+    "balancesNote": "Os saldos são o saldo inicial mais as transações da conta até o fim do mês selecionado — pagar uma fatura lança um débito, então uma fatura já paga já saiu daí. Do total ainda são descontadas as faturas em aberto que vencem até lá, por isso ele não bate com os valores por conta abaixo: é dinheiro comprometido, mas ainda não retirado de nenhuma conta.",
     "accountBalances": "Saldo das contas",
     "invoicesDueSoon": "Faturas a vencer",
     "nothingDue": "Nada a vencer",
-    "due": "Vence"
+    "due": "Vence",
+    "otherCategories": "Outras"
   },
   "accounts": {
     "title": "Contas bancárias",
@@ -332,7 +334,8 @@
     "dueToday": "Vence hoje",
     "dueInDays": "em {{days}} dias",
     "deleteHeader": "Excluir fatura",
-    "deleteMessage": "Excluir esta fatura de {{amount}} definitivamente? Todos os lançamentos dela serão excluídos junto. Isso não pode ser desfeito."
+    "deleteMessage": "Excluir esta fatura de {{amount}} definitivamente? Todos os lançamentos dela serão excluídos junto. Isso não pode ser desfeito.",
+    "paymentDescription": "Pagamento de fatura"
   },
   "categories": {
     "title": "Categorias",
