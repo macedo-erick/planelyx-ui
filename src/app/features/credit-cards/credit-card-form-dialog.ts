@@ -131,12 +131,19 @@ export class CreditCardFormDialog {
       acceptButtonProps: { label: this.t('common.delete'), severity: 'danger' },
       rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },
       accept: () => {
+        this.saving.set(true);
         this.service
           .remove(current.id)
           .pipe(takeUntilDestroyed(this.destroyRef))
-          .subscribe(() => {
-            this.visible.set(false);
-            this.deleted.emit(current);
+          .subscribe({
+            next: () => {
+              this.saving.set(false);
+              this.visible.set(false);
+              this.deleted.emit(current);
+            },
+            // The interceptor raises the toast; the dialog stays open on purpose. Closing it
+            // would suggest the card had gone when it is still there.
+            error: () => this.saving.set(false),
           });
       },
     });

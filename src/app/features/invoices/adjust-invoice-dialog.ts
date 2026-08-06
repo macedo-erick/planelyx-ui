@@ -116,7 +116,8 @@ export class AdjustInvoiceDialog {
       accept: () => {
         this.saving.set(true);
         this.service
-          .adjust(invoice.id, target)
+          // The API has no translations, so the charge is named from here or it reads English.
+          .adjust(invoice.id, target, this.t('invoices.adjust.description'))
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
             next: () => {

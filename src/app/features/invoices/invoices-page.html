@@ -22,7 +22,7 @@
     />
   </div>
 
-  <planelyx-month-nav class="mb-4" [(month)]="month" />
+  <planelyx-month-nav class="mb-4" [(month)]="selectedMonth" />
 
   @if (invoice(); as inv) {
     <planelyx-card>
@@ -73,7 +73,6 @@
                     severity="secondary"
                     [text]="true"
                     styleClass="justify-start w-full"
-                    [disabled]="inv.totalAmount === 0"
                     (onClick)="actions.hide(); confirmPay(inv)"
                   />
                   <!-- Absent once paid: the charges are settled, so the total is history. -->
@@ -86,6 +85,14 @@
                     (onClick)="actions.hide(); adjustOpen.set(true)"
                   />
                 }
+                <p-button
+                  [label]="t('common.delete')"
+                  icon="pi pi-trash"
+                  severity="danger"
+                  [text]="true"
+                  styleClass="justify-start w-full"
+                  (onClick)="actions.hide(); confirmDelete(inv)"
+                />
               </div>
             </p-popover>
           </span>
