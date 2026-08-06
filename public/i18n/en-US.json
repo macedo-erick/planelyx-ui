@@ -36,7 +36,6 @@
     "dashboard": "Dashboard",
     "transactions": "Transactions",
     "invoices": "Invoices",
-    "invoice": "Invoice",
     "accounts": "Bank accounts",
     "cards": "Credit cards",
     "categories": "Categories",
@@ -146,7 +145,7 @@
     "balanceHint": "What the account holds right now. Transactions are applied on top of it.",
     "currencyHint": "Three-letter ISO code.",
     "deleteHeader": "Delete account",
-    "deleteMessage": "Permanently delete \"{{name}}\"? This cannot be undone, and any cards or transactions attached to it will be affected.",
+    "deleteMessage": "Permanently delete \"{{name}}\"? Any cards drawn on it, their invoices, and every transaction on the account are deleted too. This cannot be undone.",
     "created": "Account created",
     "updated": "Account updated",
     "adjust": {
@@ -159,7 +158,8 @@
       "notice": "Changing the balance records an adjustment transaction for the difference. It will appear in your transaction list.",
       "confirm": "Set \"{{name}}\" to {{target}}? This records an adjustment transaction of {{delta}}.",
       "done": "Balance adjusted",
-      "doneDetail": "{{name}} is now {{target}}."
+      "doneDetail": "{{name}} is now {{target}}.",
+      "description": "Balance adjustment"
     }
   },
   "cards": {
@@ -189,7 +189,7 @@
     "newHeader": "New credit card",
     "editHeader": "Edit credit card",
     "deleteHeader": "Delete card",
-    "deleteMessage": "Permanently delete \"{{name}}\"? Its invoices and charges will be affected.",
+    "deleteMessage": "Permanently delete \"{{name}}\"? The card’s invoices and every charge on them are deleted too. This cannot be undone.",
     "created": "Card created",
     "updated": "Card updated",
     "limitUsed": "Limit used",
@@ -322,13 +322,16 @@
       "notice": "This records an adjustment charge on the invoice for the difference. It will appear alongside the invoice's other charges.",
       "confirm": "Set this invoice to {{target}}? This records an adjustment charge of {{delta}} on it.",
       "done": "Invoice adjusted",
-      "doneDetail": "The total is now {{target}}."
+      "doneDetail": "The total is now {{target}}.",
+      "description": "Invoice adjustment"
     },
     "noCards": "No credit cards yet",
     "noCardsMessage": "Add a card and its invoices will show up here.",
     "overdue": "{{days}} days overdue",
     "dueToday": "Due today",
-    "dueInDays": "in {{days}} days"
+    "dueInDays": "in {{days}} days",
+    "deleteHeader": "Delete invoice",
+    "deleteMessage": "Permanently delete this {{amount}} invoice? Every charge on it is deleted too. This cannot be undone."
   },
   "categories": {
     "title": "Categories",

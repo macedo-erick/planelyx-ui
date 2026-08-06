@@ -29,12 +29,9 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/invoices/invoices-page').then((m) => m.InvoicesPage),
       },
-      {
-        path: 'invoices/:id',
-        title: 'titles.invoice',
-        loadComponent: () =>
-          import('./features/invoices/invoice-detail-page').then((m) => m.InvoiceDetailPage),
-      },
+      // The separate detail page is gone: it showed the same invoice as the main screen while
+      // labelling its month differently. Old links land on the main screen rather than 404ing.
+      { path: 'invoices/:id', pathMatch: 'full', redirectTo: 'invoices' },
       {
         path: 'accounts',
         title: 'titles.accounts',

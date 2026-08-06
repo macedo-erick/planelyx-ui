@@ -1,4 +1,4 @@
-import { IsoDate } from '../models/common';
+import { IsoDate, MonthKey } from '../models/common';
 
 /**
  * Conversions between the API's `LocalDate` strings and JS `Date` objects.
@@ -39,6 +39,16 @@ export function todayIso(): IsoDate {
 /** First day of the month containing `date`. */
 export function startOfMonth(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+/** `Date` -> `"YYYY-MM"`, the form the API uses for a month. Local calendar, so it never drifts. */
+export function toMonthKey(date: Date): MonthKey {
+  return toIsoDate(date).slice(0, 7);
+}
+
+/** `"YYYY-MM"` -> local-midnight `Date` on the first of that month. Null for anything malformed. */
+export function fromMonthKey(value: MonthKey | null | undefined): Date | null {
+  return value ? fromIsoDate(`${value}-01`) : null;
 }
 
 /** Last day of the month containing `date`. Day 0 of the next month is the trick. */

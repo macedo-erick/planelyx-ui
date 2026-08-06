@@ -25,9 +25,16 @@ export class CategoryService extends CrudService<Category, CategoryRequest> {
   /**
    * Alphabetical, for dropdowns and tables — the API returns no sort order. Sorted on the
    * translated name, since that is what the reader sees.
+   *
+   * System categories are left out. They exist only to label the corrections the app posts
+   * itself, so offering one on a transaction or on the categories screen invites the user to file
+   * against a category they cannot edit and the API will refuse. `byIdMap` deliberately keeps
+   * them, so a correction that already exists still renders its name.
    */
   readonly sorted = computed(() =>
-    [...this.items()].sort((a, b) => this.displayName(a).localeCompare(this.displayName(b))),
+    [...this.items()]
+      .filter((category) => !category.system)
+      .sort((a, b) => this.displayName(a).localeCompare(this.displayName(b))),
   );
 
   readonly expenseCategories = computed(() => this.sorted().filter((c) => c.type === 'EXPENSE'));

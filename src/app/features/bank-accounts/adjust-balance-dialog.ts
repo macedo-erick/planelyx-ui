@@ -133,6 +133,9 @@ export class AdjustBalanceDialog {
           .adjustBalance(account.id, {
             targetBalance: value.targetBalance,
             transactionDate: value.transactionDate,
+            // The API has no translations, so the transaction is named from here or it reads
+            // English.
+            description: this.t('accounts.adjust.description'),
           })
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
