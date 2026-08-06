@@ -12,7 +12,7 @@ import { AdjustBalanceDialog } from './adjust-balance-dialog';
 import { provideTestingTransloco } from '../../../testing/transloco';
 
 interface AdjustBalanceInternals {
-  f: FieldTree<{ targetBalance: number; transactionDate: string | null }>;
+  f: FieldTree<{ targetBalance: number | null; transactionDate: string | null }>;
   delta(): number;
   deltaLabel(): string;
   unchanged(): boolean;

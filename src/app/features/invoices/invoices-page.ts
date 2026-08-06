@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, linkedSignal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
@@ -66,6 +66,11 @@ import { InvoiceService } from './invoice.service';
     AdjustInvoiceDialog,
   ],
   templateUrl: './invoices-page.html',
+  styles: `
+    :host {
+      display: block;
+    }
+  `,
 })
 export class InvoicesPage {
   protected readonly service = inject(InvoiceService);
@@ -128,13 +133,25 @@ export class InvoicesPage {
     );
   });
 
-  /** Zero-based page of the charge list, independent of the invoice summary above it. */
-  protected readonly chargePage = signal(0);
+  /**
+   * Zero-based page of the charge list, independent of the invoice summary above it. Switching
+   * card or month starts over at the first page — page 3 of the invoice you just left says
+   * nothing about the one you just opened, and a short invoice would render blank.
+   */
+  protected readonly chargePage = linkedSignal({
+    source: () => this.invoice()?.id ?? null,
+    computation: () => 0,
+  });
   protected readonly chargeSize = signal(25);
 
   /**
    * Charges come from their own paged endpoint rather than riding along on the invoice, so
-   * turning a page does not refetch the totals shown in the header.
+   * reloading them does not refetch the totals shown in the header.
+   *
+   * The whole invoice is fetched at once because the rows are reordered by purchase date on
+   * this side: sorting one server page at a time would put the same charge in a different place
+   * depending on which page it landed on. An invoice is a few dozen charges — the same reasoning
+   * that already has this screen slicing the invoice list locally.
    */
   protected readonly detail = httpResource<PageResponse<Transaction>>(
     () => {
@@ -142,15 +159,31 @@ export class InvoicesPage {
       return current
         ? {
             url: `${environment.apiUrl}/invoices/${current.id}/transactions`,
-            params: { page: this.chargePage(), size: this.chargeSize() },
+            params: { page: 0, size: 2000 },
           }
         : undefined;
     },
     { defaultValue: emptyPage<Transaction>() },
   );
 
-  protected readonly charges = computed(() => this.detail.value().content);
-  protected readonly chargeTotal = computed(() => this.detail.value().totalElements);
+  /**
+   * Newest purchase first, which is the API's own order for everything except installments —
+   * those carry the date of the purchase they came from, so a series bought months ago sinks
+   * below the charges actually made this month instead of being scattered among them.
+   */
+  protected readonly charges = computed(() =>
+    [...this.detail.value().content].sort((a, b) => {
+      const byPurchase = b.purchaseDate.localeCompare(a.purchaseDate);
+      return byPurchase !== 0 ? byPurchase : b.createdAt.localeCompare(a.createdAt);
+    }),
+  );
+
+  protected readonly chargeTotal = computed(() => this.charges().length);
+
+  protected readonly pagedCharges = computed(() => {
+    const start = this.chargePage() * this.chargeSize();
+    return this.charges().slice(start, start + this.chargeSize());
+  });
 
   constructor() {
     // Land on the unpaid invoice once the lists have arrived, then leave the choice alone —

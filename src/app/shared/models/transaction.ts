@@ -19,6 +19,14 @@ export interface Transaction {
   readonly totalInstallments: number | null;
   readonly amount: Money;
   readonly transactionDate: IsoDate;
+  /**
+   * The day the purchase was made, resolved by the API.
+   *
+   * The same as `transactionDate` for anything bought outright. An installment's occurrences are
+   * generated a month apart, so a sofa bought on 25 January is dated 25 March inside the March
+   * invoice — this is the only field that still says January.
+   */
+  readonly purchaseDate: IsoDate;
   readonly description: string;
   /** Hardcoded true on create by the API and not settable. Display only. */
   readonly paid: boolean;

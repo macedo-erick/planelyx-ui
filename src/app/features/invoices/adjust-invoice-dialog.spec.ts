@@ -12,7 +12,7 @@ import { AdjustInvoiceDialog } from './adjust-invoice-dialog';
 import { provideTestingTransloco } from '../../../testing/transloco';
 
 interface AdjustInvoiceInternals {
-  f: FieldTree<{ targetAmount: number }>;
+  f: FieldTree<{ targetAmount: number | null }>;
   delta(): number;
   deltaLabel(): string;
   unchanged(): boolean;

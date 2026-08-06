@@ -41,6 +41,11 @@ import { TransactionService } from './transaction.service';
     RecurringRulesDialog,
   ],
   templateUrl: './transactions-page.html',
+  styles: `
+    :host {
+      display: block;
+    }
+  `,
 })
 export class TransactionsPage {
   protected readonly service = inject(TransactionService);

@@ -30,7 +30,8 @@ interface CreditCardFormModel {
   bankAccountId: Uuid | null;
   name: string;
   brand: string;
-  creditLimit: number;
+  /** Empty means "no limit tracked", so it is sent as zero rather than being required. */
+  creditLimit: number | null;
   closingDay: number | null;
   dueDay: number | null;
 }
@@ -39,7 +40,7 @@ const empty = (): CreditCardFormModel => ({
   bankAccountId: null,
   name: '',
   brand: '',
-  creditLimit: 0,
+  creditLimit: null,
   closingDay: 1,
   dueDay: 10,
 });
@@ -161,7 +162,7 @@ export class CreditCardFormDialog {
       bankAccountId: value.bankAccountId as Uuid,
       name: value.name.trim(),
       brand: value.brand.trim(),
-      creditLimit: value.creditLimit,
+      creditLimit: value.creditLimit ?? 0,
       closingDay: value.closingDay as number,
       dueDay: value.dueDay as number,
     };
