@@ -22,26 +22,11 @@ export class CategoryService extends CrudService<Category, CategoryRequest> {
     return this.translateName()(category.name);
   }
 
-  /**
-   * Alphabetical, for dropdowns and tables — the API returns no sort order. Sorted on the
-   * translated name, since that is what the reader sees.
-   *
-   * System categories are left out. They exist only to label the corrections the app posts
-   * itself, so offering one on a transaction or on the categories screen invites the user to file
-   * against a category they cannot edit and the API will refuse. `byIdMap` deliberately keeps
-   * them, so a correction that already exists still renders its name.
-   */
-  readonly sorted = computed(() =>
-    [...this.items()]
-      .filter((category) => !category.system)
-      .sort((a, b) => this.displayName(a).localeCompare(this.displayName(b))),
-  );
-
-  readonly expenseCategories = computed(() => this.sorted().filter((c) => c.type === 'EXPENSE'));
-  readonly incomeCategories = computed(() => this.sorted().filter((c) => c.type === 'INCOME'));
+  readonly expenseCategories = computed(() => this.items().filter((c) => c.type === 'EXPENSE'));
+  readonly incomeCategories = computed(() => this.items().filter((c) => c.type === 'INCOME'));
 
   readonly options = computed<SelectOption<Uuid>[]>(() =>
-    this.sorted().map((category) => ({
+    this.items().map((category) => ({
       label: this.displayName(category),
       value: category.id,
       icon: category.icon ?? undefined,
