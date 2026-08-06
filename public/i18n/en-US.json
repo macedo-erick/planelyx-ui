@@ -95,7 +95,8 @@
     "Gifts": "Gifts",
     "Other Income": "Other Income",
     "Adjustment": "Adjustment",
-    "Uncategorised": "Uncategorised"
+    "Uncategorised": "Uncategorised",
+    "Invoice payment": "Invoice payment"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -117,16 +118,17 @@
     "noInvoicesMessage": "Add a card and its invoices will show up here.",
     "incomplete": "This month is past the last generated occurrence of an open-ended recurring rule, so it shows only what has been scheduled so far. Those rules are extended a month at a time.",
     "projectedBalance": "Projected balance",
-    "acrossAccounts": "Across {{count}} account(s)",
-    "acrossAccountsEom": "Across {{count}} account(s), end of month",
+    "acrossAccounts": "Across {{count}} account(s), {{amount}}",
+    "acrossAccountsEom": "Across {{count}} account(s) at end of month, {{amount}}",
     "lessInvoicesDue": "less {{count}} invoice(s) due, {{amount}}",
-    "expenseHint": "Accounts and cards combined",
+    "expenseHint": "Account spending this month, plus the invoices falling due in it",
     "dueSoonest": "{{count}} due soonest",
-    "balancesNote": "Balances are your initial balance plus account transactions up to the end of the selected month. The total also has any unpaid invoice due by then taken off it, so it will not match the per account figures below — a card invoice is money committed but not yet drawn from one account.",
+    "balancesNote": "Balances are your initial balance plus account transactions up to the end of the selected month — paying an invoice posts a debit, so one already paid has left them. The total then has any unpaid invoice due by then taken off it, which is why it will not match the per account figures below: that money is committed but not yet drawn from one account.",
     "accountBalances": "Account balances",
     "invoicesDueSoon": "Invoices due soon",
     "nothingDue": "Nothing due",
-    "due": "Due"
+    "due": "Due",
+    "otherCategories": "Other"
   },
   "accounts": {
     "title": "Bank accounts",
@@ -332,7 +334,8 @@
     "dueToday": "Due today",
     "dueInDays": "in {{days}} days",
     "deleteHeader": "Delete invoice",
-    "deleteMessage": "Permanently delete this {{amount}} invoice? Every charge on it is deleted too. This cannot be undone."
+    "deleteMessage": "Permanently delete this {{amount}} invoice? Every charge on it is deleted too. This cannot be undone.",
+    "paymentDescription": "Invoice payment"
   },
   "categories": {
     "title": "Categories",
