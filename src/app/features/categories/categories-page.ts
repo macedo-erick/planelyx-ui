@@ -34,7 +34,7 @@ export class CategoriesPage {
   protected dialogOpen = signal(false);
   protected readonly selected = signal<Category | null>(null);
 
-  protected readonly categories = computed(() => this.service.items());
+  protected readonly categories = computed(() => this.service.selectable());
 
   protected typeLabel(type: CategoryType): string {
     return this.typeLabels()[type];
