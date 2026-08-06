@@ -138,10 +138,11 @@
       } @else if (charges().length === 0) {
         <planelyx-empty-state icon="pi-receipt" [title]="t('invoices.noCharges')" />
       } @else {
-        @for (tx of charges(); track tx.id) {
+        @for (tx of pagedCharges(); track tx.id) {
           <planelyx-transaction-row
             [transaction]="tx"
             [category]="category(tx.categoryId)"
+            [purchaseDate]="tx.purchaseDate"
             (edit)="openEdit(tx)"
           />
         }

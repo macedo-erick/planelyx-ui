@@ -31,7 +31,8 @@ interface BankAccountFormModel {
   name: string;
   bankName: string;
   accountType: AccountType | null;
-  initialBalance: number;
+  /** Empty means "no opening balance", so it is sent as zero rather than being required. */
+  initialBalance: number | null;
   currency: string;
 }
 
@@ -39,7 +40,7 @@ const empty = (): BankAccountFormModel => ({
   name: '',
   bankName: '',
   accountType: 'CHECKING',
-  initialBalance: 0,
+  initialBalance: null,
   currency: environment.defaultCurrency,
 });
 
@@ -170,7 +171,7 @@ export class BankAccountFormDialog {
       accountType: value.accountType as AccountType,
       // The API still requires it, but editing must never move it — the balance is derived
       // from it and correcting one is what "Adjust balance" is for.
-      initialBalance: existing ? existing.initialBalance : value.initialBalance,
+      initialBalance: existing ? existing.initialBalance : (value.initialBalance ?? 0),
       currency: value.currency.trim().toUpperCase(),
     };
 

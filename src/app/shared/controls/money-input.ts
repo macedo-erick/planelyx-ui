@@ -1,4 +1,4 @@
-import { Component, input, model } from '@angular/core';
+import { Component, computed, input, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import type { FormValueControl } from '@angular/forms/signals';
 import { InputNumber } from 'primeng/inputnumber';
@@ -6,6 +6,7 @@ import { InputNumber } from 'primeng/inputnumber';
 import { environment } from '../../../environments/environment';
 import { Money } from '../models/common';
 import { currentLocale } from '../util/locale';
+import { formatMoney } from '../util/money';
 import { generateControlId, PlanelyxControlBase } from './control-base';
 import { PlanelyxFieldShell } from './field-shell';
 
@@ -40,9 +41,8 @@ import { PlanelyxFieldShell } from './field-shell';
         [locale]="locale()"
         [disabled]="disabled()"
         [readonly]="readonly()"
-        [min]="min()"
-        [max]="max()"
-        [placeholder]="placeholder()"
+        [allowEmpty]="true"
+        [placeholder]="resolvedPlaceholder()"
         [invalid]="invalid() && touched()"
         [ariaDescribedBy]="describedBy"
         [fluid]="true"
@@ -50,10 +50,24 @@ import { PlanelyxFieldShell } from './field-shell';
     </planelyx-field-shell>
   `,
 })
-export class PlanelyxMoneyInput extends PlanelyxControlBase implements FormValueControl<Money> {
-  readonly value = model<Money>(0);
+export class PlanelyxMoneyInput
+  extends PlanelyxControlBase
+  implements FormValueControl<Money | null>
+{
+  /**
+   * Nullable, and empty by default.
+   *
+   * A field seeded with `0` renders as `R$ 0,00`, which has to be selected and deleted before
+   * any amount can be typed. Empty is the honest starting state; the schema is what decides
+   * whether a value is required.
+   */
+  readonly value = model<Money | null>(null);
   readonly currency = input(environment.defaultCurrency);
-  /** Bound automatically from `min()`/`max()` rules in the form schema. */
+  /**
+   * Bound automatically from `min()`/`max()` rules in the form schema, and deliberately not
+   * forwarded to InputNumber: it clamps the value to `min` on blur and on `Home`, which turns
+   * a `min` of 0.01 into a field that refuses to stay empty. Validation stays in the schema.
+   */
   readonly min = input<number | undefined>(undefined);
   readonly max = input<number | undefined>(undefined);
 
@@ -62,8 +76,12 @@ export class PlanelyxMoneyInput extends PlanelyxControlBase implements FormValue
   protected readonly inputId = generateControlId('planelyx-money');
   protected readonly describedBy = `${this.inputId}-hint ${this.inputId}-error`;
 
-  /** InputNumber emits null when cleared; the model is non-nullable, so normalize to 0. */
+  /** A zero in the caller's locale, so an empty field still reads as a money field. */
+  protected readonly resolvedPlaceholder = computed(
+    () => this.placeholder() || formatMoney(0, this.currency()),
+  );
+
   protected onChange(next: number | null): void {
-    this.value.set(next ?? 0);
+    this.value.set(next);
   }
 }

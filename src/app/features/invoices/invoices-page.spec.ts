@@ -8,15 +8,18 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { environment } from '../../../environments/environment';
 import { provideTestingTransloco } from '../../../testing/transloco';
 import { Invoice } from '../../shared/models/invoice';
+import { Transaction } from '../../shared/models/transaction';
 import { InvoicesPage } from './invoices-page';
 
 interface InvoicesPageInternals {
   selectedCardId: { set(value: string | null): void };
   selectedMonth: { set(value: Date): void };
   invoice(): Invoice | null;
+  charges(): readonly Transaction[];
 }
 
 const CARD_ID = '22222222-2222-2222-2222-222222222222';
+const TEMPLATE_ID = '33333333-3333-3333-3333-333333333333';
 
 /**
  * Two consecutive periods on a card closing the 28th and due the 5th.
@@ -50,6 +53,25 @@ const SEPTEMBER_CLOSE_OCTOBER_DUE: Invoice = {
   paidAt: null,
   createdAt: '2026-08-29T00:00:00Z',
 };
+
+const charge = (overrides: Partial<Transaction>): Transaction => ({
+  id: 'tx',
+  kind: 'CARD_CHARGE',
+  bankAccountId: null,
+  creditCardId: CARD_ID,
+  categoryId: '66666666-6666-6666-6666-666666666666',
+  invoiceId: AUGUST_CLOSE_SEPTEMBER_DUE.id,
+  templateId: null,
+  installmentNumber: null,
+  totalInstallments: null,
+  amount: 50,
+  transactionDate: '2026-08-01',
+  purchaseDate: '2026-08-01',
+  description: 'Charge',
+  paid: false,
+  createdAt: '2026-08-01T00:00:00Z',
+  ...overrides,
+});
 
 describe('InvoicesPage', () => {
   let fixture: ComponentFixture<InvoicesPage>;
@@ -99,5 +121,53 @@ describe('InvoicesPage', () => {
 
   it('keeps consecutive periods on consecutive months', () => {
     expect(showMonth(2026, 9)?.id).toBe(SEPTEMBER_CLOSE_OCTOBER_DUE.id);
+  });
+
+  /**
+   * The API returns charges newest-first by their own date, which scatters installments among
+   * the month's purchases. Ordering on `purchaseDate` sinks them to the bottom instead.
+   */
+  it("orders charges by purchase date, putting an installment below this month's charges", async () => {
+    showMonth(2026, 8);
+
+    // Bought on 25 June in 10x, so its August slice is dated 25 August by the API.
+    const installment = charge({
+      id: 'installment',
+      templateId: TEMPLATE_ID,
+      installmentNumber: 3,
+      totalInstallments: 10,
+      transactionDate: '2026-08-25',
+      purchaseDate: '2026-06-25',
+      createdAt: '2026-08-25T00:00:00Z',
+    });
+    const groceries = charge({
+      id: 'groceries',
+      transactionDate: '2026-08-10',
+      purchaseDate: '2026-08-10',
+    });
+    const fuel = charge({
+      id: 'fuel',
+      transactionDate: '2026-08-02',
+      purchaseDate: '2026-08-02',
+    });
+
+    const http = TestBed.inject(HttpTestingController);
+    const requests = http.match((req) =>
+      req.url.endsWith(`/invoices/${AUGUST_CLOSE_SEPTEMBER_DUE.id}/transactions`),
+    );
+    expect(requests).toHaveLength(1);
+    requests[0].flush({
+      // Server order: the installment first, because its own date is the latest.
+      content: [installment, groceries, fuel],
+      page: 0,
+      size: 2000,
+      totalElements: 3,
+      totalPages: 1,
+    });
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(page.charges().map((tx) => tx.id)).toEqual(['groceries', 'fuel', 'installment']);
   });
 });

@@ -19,10 +19,17 @@
   color-scheme: dark;
 }
 
+/*
+  The shell owns the only scrollbar: `main` is the scroller, so the document must never grow
+  past the viewport. Without `overflow: hidden` the fixed 100% height leaks — PrimeNG overlays
+  appended to the body are positioned in document coordinates, and one opened near the bottom
+  of the transactions or invoices filters stretched the page into a second scrollbar.
+*/
 html,
 body {
   height: 100%;
   margin: 0;
+  overflow: hidden;
 }
 
 body {

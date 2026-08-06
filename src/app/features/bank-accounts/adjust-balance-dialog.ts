@@ -25,7 +25,8 @@ import { formatMoney, roundCents } from '../../shared/util/money';
 import { BankAccountService } from './bank-account.service';
 
 interface AdjustBalanceFormModel {
-  targetBalance: Money;
+  /** Nullable because the money input can be cleared; seeded with the current balance on open. */
+  targetBalance: Money | null;
   transactionDate: IsoDate | null;
 }
 
@@ -65,17 +66,18 @@ export class AdjustBalanceDialog {
   });
 
   protected readonly model = signal<AdjustBalanceFormModel>({
-    targetBalance: 0,
+    targetBalance: null,
     transactionDate: todayIso(),
   });
 
   protected readonly f = form(this.model, (path) => {
+    required(path.targetBalance, { message: this.t('validation.amountPositive') });
     required(path.transactionDate, { message: this.t('validation.adjustmentDate') });
   });
 
   /** Signed: positive is money the ledger is missing, negative is money it over-counted. */
   protected readonly delta = computed(() =>
-    roundCents(this.f.targetBalance().value() - this.current()),
+    roundCents((this.f.targetBalance().value() ?? this.current()) - this.current()),
   );
 
   protected readonly unchanged = computed(() => this.delta() === 0);
@@ -116,12 +118,14 @@ export class AdjustBalanceDialog {
     }
 
     const value = this.model();
+    // `unchanged()` already returned above for a cleared field, and the schema requires one.
+    const target = value.targetBalance as Money;
 
     this.confirm.confirm({
       header: this.t('accounts.adjust.header'),
       message: this.t('accounts.adjust.confirm', {
         name: account.name,
-        target: formatMoney(value.targetBalance, this.currency()),
+        target: formatMoney(target, this.currency()),
         delta: this.deltaLabel(),
       }),
       icon: 'pi pi-exclamation-triangle',
@@ -131,7 +135,7 @@ export class AdjustBalanceDialog {
         this.saving.set(true);
         this.service
           .adjustBalance(account.id, {
-            targetBalance: value.targetBalance,
+            targetBalance: target,
             transactionDate: value.transactionDate,
             // The API has no translations, so the transaction is named from here or it reads
             // English.
@@ -146,7 +150,7 @@ export class AdjustBalanceDialog {
                 summary: this.t('accounts.adjust.done'),
                 detail: this.t('accounts.adjust.doneDetail', {
                   name: account.name,
-                  target: formatMoney(value.targetBalance, this.currency()),
+                  target: formatMoney(target, this.currency()),
                 }),
                 life: 3000,
               });
