@@ -8,7 +8,7 @@ import { Tag } from 'primeng/tag';
 import { environment } from '../../../environments/environment';
 import { injectTranslate } from '../../core/i18n/translate';
 import { IsoDate, Uuid } from '../../shared/models/common';
-import { Dashboard } from '../../shared/models/dashboard';
+import { CategoryBreakdown, Dashboard } from '../../shared/models/dashboard';
 import { InvoiceStatus } from '../../shared/models/enums';
 import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
 import { PlanelyxMonthNav } from '../../shared/ui/month-nav';
@@ -65,9 +65,12 @@ export class DashboardPage {
   protected readonly monthLabel = computed(() => monthYear(this.month()));
 
   /** e.g. "Across 3 account(s), end of month" — the tail only when reading a future month. */
+  protected readonly accountBalanceTotal = computed(() => this.data()?.accountBalanceTotal ?? 0);
+
   protected readonly accountsLabel = computed(() =>
     this.t(this.isFuture() ? 'dashboard.acrossAccountsEom' : 'dashboard.acrossAccounts', {
       count: this.accountCount(),
+      amount: formatMoney(this.accountBalanceTotal()),
     }),
   );
 
@@ -97,7 +100,7 @@ export class DashboardPage {
   protected readonly chartData = computed(() => {
     const breakdown = this.data()?.categoryBreakdown ?? [];
     return {
-      labels: breakdown.map((row) => this.translateCategory()(row.name)),
+      labels: breakdown.map((row) => this.sliceLabel(row)),
       datasets: [
         {
           data: breakdown.map((row) => row.total),
@@ -113,6 +116,16 @@ export class DashboardPage {
   protected readonly hasBreakdown = computed(
     () => (this.data()?.categoryBreakdown ?? []).length > 0,
   );
+
+  /**
+   * The remainder slice carries no category id — it stands for the tail the chart does not draw
+   * individually, so it is named here rather than translated as if it were a category.
+   */
+  private sliceLabel(row: CategoryBreakdown): string {
+    return row.categoryId === null
+      ? this.t('dashboard.otherCategories')
+      : this.translateCategory()(row.name);
+  }
 
   protected readonly chartOptions = {
     responsive: true,

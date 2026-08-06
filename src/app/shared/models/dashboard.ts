@@ -6,10 +6,13 @@ export interface Dashboard {
   readonly periodStart: IsoDate;
   readonly periodEnd: IsoDate;
   readonly accountBalances: readonly AccountBalance[];
+  /** `accountBalances` summed, so the subtraction below can be shown rather than explained. */
+  readonly accountBalanceTotal: Money;
   /**
-   * `accountBalances` summed, less `invoicesDueTotal` — so it deliberately does not match that
-   * sum. A card invoice is committed money that has not left any one account yet, so it comes
-   * off the total only.
+   * `accountBalanceTotal` less `invoicesDueTotal` — so it deliberately does not match that sum.
+   * An unpaid card invoice is committed money that has not left any one account yet, so it comes
+   * off the total only. Invoices already paid are not deducted here and need not be: paying one
+   * posts a settlement against an account, so it has already left the balances above.
    */
   readonly totalBalance: Money;
   /** Unpaid invoices falling due on or before `periodEnd`, already deducted from the total. */
@@ -36,8 +39,15 @@ export interface AccountBalance {
   readonly balance: Money;
 }
 
+/**
+ * One slice of `expense`. The slices total `expense`, so the chart agrees with the tile.
+ */
 export interface CategoryBreakdown {
-  readonly categoryId: Uuid;
+  /**
+   * Null on the single remainder slice carrying every category past the largest few. It stands
+   * for no one category, which is how it is told apart and labelled in the reader's language.
+   */
+  readonly categoryId: Uuid | null;
   readonly name: string;
   readonly color: string | null;
   readonly total: Money;
