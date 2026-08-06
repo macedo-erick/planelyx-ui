@@ -8,24 +8,32 @@ import { SelectOption } from '../../shared/util/enum-labels';
  *
  * The icon is what is stored; the label only describes it in the picker, so it is translated
  * from `categories.groups` rather than saved anywhere.
+ *
+ * Every icon the API seeds its default categories with has to appear here. An icon missing from
+ * this list leaves the picker blank on the category that uses it, which reads as "no icon" and
+ * invites the user to save one away without meaning to. The dialog also keeps whatever is
+ * already stored, so a value from outside this list survives an edit either way.
  */
 const ICONS: readonly { readonly key: string; readonly icon: string }[] = [
   { key: 'Groceries', icon: 'pi-shopping-cart' },
-  { key: 'Dining', icon: 'pi-apple' },
+  { key: 'Dining', icon: 'pi-shop' },
   { key: 'Home', icon: 'pi-home' },
+  { key: 'Utilities', icon: 'pi-bolt' },
   { key: 'Transport', icon: 'pi-car' },
-  { key: 'Health', icon: 'pi-heart' },
-  { key: 'Education', icon: 'pi-book' },
-  { key: 'Entertainment', icon: 'pi-ticket' },
-  { key: 'Travel', icon: 'pi-send' },
+  { key: 'Health', icon: 'pi-heart-fill' },
+  { key: 'Education', icon: 'pi-graduation-cap' },
+  { key: 'Entertainment', icon: 'pi-video' },
+  { key: 'Travel', icon: 'pi-map' },
   { key: 'Bills', icon: 'pi-file' },
-  { key: 'Salary', icon: 'pi-briefcase' },
+  { key: 'Insurance', icon: 'pi-shield' },
+  { key: 'Salary', icon: 'pi-wallet' },
+  { key: 'Freelance', icon: 'pi-briefcase' },
   { key: 'Investments', icon: 'pi-chart-line' },
   { key: 'Gifts', icon: 'pi-gift' },
-  { key: 'Subscriptions', icon: 'pi-replay' },
-  { key: 'Shopping', icon: 'pi-tag' },
-  { key: 'Savings', icon: 'pi-wallet' },
-  { key: 'Other', icon: 'pi-circle' },
+  { key: 'Subscriptions', icon: 'pi-sync' },
+  { key: 'Shopping', icon: 'pi-shopping-bag' },
+  { key: 'Savings', icon: 'pi-money-bill' },
+  { key: 'Other', icon: 'pi-ellipsis-h' },
 ];
 
 /** Must be called from an injection context — see the note in `enum-labels.ts`. */
