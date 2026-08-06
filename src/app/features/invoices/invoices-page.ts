@@ -299,7 +299,9 @@ export class InvoicesPage {
       acceptButtonProps: { label: this.t('invoices.markPaid') },
       rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },
       accept: () => {
-        this.service.pay(invoice.id).subscribe(() => this.cards.reload());
+        this.service
+          .pay(invoice.id, this.t('invoices.paymentDescription'))
+          .subscribe(() => this.cards.reload());
       },
     });
   }

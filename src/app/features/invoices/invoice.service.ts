@@ -42,9 +42,16 @@ export class InvoiceService {
     this.filters.set(filters);
   }
 
-  pay(id: Uuid): Observable<Invoice> {
+  /**
+   * Marks the invoice settled. The server posts a debit against the card's account for it, so the
+   * money actually leaves — a paid invoice is no longer deducted from the projected total.
+   *
+   * `description` names that debit, for the same reason `adjust` takes one: the API holds no
+   * translations, so without it the row reads "Invoice payment" whatever language the user is in.
+   */
+  pay(id: Uuid, description: string): Observable<Invoice> {
     return this.http
-      .post<Invoice>(`${this.baseUrl}/${id}/pay`, null)
+      .post<Invoice>(`${this.baseUrl}/${id}/pay`, { description })
       .pipe(tap(() => this.resource.reload()));
   }
 
