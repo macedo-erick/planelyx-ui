@@ -238,7 +238,7 @@ export class TransactionFormDialog {
         ? this.categories.incomeCategories()
         : this.categories.expenseCategories();
 
-    const source = list.length > 0 ? list : this.categories.sorted();
+    const source = list.length > 0 ? list : this.categories.items();
     return source.map((category) => ({
       label: this.categories.displayName(category),
       value: category.id,
