@@ -12,7 +12,7 @@
 }
 
 <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-  <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
+  <planelyx-card [padded]="true">
     <div class="text-xs text-[var(--p-text-muted-color)]">
       {{ t(isFuture() ? 'dashboard.projectedBalance' : 'dashboard.totalBalance') }}
     </div>
@@ -32,25 +32,25 @@
         }}
       </div>
     }
-  </div>
-  <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
+  </planelyx-card>
+  <planelyx-card [padded]="true">
     <div class="text-xs text-[var(--p-text-muted-color)]">{{ t('dashboard.income') }}</div>
     <div class="text-2xl font-semibold tabular-nums text-green-600">{{ money(income()) }}</div>
-  </div>
-  <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
+  </planelyx-card>
+  <planelyx-card [padded]="true">
     <div class="text-xs text-[var(--p-text-muted-color)]">{{ t('dashboard.expense') }}</div>
     <div class="text-2xl font-semibold tabular-nums">{{ money(expense()) }}</div>
     <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
       {{ t('dashboard.expenseHint') }}
     </div>
-  </div>
-  <div class="rounded-lg border border-[var(--p-content-border-color)] p-4">
+  </planelyx-card>
+  <planelyx-card [padded]="true">
     <div class="text-xs text-[var(--p-text-muted-color)]">{{ t('dashboard.unpaidInvoices') }}</div>
     <div class="text-2xl font-semibold tabular-nums">{{ money(outstandingInvoices()) }}</div>
     <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
       {{ t('dashboard.dueSoonest', { count: openInvoiceCount() }) }}
     </div>
-  </div>
+  </planelyx-card>
 </div>
 
 <p
@@ -59,101 +59,187 @@
   {{ t('dashboard.balancesNote') }}
 </p>
 
-<div class="grid gap-6 lg:grid-cols-2">
-  <section>
-    <h2 class="mb-2 text-lg font-medium">{{ t('dashboard.spendingByCategory') }}</h2>
-    @if (hasBreakdown()) {
-      <p-chart type="doughnut" [data]="chartData()" [options]="chartOptions" height="300px" />
-    } @else {
-      <planelyx-empty-state
-        icon="pi-chart-pie"
-        [title]="t('dashboard.noSpending')"
-        [message]="t('dashboard.noSpendingMessage')"
-      />
-    }
-  </section>
+<div class="grid items-start gap-6 lg:grid-cols-2">
+  <div class="flex flex-col gap-6">
+    <planelyx-card>
+      <div card-header class="border-b border-[var(--p-content-border-color)] px-4 py-3">
+        <h2 class="text-lg font-medium">{{ t('dashboard.spendingByCategory') }}</h2>
+      </div>
+      @if (hasBreakdown()) {
+        <div class="p-4">
+          <p-chart type="doughnut" [data]="chartData()" [options]="chartOptions" height="300px" />
+        </div>
+      } @else {
+        <planelyx-empty-state
+          icon="pi-chart-pie"
+          [title]="t('dashboard.noSpending')"
+          [message]="t('dashboard.noSpendingMessage')"
+        />
+      }
+    </planelyx-card>
 
-  <section>
-    <h2 class="mb-2 text-lg font-medium">{{ t('dashboard.accountBalances') }}</h2>
-    <p-table [value]="balances()" [loading]="isLoading()" size="small">
-      <ng-template #header>
-        <tr>
-          <th scope="col">{{ t('dashboard.account') }}</th>
-          <th scope="col" class="text-right">{{ t('common.balance') }}</th>
-        </tr>
-      </ng-template>
-      <ng-template #body let-row>
-        <tr>
-          <td>
-            <div class="font-medium">{{ row.name }}</div>
-            <div class="text-xs text-[var(--p-text-muted-color)]">{{ row.bankName }}</div>
-          </td>
-          <td class="text-right font-medium tabular-nums" [class.text-red-500]="row.balance < 0">
-            {{ moneyIn(row.balance, row.currency) }}
-          </td>
-        </tr>
-      </ng-template>
-      <ng-template #emptymessage>
-        <tr>
-          <td colspan="2">
-            <planelyx-empty-state
-              icon="pi-building-columns"
-              [title]="t('dashboard.noAccounts')"
-              [message]="t('dashboard.noAccountsMessage')"
+    <planelyx-card>
+      <div
+        card-header
+        class="flex items-start justify-between gap-3 border-b border-[var(--p-content-border-color)] px-4 py-3"
+      >
+        <span class="min-w-0">
+          <h2 class="text-lg font-medium">{{ t('dashboard.billsDue') }}</h2>
+          <p class="mt-0.5 text-xs text-[var(--p-text-muted-color)]">
+            {{ t('dashboard.billsNote') }}
+          </p>
+        </span>
+        @if (billsDueCount() > 0) {
+          <span class="shrink-0 text-right">
+            <span class="block font-semibold tabular-nums">{{ money(billsDueTotal()) }}</span>
+            <span class="block text-xs text-[var(--p-text-muted-color)]">
+              {{ t('dashboard.billsCount', { count: billsDueCount() }) }}
+            </span>
+          </span>
+        }
+      </div>
+
+      @for (bill of billsDue(); track bill.id) {
+        <!--
+          The row is not a <button>: it holds the tick, which would be a button inside a
+          button. A stretched overlay carries the click instead — the same trick the account
+          cards use — with the checkbox lifted above it so it stays clickable in its own right.
+        -->
+        <div
+          class="relative flex items-center gap-3 border-b border-[var(--p-content-border-color)] px-4 py-3 last:border-b-0 hover:bg-[var(--p-content-hover-background)]"
+        >
+          <button
+            type="button"
+            class="absolute inset-0 z-10 hover:cursor-pointer"
+            [attr.aria-label]="t('transactions.editAria', { description: bill.description })"
+            (click)="openEdit(bill)"
+          ></button>
+
+          <span class="relative z-20 flex items-center">
+            <p-checkbox
+              [binary]="true"
+              [ngModel]="bill.paid"
+              [ariaLabel]="t('dashboard.markPaid', { description: bill.description })"
+              (onChange)="toggleBill(bill, $event.checked)"
             />
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
+          </span>
 
-    <h2 class="mb-2 mt-6 text-lg font-medium">{{ t('dashboard.invoicesDueSoon') }}</h2>
-    <p-table [value]="upcomingInvoices()" size="small">
-      <ng-template #header>
-        <tr>
-          <th scope="col">{{ t('dashboard.card') }}</th>
-          <th scope="col" style="width: 9rem">{{ t('dashboard.due') }}</th>
-          <th scope="col" style="width: 7rem">{{ t('common.status') }}</th>
-          <th scope="col" class="text-right">{{ t('common.amount') }}</th>
-        </tr>
-      </ng-template>
-      <ng-template #body let-invoice>
-        <tr>
-          <td>
-            <!--
-              Goes to the invoices screen already showing this invoice, rather than to a detail
-              page of its own — the two had drifted into disagreeing about which month an
-              invoice belonged to.
-            -->
-            <a
-              routerLink="/invoices"
-              [queryParams]="{ cardId: invoice.creditCardId, month: invoice.referenceMonth }"
-              class="font-medium hover:underline"
-            >
+          <planelyx-category-badge [category]="category(bill.categoryId)" size="md" />
+
+          <span class="min-w-0 flex-1">
+            <span class="block truncate font-medium text-[var(--p-text-color)]">
+              {{ bill.description }}
+            </span>
+            <span class="block truncate text-sm text-[var(--p-text-muted-color)]">
+              {{ accountName(bill) }}
+            </span>
+          </span>
+
+          <span class="shrink-0 text-right">
+            <span class="block font-medium tabular-nums text-red-500">
+              {{ money(bill.amount) }}
+            </span>
+            <span class="block text-sm tabular-nums text-[var(--p-text-muted-color)]">
+              {{ shortDate(bill.transactionDate) }}
+              @if (dueText(bill.transactionDate); as text) {
+                <span> · {{ text }}</span>
+              }
+            </span>
+          </span>
+        </div>
+      } @empty {
+        <planelyx-empty-state icon="pi-check-circle" [title]="t('dashboard.noBills')" />
+      }
+    </planelyx-card>
+  </div>
+
+  <div class="flex flex-col gap-6">
+    <planelyx-card>
+      <div card-header class="border-b border-[var(--p-content-border-color)] px-4 py-3">
+        <h2 class="text-lg font-medium">{{ t('dashboard.accountBalances') }}</h2>
+      </div>
+
+      @if (isLoading()) {
+        <p class="px-4 py-8 text-center text-sm text-[var(--p-text-muted-color)]">
+          {{ t('common.loading') }}
+        </p>
+      } @else {
+        @for (row of balances(); track row.bankAccountId) {
+          <div
+            class="flex items-center gap-3 border-b border-[var(--p-content-border-color)] px-4 py-3 last:border-b-0"
+          >
+            <span class="min-w-0 flex-1">
+              <span class="block truncate font-medium text-[var(--p-text-color)]">
+                {{ row.name }}
+              </span>
+              <span class="block truncate text-sm text-[var(--p-text-muted-color)]">
+                {{ row.bankName }}
+              </span>
+            </span>
+            <span class="shrink-0 font-medium tabular-nums" [class.text-red-500]="row.balance < 0">
+              {{ moneyIn(row.balance, row.currency) }}
+            </span>
+          </div>
+        } @empty {
+          <planelyx-empty-state
+            icon="pi-building-columns"
+            [title]="t('dashboard.noAccounts')"
+            [message]="t('dashboard.noAccountsMessage')"
+          />
+        }
+      }
+    </planelyx-card>
+
+    <planelyx-card>
+      <div card-header class="border-b border-[var(--p-content-border-color)] px-4 py-3">
+        <h2 class="text-lg font-medium">{{ t('dashboard.invoicesDueSoon') }}</h2>
+      </div>
+
+      @for (invoice of upcomingInvoices(); track invoice.id) {
+        <!--
+          Goes to the invoices screen already showing this invoice, rather than to a detail
+          page of its own — the two had drifted into disagreeing about which month an
+          invoice belonged to.
+        -->
+        <a
+          routerLink="/invoices"
+          [queryParams]="{ cardId: invoice.creditCardId, month: invoice.referenceMonth }"
+          class="flex items-center gap-3 border-b border-[var(--p-content-border-color)] px-4 py-3 last:border-b-0 hover:bg-[var(--p-content-hover-background)]"
+        >
+          <span class="min-w-0 flex-1">
+            <span class="block truncate font-medium text-[var(--p-text-color)]">
               {{ cardName(invoice.creditCardId) }}
-            </a>
-          </td>
-          <td class="tabular-nums">
-            {{ shortDate(invoice.dueDate) }}
-            @if (dueText(invoice.dueDate); as text) {
-              <div class="text-xs text-[var(--p-text-muted-color)]">{{ text }}</div>
-            }
-          </td>
-          <td>
+            </span>
+            <span class="block truncate text-sm text-[var(--p-text-muted-color)]">
+              {{ t('dashboard.due') }} {{ shortDate(invoice.dueDate) }}
+              @if (dueText(invoice.dueDate); as text) {
+                <span> · {{ text }}</span>
+              }
+            </span>
+          </span>
+          <span class="shrink-0 text-right">
+            <span class="block font-medium tabular-nums">{{ money(invoice.totalAmount) }}</span>
             <p-tag
+              class="mt-1 inline-block"
               [value]="statusLabel(invoice.status)"
               [severity]="statusSeverity(invoice.status)"
             />
-          </td>
-          <td class="text-right tabular-nums">{{ money(invoice.totalAmount) }}</td>
-        </tr>
-      </ng-template>
-      <ng-template #emptymessage>
-        <tr>
-          <td colspan="4">
-            <planelyx-empty-state icon="pi-check-circle" [title]="t('dashboard.nothingDue')" />
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </section>
+          </span>
+        </a>
+      } @empty {
+        <planelyx-empty-state icon="pi-check-circle" [title]="t('dashboard.nothingDue')" />
+      }
+    </planelyx-card>
+  </div>
 </div>
+
+<!--
+  Editing a bill from here rather than sending the owner to the transactions page: a fixed cost
+  is rarely a fixed amount, and the reminder is where they meet it.
+-->
+<planelyx-transaction-form-dialog
+  [(visible)]="dialogOpen"
+  [transaction]="selected()"
+  (saved)="reload()"
+  (deleted)="reload()"
+/>

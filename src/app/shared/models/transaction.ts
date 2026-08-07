@@ -28,7 +28,17 @@ export interface Transaction {
    */
   readonly purchaseDate: IsoDate;
   readonly description: string;
-  /** Hardcoded true on create by the API and not settable. Display only. */
+  /**
+   * Whether this has been ticked off.
+   *
+   * Only meaningful on an ACCOUNT_DEBIT. A card charge is always paid — it is settled through its
+   * invoice, not one at a time — and income is not a bill, so both are written true and the server
+   * refuses to flip them. The server sets it on create: a debit dated ahead of today has not
+   * happened yet, anything on or before today is being recorded after the fact.
+   *
+   * Purely a reminder. Balances run to the end of the month, so the money is already deducted
+   * either way — see `Dashboard.billsDue`.
+   */
   readonly paid: boolean;
   readonly createdAt: IsoInstant;
 }

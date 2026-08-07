@@ -11,7 +11,7 @@ import {
   untracked,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Observable } from 'rxjs';
+import { Observable, of, switchMap } from 'rxjs';
 import {
   applyWhen,
   form,
@@ -23,6 +23,7 @@ import {
 } from '@angular/forms/signals';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
+import { Checkbox } from 'primeng/checkbox';
 import { Dialog } from 'primeng/dialog';
 
 import { injectTranslate } from '../../core/i18n/translate';
@@ -96,6 +97,7 @@ const empty = (): TransactionFormModel => ({
   imports: [
     Dialog,
     Button,
+    Checkbox,
     FormField,
     PlanelyxSelect,
     PlanelyxTextInput,
@@ -138,6 +140,24 @@ export class TransactionFormDialog {
   protected readonly cardOptions = computed(() => this.cards.options());
   protected readonly saving = signal(false);
   protected readonly editing = computed(() => this.transaction() !== null);
+
+  /**
+   * Whether this bill has been ticked off, held outside the form.
+   *
+   * The API takes it on endpoints of its own rather than in the update payload, so it is not a
+   * form field. It is still applied on save rather than on click: Cancel sits right there, and a
+   * tick that had already gone through would make that button a lie.
+   */
+  protected readonly paid = signal(true);
+
+  /**
+   * Only an account debit can be ticked off. A card charge is always paid — it is settled through
+   * its invoice, all at once — and income is not a bill, so the server refuses both. Creating is
+   * excluded too: the date decides it, and there is nothing to un-tick yet.
+   */
+  protected readonly paidVisible = computed(
+    () => this.editing() && this.transaction()?.kind === 'ACCOUNT_DEBIT',
+  );
 
   protected readonly scopeOpen = signal(false);
   protected readonly scopeMode = signal<'delete' | 'save'>('delete');
@@ -282,6 +302,7 @@ export class TransactionFormDialog {
               }
             : { ...empty(), ...(this.prefill() ?? {}) },
         );
+        this.paid.set(current?.paid ?? true);
         this.saving.set(false);
       });
     });
@@ -369,6 +390,20 @@ export class TransactionFormDialog {
     this.performSave('SINGLE');
   }
 
+  /**
+   * Sends the tick, if it moved. Nothing to send otherwise.
+   *
+   * Deliberately not spread across a series the way `scope` spreads an edit: each month's bill is
+   * paid on its own day, so ticking March off must not claim April was paid too.
+   */
+  private applyPaid(existing: Transaction): Observable<unknown> {
+    if (!this.paidVisible() || this.paid() === existing.paid) {
+      return of(null);
+    }
+
+    return this.service.setPaid(existing.id, this.paid());
+  }
+
   private performSave(scope: TransactionScope): void {
     const value = this.model();
     const existing = this.transaction();
@@ -377,13 +412,15 @@ export class TransactionFormDialog {
     const amount = value.amount as Money;
 
     const call: Observable<unknown> = existing
-      ? this.service.update(existing.id, {
-          categoryId: value.categoryId as Uuid,
-          amount,
-          transactionDate: value.transactionDate as IsoDate,
-          description: value.description.trim(),
-          scope,
-        } satisfies TransactionUpdateRequest)
+      ? this.service
+          .update(existing.id, {
+            categoryId: value.categoryId as Uuid,
+            amount,
+            transactionDate: value.transactionDate as IsoDate,
+            description: value.description.trim(),
+            scope,
+          } satisfies TransactionUpdateRequest)
+          .pipe(switchMap(() => this.applyPaid(existing)))
       : recurring
         ? this.templates.create({
             kind: value.kind,
