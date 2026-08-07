@@ -84,7 +84,7 @@
           [binary]="true"
           [ngModel]="paid()"
           [ngModelOptions]="{ standalone: true }"
-          (ngModelChange)="paid.set($event)"
+          (ngModelChange)="onPaidChange($event)"
         />
         <span>
           <label for="transaction-paid" class="text-sm font-medium">
