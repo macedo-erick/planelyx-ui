@@ -128,7 +128,13 @@
     "invoicesDueSoon": "Faturas a vencer",
     "nothingDue": "Nada a vencer",
     "due": "Vence",
-    "otherCategories": "Outras"
+    "otherCategories": "Outras",
+    "billsDue": "Contas do mês",
+    "billsNote": "Já descontadas dos saldos acima — marcar não muda nenhuma cifra. Toque para corrigir o valor.",
+    "noBills": "Nenhuma conta a pagar",
+    "paid": "Pago",
+    "markPaid": "Marcar {{description}} como paga",
+    "billsCount": "{{count}} conta(s)"
   },
   "accounts": {
     "title": "Contas bancárias",
@@ -271,7 +277,10 @@
     "occurrencesInstallments": "Número de parcelas",
     "occurrencesTimes": "Número de vezes",
     "ruleCreated": "Recorrência criada",
-    "ruleCreatedDetail": "As transações geradas por ela já estão na sua lista."
+    "ruleCreatedDetail": "As transações geradas por ela já estão na sua lista.",
+    "paid": "Paga",
+    "paidHint": "Só um lembrete. O valor já está descontado do saldo, marcar não muda nenhuma cifra.",
+    "unpaid": "a pagar"
   },
   "recurring": {
     "header": "Recorrências",

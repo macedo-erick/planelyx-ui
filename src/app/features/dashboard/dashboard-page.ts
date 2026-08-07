@@ -1,15 +1,20 @@
 import { httpResource } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { UIChart } from 'primeng/chart';
-import { TableModule } from 'primeng/table';
+import { Checkbox } from 'primeng/checkbox';
 import { Tag } from 'primeng/tag';
 
 import { environment } from '../../../environments/environment';
 import { injectTranslate } from '../../core/i18n/translate';
+import { Category } from '../../shared/models/category';
 import { IsoDate, Uuid } from '../../shared/models/common';
 import { CategoryBreakdown, Dashboard } from '../../shared/models/dashboard';
 import { InvoiceStatus } from '../../shared/models/enums';
+import { Transaction } from '../../shared/models/transaction';
+import { PlanelyxCard } from '../../shared/ui/card';
+import { PlanelyxCategoryBadge } from '../../shared/ui/category-badge';
 import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
 import { PlanelyxMonthNav } from '../../shared/ui/month-nav';
 import { PlanelyxPageHeader } from '../../shared/ui/page-header';
@@ -21,23 +26,34 @@ import {
   invoiceStatusLabels,
 } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
+import { BankAccountService } from '../bank-accounts/bank-account.service';
+import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
+import { TransactionFormDialog } from '../transactions/transaction-form-dialog';
+import { TransactionService } from '../transactions/transaction.service';
 
 @Component({
   selector: 'planelyx-dashboard-page',
   imports: [
-    TableModule,
     Tag,
     UIChart,
+    Checkbox,
+    FormsModule,
     RouterLink,
+    PlanelyxCard,
+    PlanelyxCategoryBadge,
     PlanelyxMonthNav,
     PlanelyxPageHeader,
     PlanelyxEmptyState,
+    TransactionFormDialog,
   ],
   templateUrl: './dashboard-page.html',
 })
 export class DashboardPage {
   private readonly cards = inject(CreditCardService);
+  private readonly accounts = inject(BankAccountService);
+  private readonly categories = inject(CategoryService);
+  private readonly transactions = inject(TransactionService);
 
   /** Drives the whole page; stepping it is what makes past and future months viewable. */
   protected readonly month = signal(startOfMonth(new Date()));
@@ -90,8 +106,55 @@ export class DashboardPage {
   // Spread rather than passed through: p-table's `value` input is a mutable array.
   protected readonly balances = computed(() => [...(this.data()?.accountBalances ?? [])]);
   protected readonly upcomingInvoices = computed(() => [...(this.data()?.upcomingInvoices ?? [])]);
+  /** The bill being edited, and whether its dialog is up. */
+  protected readonly dialogOpen = signal(false);
+  protected readonly selected = signal<Transaction | null>(null);
+
+  protected readonly billsDue = computed(() => [...(this.data()?.billsDue ?? [])]);
+  protected readonly billsDueTotal = computed(() => this.data()?.billsDueTotal ?? 0);
+  protected readonly billsDueCount = computed(() => this.data()?.billsDueCount ?? 0);
   protected readonly accountCount = computed(() => this.balances().length);
   protected readonly openInvoiceCount = computed(() => this.upcomingInvoices().length);
+
+  /**
+   * Ticks a bill off the reminder, or puts it back.
+   *
+   * Nothing above moves — the bill is an ordinary transaction already counted in every balance —
+   * but the dashboard is refetched anyway, because the list it was read from has changed.
+   */
+  protected toggleBill(bill: Transaction, paid: boolean): void {
+    this.transactions.setPaid(bill.id, paid).subscribe(() => this.resource.reload());
+  }
+
+  /**
+   * Opens a bill for editing without leaving the dashboard.
+   *
+   * A fixed cost is rarely a fixed amount — the condomínio, the power bill and the water bill
+   * arrive at a different figure every month. The reminder is where the owner meets them, so it
+   * is where the figure has to be correctable.
+   */
+  protected openEdit(bill: Transaction): void {
+    this.selected.set(bill);
+    this.dialogOpen.set(true);
+  }
+
+  /**
+   * Refetches every figure on the page.
+   *
+   * Editing a bill can move its amount, and the amount is inside the month's spending and every
+   * balance below it — so the whole response is stale, not just the reminder list.
+   */
+  protected reload(): void {
+    this.resource.reload();
+  }
+
+  protected category(id: Uuid): Category | undefined {
+    return this.categories.byIdMap().get(id);
+  }
+
+  protected accountName(bill: Transaction): string {
+    return this.accounts.byIdMap().get(bill.bankAccountId ?? '')?.name ?? '';
+  }
 
   protected readonly incomplete = computed(
     () => this.isFuture() && (this.data()?.beyondGeneratedOccurrences ?? false),

@@ -78,6 +78,20 @@ export class TransactionService {
       .pipe(tap(() => this.reload()));
   }
 
+  /**
+   * Ticks a bill off the dashboard's reminder, or puts it back on.
+   *
+   * Account debits only — a card charge is always paid, settled through its invoice rather than
+   * one at a time, and the server refuses anything else. Nothing but the flag moves: the entry is
+   * already counted in every balance, so this changes no figure. That is the opposite of
+   * `InvoiceService.pay`, which posts a real debit against an account.
+   */
+  setPaid(id: Uuid, paid: boolean): Observable<Transaction> {
+    return this.http
+      .post<Transaction>(`${this.baseUrl}/${id}/${paid ? 'pay' : 'unpay'}`, null)
+      .pipe(tap(() => this.reload()));
+  }
+
   /** `scope` only reaches beyond this row for a transaction belonging to a template. */
   remove(id: Uuid, scope?: TransactionScope): Observable<void> {
     return this.http
