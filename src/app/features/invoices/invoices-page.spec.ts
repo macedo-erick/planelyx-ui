@@ -124,10 +124,12 @@ describe('InvoicesPage', () => {
   });
 
   /**
-   * The API returns charges newest-first by their own date, which scatters installments among
-   * the month's purchases. Ordering on `purchaseDate` sinks them to the bottom instead.
+   * Ordering by purchase date is the API's job — it sorts on the column, so an installment bought
+   * months ago already arrives below the month's own purchases. This screen must hand that order
+   * straight through: re-sorting a server page here would put the same charge in a different place
+   * depending on which page it landed on.
    */
-  it("orders charges by purchase date, putting an installment below this month's charges", async () => {
+  it('renders charges in the order the API sent them', async () => {
     showMonth(2026, 8);
 
     // Bought on 25 June in 10x, so its August slice is dated 25 August by the API.
@@ -157,8 +159,8 @@ describe('InvoicesPage', () => {
     );
     expect(requests).toHaveLength(1);
     requests[0].flush({
-      // Server order: the installment first, because its own date is the latest.
-      content: [installment, groceries, fuel],
+      // Server order: newest purchase first, so the June installment comes last.
+      content: [groceries, fuel, installment],
       page: 0,
       size: 2000,
       totalElements: 3,
