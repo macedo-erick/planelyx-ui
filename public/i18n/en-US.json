@@ -128,7 +128,13 @@
     "invoicesDueSoon": "Invoices due soon",
     "nothingDue": "Nothing due",
     "due": "Due",
-    "otherCategories": "Other"
+    "otherCategories": "Other",
+    "billsDue": "This month's bills",
+    "billsNote": "Already deducted from the balances above — ticking one changes no figure. Tap to correct an amount.",
+    "noBills": "Nothing to pay",
+    "paid": "Paid",
+    "markPaid": "Mark {{description}} as paid",
+    "billsCount": "{{count}} bill(s)"
   },
   "accounts": {
     "title": "Bank accounts",
@@ -271,7 +277,10 @@
     "occurrencesInstallments": "Number of installments",
     "occurrencesTimes": "Number of times",
     "ruleCreated": "Recurring rule created",
-    "ruleCreatedDetail": "The transactions it generates are now in your list."
+    "ruleCreatedDetail": "The transactions it generates are now in your list.",
+    "paid": "Paid",
+    "paidHint": "Only a reminder. The amount is already deducted from the balance; ticking it changes no figure.",
+    "unpaid": "to pay"
   },
   "recurring": {
     "header": "Recurring rules",

@@ -10,8 +10,15 @@ import { Component, input } from '@angular/core';
 @Component({
   selector: 'planelyx-card',
   template: `
+    <!--
+      h-full so a card in a grid row is as tall as the ones beside it. The host stretches on its
+      own, being the grid item, but the bordered box is this div — it would otherwise stop at its
+      own content and leave the shortest card visibly smaller than its neighbours. Outside a
+      stretched context, height:100% against an auto-height parent resolves to auto and this
+      changes nothing.
+    -->
     <div
-      class="overflow-hidden rounded-xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] shadow-sm"
+      class="h-full overflow-hidden rounded-xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] shadow-sm"
       [class.p-4]="padded()"
     >
       <ng-content select="[card-header]" />

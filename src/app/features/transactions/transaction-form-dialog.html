@@ -69,6 +69,32 @@
       <planelyx-number-input [formField]="f.totalOccurrences" [label]="occurrencesLabel()" />
     }
 
+    @if (paidVisible()) {
+      <!--
+        Applied on save with the rest of the form, not on click — Cancel is right there. The
+        tick moves no money either way: the entry is already counted in every balance.
+      -->
+      <div class="flex items-start gap-2">
+        <!--
+          `standalone`, because this sits inside a <form> that NgForm attaches to but the field
+          itself belongs to the signal form above, not to it.
+        -->
+        <p-checkbox
+          inputId="transaction-paid"
+          [binary]="true"
+          [ngModel]="paid()"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="paid.set($event)"
+        />
+        <span>
+          <label for="transaction-paid" class="text-sm font-medium">
+            {{ t('transactions.paid') }}
+          </label>
+          <p class="text-xs text-[var(--p-text-muted-color)]">{{ t('transactions.paidHint') }}</p>
+        </span>
+      </div>
+    }
+
     @if (previewSummary()) {
       <div class="rounded-md border border-[var(--p-content-border-color)] px-3 py-2 text-sm">
         <div class="mb-1 font-medium">{{ t('transactions.splitPreview') }}</div>
