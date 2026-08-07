@@ -54,6 +54,17 @@ export class PlanelyxTransactionRow {
 
   protected readonly interactive = computed(() => this.clickable() && !this.locked());
 
+  /**
+   * A bill still to be paid, marked so the list says which ones are open without being opened.
+   *
+   * Account debits only. A card charge is settled through its invoice rather than one at a time,
+   * so `paid` says nothing about it, and income is not a bill at all.
+   */
+  protected readonly unpaid = computed(() => {
+    const tx = this.transaction();
+    return tx.kind === 'ACCOUNT_DEBIT' && !tx.paid;
+  });
+
   protected readonly categoryName = computed(() => {
     const category = this.category();
     return category

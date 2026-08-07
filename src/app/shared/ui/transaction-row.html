@@ -24,6 +24,13 @@
       @if (secondary()) {
         <span> | {{ secondary() }}</span>
       }
+      @if (unpaid()) {
+        <span
+          class="ml-1 rounded border border-[var(--p-content-border-color)] px-1 py-px text-xs text-[var(--p-text-muted-color)]"
+        >
+          {{ t('transactions.unpaid') }}
+        </span>
+      }
       @if (tx.templateId && !tx.installmentNumber) {
         <i
           class="pi pi-replay ml-1 text-xs"

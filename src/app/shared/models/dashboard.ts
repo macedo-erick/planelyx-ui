@@ -1,5 +1,6 @@
 import { IsoDate, Money, Uuid } from './common';
 import { Invoice } from './invoice';
+import { Transaction } from './transaction';
 
 /** `GET /api/dashboard?month=YYYY-MM` — every figure the dashboard shows, in one round trip. */
 export interface Dashboard {
@@ -23,6 +24,22 @@ export interface Dashboard {
   readonly categoryBreakdown: readonly CategoryBreakdown[];
   readonly outstandingInvoiceTotal: Money;
   readonly upcomingInvoices: readonly Invoice[];
+  /**
+   * This month's recurring account bills not yet ticked off — rent, power, internet — oldest
+   * first. The reminder.
+   *
+   * Every one is an ordinary transaction that already exists and is **already inside**
+   * `accountBalanceTotal`, because balances here run to the end of the month rather than stopping
+   * at today. Ticking one off moves no money and changes no figure. Never subtract `billsDueTotal`
+   * from anything — that double counts, which is exactly what this is here to prevent.
+   *
+   * Card invoices are not here: they are settled as one bill through `upcomingInvoices` and
+   * deducted through `invoicesDueTotal`, which is a different thing entirely.
+   */
+  readonly billsDue: readonly Transaction[];
+  /** `billsDue` summed, for a heading. Not deducted from anything. */
+  readonly billsDueTotal: Money;
+  readonly billsDueCount: number;
   /**
    * The month sits past the last generated occurrence of an open-ended recurring rule, so its
    * figures are incomplete rather than simply low. Surfaced to the user, not silently ignored.
