@@ -175,9 +175,11 @@ export class InvoicesPage {
     return this.charges().slice(start, start + this.chargeSize());
   });
 
+  /**
+   * Lands on the unpaid invoice once the lists have arrived, then leaves the choice alone — a
+   * reload after pay or unpay must not yank the user back off the month they were on.
+   */
   constructor() {
-    // Land on the unpaid invoice once the lists have arrived, then leave the choice alone —
-    // a reload after pay/unpay must not yank the user back off the month they were on.
     let seeded = false;
     effect(() => {
       const status = this.service.resource.status();
@@ -187,8 +189,6 @@ export class InvoicesPage {
       }
       seeded = true;
 
-      // A link in from the dashboard names the invoice it meant; otherwise fall back to the
-      // oldest unpaid one.
       const requestedCard = this.cardId();
       const requestedMonth = fromMonthKey(this.month());
 

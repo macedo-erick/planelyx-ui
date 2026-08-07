@@ -26,7 +26,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         messages.add({
           severity: 'error',
           summary: transloco.translate(normalized.titleKey),
-          // The server's own wording when it sent any; otherwise our generic fallback.
           detail: normalized.detailKey
             ? transloco.translate(normalized.detailKey)
             : normalized.detail,

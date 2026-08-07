@@ -3,9 +3,10 @@
  *
  * Reached through the API's `/me` endpoints rather than Keycloak directly, so the browser never
  * needs admin-scoped credentials.
+ *
+ * `username` is read-only: the realm does not allow it to change.
  */
 export interface Profile {
-  /** Read-only: the realm does not allow the username to change. */
   readonly username: string;
   readonly firstName: string;
   readonly lastName: string;

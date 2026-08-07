@@ -61,8 +61,6 @@ export class RecurrenceScopeDialog {
   );
 
   constructor() {
-    // Reopening must not inherit the previous answer — "all" is destructive enough that it
-    // should never be preselected by accident.
     effect(() => {
       if (this.visible()) {
         this.scope.set('SINGLE');
