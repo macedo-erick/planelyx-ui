@@ -26,6 +26,10 @@ const apiUrlCondition = createInterceptorCondition<IncludeBearerTokenCondition>(
   bearerPrefix: 'Bearer',
 });
 
+/**
+ * The silent-SSO redirect is resolved against `<base href>` rather than the bare origin:
+ * production serves the app under `/ui/`, where `${origin}/silent-check-sso.html` would 404.
+ */
 export const provideKeycloakAuth = (): EnvironmentProviders =>
   provideKeycloak({
     config: {
@@ -36,8 +40,6 @@ export const provideKeycloakAuth = (): EnvironmentProviders =>
     initOptions: {
       onLoad: 'check-sso',
       pkceMethod: 'S256',
-      // Resolved against <base href>, not the bare origin: production serves the app
-      // under /ui/, where `${origin}/silent-check-sso.html` would 404.
       silentCheckSsoRedirectUri: new URL('silent-check-sso.html', document.baseURI).href,
     },
     features: [

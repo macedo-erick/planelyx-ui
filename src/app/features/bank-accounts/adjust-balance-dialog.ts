@@ -88,9 +88,11 @@ export class AdjustBalanceDialog {
     return `${sign} ${formatMoney(Math.abs(delta), this.currency())}`;
   });
 
+  /**
+   * Seeds the field from the current balance, so it opens on the number it is replacing and
+   * submitting untouched is a no-op rather than a correction to zero.
+   */
   constructor() {
-    // Seeded from the current balance so the field opens on the number it is replacing, and
-    // submitting untouched is a no-op rather than a correction to zero.
     effect(() => {
       if (!this.visible()) {
         return;
@@ -118,7 +120,6 @@ export class AdjustBalanceDialog {
     }
 
     const value = this.model();
-    // `unchanged()` already returned above for a cleared field, and the schema requires one.
     const target = value.targetBalance as Money;
 
     this.confirm.confirm({
@@ -137,8 +138,6 @@ export class AdjustBalanceDialog {
           .adjustBalance(account.id, {
             targetBalance: target,
             transactionDate: value.transactionDate,
-            // The API has no translations, so the transaction is named from here or it reads
-            // English.
             description: this.t('accounts.adjust.description'),
           })
           .pipe(takeUntilDestroyed(this.destroyRef))

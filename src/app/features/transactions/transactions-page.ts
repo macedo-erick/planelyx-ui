@@ -91,8 +91,6 @@ export class TransactionsPage {
   constructor() {
     this.range.set(currentMonthRange());
 
-    // One place assembles the request, so a filter and the page it should reset to can never
-    // be pushed out of step with each other.
     effect(() => {
       const range = this.range();
       this.service.setFilters({

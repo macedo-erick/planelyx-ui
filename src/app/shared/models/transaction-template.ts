@@ -1,6 +1,13 @@
 import { IsoDate, IsoInstant, Money, Uuid } from './common';
 import { IntervalUnit, RecurrenceType, TransactionKind } from './enums';
 
+/**
+ * A recurring rule, and the counter of how much of it has been materialised.
+ *
+ * For an INSTALLMENT, `totalAmount` is the full purchase price, split across occurrences. It is
+ * null for FIXED_INDEFINITE, which has no end. `active` goes false on DELETE (a soft deactivate)
+ * and once the server finishes generating a counted rule.
+ */
 export interface TransactionTemplate {
   readonly id: Uuid;
   readonly kind: TransactionKind;
@@ -8,15 +15,12 @@ export interface TransactionTemplate {
   readonly creditCardId: Uuid | null;
   readonly categoryId: Uuid;
   readonly description: string;
-  /** For INSTALLMENT this is the full purchase price, split across occurrences. */
   readonly totalAmount: Money;
   readonly recurrenceType: RecurrenceType;
   readonly intervalUnit: IntervalUnit;
   readonly startDate: IsoDate;
-  /** Null for FIXED_INDEFINITE. */
   readonly totalOccurrences: number | null;
   readonly occurrencesGenerated: number;
-  /** Set false by DELETE (soft deactivate), and by the server once generation completes. */
   readonly active: boolean;
   readonly createdAt: IsoInstant;
 }

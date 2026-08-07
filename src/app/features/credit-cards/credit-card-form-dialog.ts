@@ -142,8 +142,6 @@ export class CreditCardFormDialog {
               this.visible.set(false);
               this.deleted.emit(current);
             },
-            // The interceptor raises the toast; the dialog stays open on purpose. Closing it
-            // would suggest the card had gone when it is still there.
             error: () => this.saving.set(false),
           });
       },
