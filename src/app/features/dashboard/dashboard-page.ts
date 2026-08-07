@@ -103,7 +103,6 @@ export class DashboardPage {
   protected readonly outstandingInvoices = computed(
     () => this.data()?.outstandingInvoiceTotal ?? 0,
   );
-  // Spread rather than passed through: p-table's `value` input is a mutable array.
   protected readonly balances = computed(() => [...(this.data()?.accountBalances ?? [])]);
   protected readonly upcomingInvoices = computed(() => [...(this.data()?.upcomingInvoices ?? [])]);
   /** The bill being edited, and whether its dialog is up. */
