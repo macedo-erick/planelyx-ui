@@ -24,10 +24,6 @@
           [hint]="t('profile.emailHint')"
         />
 
-        <!--
-          Shown rather than edited: the realm does not enable editUsername, so Keycloak would
-          reject a change. Saying why beats a field that fails on save.
-        -->
         <planelyx-text-input
           [value]="service.profile()?.username ?? ''"
           [label]="t('profile.username')"

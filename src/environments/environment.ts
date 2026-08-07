@@ -1,20 +1,9 @@
-/**
- * Development environment (the default — no file replacement applied).
- *
- * Swap targets without touching code:
- *   yarn start              -> this file
- *   yarn start:staging      -> environment.staging.ts
- *   yarn start:production   -> environment.production.ts
- */
 import type { Environment } from './environment.model';
 
 export const environment: Environment = {
   production: false,
   apiUrl: 'http://localhost:8080/api',
   keycloak: {
-    // The /auth prefix is not an nginx artefact: local dev now runs the same image production
-    // does, and KC_HTTP_RELATIVE_PATH=/auth is baked into it. Dropping it here yields a 404 on
-    // the OIDC discovery document rather than an obvious misconfiguration.
     url: 'http://localhost:8081/auth',
     realm: 'planelyx',
     clientId: 'planelyx-api',

@@ -101,11 +101,6 @@
 </planelyx-card>
 
 @if (service.totalElements() > 0) {
-  <!--
-    No `block` here. The host already carries PrimeNG's `.p-paginator`, which is
-    `display:flex; justify-content:center`, and Tailwind's `utilities` layer is ordered after
-    `primeng` in styles.css — so a `block` utility wins and collapses the bar to the left.
-  -->
   <p-paginator
     class="mt-3"
     [first]="page() * size()"

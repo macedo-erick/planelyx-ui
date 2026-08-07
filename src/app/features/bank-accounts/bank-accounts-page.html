@@ -14,12 +14,6 @@
   <div class="grid gap-4 md:grid-cols-2">
     @for (account of accounts(); track account.id) {
       <planelyx-card class="group relative">
-        <!--
-          The card body holds an <h2> and block-level content, which a <button> may not
-          contain, so the whole-card-button trick used by the transaction rows does not
-          apply here. A stretched overlay keeps the markup valid and the card reachable by
-          keyboard. Delete lives in the edit dialog, matching the transactions flow.
-        -->
         <button
           type="button"
           class="absolute inset-0 z-10 rounded-xl enabled:hover:cursor-pointer"
@@ -42,10 +36,6 @@
             <p-tag [value]="typeLabel(account.accountType)" severity="secondary" />
           </div>
 
-          <!--
-            The live balance, not the account's starting figure: initial balance plus every
-            transaction dated to the end of this month. The same number the dashboard shows.
-          -->
           <div class="flex items-baseline justify-between gap-2 text-sm">
             <span class="text-[var(--p-text-muted-color)]">{{ t('common.balance') }}</span>
             <span class="text-right">

@@ -71,7 +71,6 @@
 
     @if (paidVisible()) {
       <div class="flex items-start gap-2">
-        <!-- standalone: inside a <form> NgForm owns, but not one of its fields. -->
         <p-checkbox
           inputId="transaction-paid"
           [binary]="true"

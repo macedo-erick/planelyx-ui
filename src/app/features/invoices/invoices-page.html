@@ -40,13 +40,6 @@
               size="small"
               (onClick)="openCreate(inv)"
             />
-            <!--
-            A p-popover of plain buttons rather than a p-menu: PrimeNG 22.0.0's Menu template
-            tracks its @for by a template context variable, which Angular hoists into a
-            context-free function, so rendering any item throws
-            "ReferenceError: parentId_r3 is not defined". Fixed upstream in 22.1.0-rc.1, but
-            that is a prerelease — avoid p-menu until a stable release ships the fix.
-          -->
             <p-button
               icon="pi pi-ellipsis-h"
               severity="secondary"
@@ -75,7 +68,6 @@
                     styleClass="justify-start w-full"
                     (onClick)="actions.hide(); confirmPay(inv)"
                   />
-                  <!-- Absent once paid: the charges are settled, so the total is history. -->
                   <p-button
                     [label]="t('invoices.adjust.action')"
                     icon="pi pi-sliders-h"
