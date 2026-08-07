@@ -148,10 +148,9 @@ export class InvoicesPage {
    * Charges come from their own paged endpoint rather than riding along on the invoice, so
    * reloading them does not refetch the totals shown in the header.
    *
-   * The whole invoice is fetched at once because the rows are reordered by purchase date on
-   * this side: sorting one server page at a time would put the same charge in a different place
-   * depending on which page it landed on. An invoice is a few dozen charges — the same reasoning
-   * that already has this screen slicing the invoice list locally.
+   * The whole invoice is fetched at once and the paginator below slices it locally. An invoice is
+   * a few dozen charges — the same reasoning that already has this screen slicing the invoice list
+   * locally.
    */
   protected readonly detail = httpResource<PageResponse<Transaction>>(
     () => {
@@ -166,17 +165,8 @@ export class InvoicesPage {
     { defaultValue: emptyPage<Transaction>() },
   );
 
-  /**
-   * Newest purchase first, which is the API's own order for everything except installments —
-   * those carry the date of the purchase they came from, so a series bought months ago sinks
-   * below the charges actually made this month instead of being scattered among them.
-   */
-  protected readonly charges = computed(() =>
-    [...this.detail.value().content].sort((a, b) => {
-      const byPurchase = b.purchaseDate.localeCompare(a.purchaseDate);
-      return byPurchase !== 0 ? byPurchase : b.createdAt.localeCompare(a.createdAt);
-    }),
-  );
+  /** Newest purchase first — the API's own order, so nothing is re-sorted here. */
+  protected readonly charges = computed(() => this.detail.value().content);
 
   protected readonly chargeTotal = computed(() => this.charges().length);
 
