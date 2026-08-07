@@ -53,6 +53,7 @@ export interface TransactionRequest {
   amount: Money;
   transactionDate: IsoDate;
   description: string;
+  paid?: boolean;
 }
 
 /**

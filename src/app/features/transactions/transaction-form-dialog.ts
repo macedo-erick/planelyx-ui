@@ -151,12 +151,19 @@ export class TransactionFormDialog {
   protected readonly paid = signal(true);
 
   /**
+   * Set once the user works the checkbox, so the default below stops overwriting their answer.
+   */
+  private readonly paidTouched = signal(false);
+
+  /**
    * Only an account debit can be ticked off. A card charge is always paid — it is settled through
-   * its invoice, all at once — and income is not a bill, so the server refuses both. Creating is
-   * excluded too: the date decides it, and there is nothing to un-tick yet.
+   * its invoice, all at once — and income is not a bill, so the server refuses both.
+   *
+   * A recurring rule is excluded as well. It materialises months of occurrences, each falling on
+   * its own day and classified on its own terms, and one checkbox could not speak for all of them.
    */
   protected readonly paidVisible = computed(
-    () => this.editing() && this.transaction()?.kind === 'ACCOUNT_DEBIT',
+    () => this.f.kind().value() === 'ACCOUNT_DEBIT' && !this.isRecurring(),
   );
 
   protected readonly scopeOpen = signal(false);
@@ -303,6 +310,7 @@ export class TransactionFormDialog {
             : { ...empty(), ...(this.prefill() ?? {}) },
         );
         this.paid.set(current?.paid ?? true);
+        this.paidTouched.set(false);
         this.saving.set(false);
       });
     });
@@ -312,6 +320,19 @@ export class TransactionFormDialog {
         untracked(() => this.f.kind().value.set('CARD_CHARGE'));
       }
     });
+
+    effect(() => {
+      const date = this.f.transactionDate().value();
+      if (this.editing() || this.paidTouched()) {
+        return;
+      }
+      untracked(() => this.paid.set(!date || date <= todayIso()));
+    });
+  }
+
+  protected onPaidChange(paid: boolean): void {
+    this.paid.set(paid);
+    this.paidTouched.set(true);
   }
 
   protected kindLabel(kind: TransactionKind): string {
@@ -393,8 +414,10 @@ export class TransactionFormDialog {
   /**
    * Sends the tick, if it moved. Nothing to send otherwise.
    *
-   * Deliberately not spread across a series the way `scope` spreads an edit: each month's bill is
-   * paid on its own day, so ticking March off must not claim April was paid too.
+   * Only on an edit. Creating carries `paid` in the payload itself, but PUT deliberately does not:
+   * an edit reaches across a series through `scope`, and each month's bill is paid on its own day,
+   * so ticking March off must not claim April was paid too. The API keeps it on endpoints that
+   * name one row, and this is the call to them.
    */
   private applyPaid(existing: Transaction): Observable<unknown> {
     if (!this.paidVisible() || this.paid() === existing.paid) {
@@ -443,6 +466,7 @@ export class TransactionFormDialog {
             amount,
             transactionDate: value.transactionDate as IsoDate,
             description: value.description.trim(),
+            paid: this.paidVisible() ? this.paid() : undefined,
           } satisfies TransactionRequest);
 
     this.saving.set(true);

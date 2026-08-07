@@ -8,6 +8,7 @@ import { providePrimeNG } from 'primeng/config';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { environment } from '../../../environments/environment';
+import { toIsoDate } from '../../shared/util/date';
 import { TransactionFormDialog, TransactionFormModel } from './transaction-form-dialog';
 import { provideTestingTransloco } from '../../../testing/transloco';
 
@@ -15,6 +16,9 @@ interface TransactionFormDialogInternals {
   f: FieldTree<TransactionFormModel>;
   previewSummary(): string;
   onSubmit(): void;
+  paidVisible(): boolean;
+  paid(): boolean;
+  onPaidChange(paid: boolean): void;
 }
 
 /**
@@ -31,6 +35,7 @@ describe('TransactionFormDialog', () => {
   const ACCOUNT = '11111111-1111-1111-1111-111111111111';
   const CARD = '22222222-2222-2222-2222-222222222222';
   const CATEGORY = '33333333-3333-3333-3333-333333333333';
+  const CREATED = '44444444-4444-4444-4444-444444444444';
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -152,4 +157,83 @@ describe('TransactionFormDialog', () => {
     fixture.detectChanges();
     expect(form.previewSummary()).toBe('');
   });
+
+  /**
+   * The tick is offered on a new transaction too, not only on an edit — a bill can be filed
+   * before it is paid. Only where it means anything: a card charge is settled through its
+   * invoice, and a recurring rule generates months of occurrences that one box cannot answer for.
+   */
+  describe('the paid tick', () => {
+    function tick(): void {
+      fixture.detectChanges();
+      TestBed.inject(ApplicationRef).tick();
+    }
+
+    it('is offered for a new account debit', () => {
+      fill({ kind: 'ACCOUNT_DEBIT', bankAccountId: ACCOUNT, repeats: 'NONE' });
+
+      expect(form.paidVisible()).toBe(true);
+    });
+
+    it('is hidden for a card charge and for a recurring rule', () => {
+      fill({ kind: 'CARD_CHARGE', creditCardId: CARD, repeats: 'NONE' });
+      expect(form.paidVisible()).toBe(false);
+
+      fill({ kind: 'ACCOUNT_DEBIT', bankAccountId: ACCOUNT, repeats: 'FIXED_INDEFINITE' });
+      expect(form.paidVisible()).toBe(false);
+    });
+
+    /** The same rule the server applies, so what the box shows is what would be stored. */
+    it('follows the date until the user sets it', () => {
+      fill({ kind: 'ACCOUNT_DEBIT', bankAccountId: ACCOUNT, repeats: 'NONE' });
+      tick();
+      expect(form.paid()).toBe(true);
+
+      form.f.transactionDate().value.set(isoDaysFromNow(7));
+      tick();
+      expect(form.paid()).toBe(false);
+
+      form.onPaidChange(true);
+      form.f.transactionDate().value.set(isoDaysFromNow(14));
+      tick();
+      expect(form.paid()).toBe(true);
+    });
+
+    /**
+     * Carried by the row that creates it, in one call. Correcting it afterwards would file the
+     * bill as paid for as long as the second request took, and leave it that way if it failed.
+     */
+    it('rides along in the create payload', () => {
+      fill({ kind: 'ACCOUNT_DEBIT', bankAccountId: ACCOUNT, repeats: 'NONE' });
+      form.onPaidChange(false);
+      form.onSubmit();
+
+      const req = http.expectOne(`${environment.apiUrl}/transactions`);
+
+      expect(req.request.body.paid).toBe(false);
+
+      req.flush({ id: CREATED, kind: 'ACCOUNT_DEBIT', paid: false });
+
+      http.expectNone(`${environment.apiUrl}/transactions/${CREATED}/pay`);
+      http.expectNone(`${environment.apiUrl}/transactions/${CREATED}/unpay`);
+    });
+
+    /** Where the tick means nothing, no opinion is sent and the server decides on its own. */
+    it('is left out of the payload for a card charge', () => {
+      fill({ kind: 'CARD_CHARGE', creditCardId: CARD, repeats: 'NONE' });
+      form.onSubmit();
+
+      const req = http.expectOne(`${environment.apiUrl}/transactions`);
+
+      expect(req.request.body.paid).toBeUndefined();
+    });
+  });
 });
+
+/** Relative, so a fixed date cannot quietly fall into the past and invert what is being tested. */
+function isoDaysFromNow(days: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+
+  return toIsoDate(date);
+}
