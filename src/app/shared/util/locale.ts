@@ -19,9 +19,6 @@ export const LOCALE_STORAGE_KEY = 'planelyx.locale';
  */
 export const currentLocale = signal<AppLocale>(initialLocale());
 
-// Set here rather than only in LocaleService: that service is constructed by the shell, which
-// sits behind the auth guard, so the document would otherwise claim the wrong language for as
-// long as sign-in takes.
 document.documentElement.lang = currentLocale();
 
 export function isAppLocale(value: string | null | undefined): value is AppLocale {

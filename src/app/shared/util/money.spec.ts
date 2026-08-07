@@ -21,7 +21,6 @@ describe('money utils', () => {
       currentLocale.set('en-US');
       const american = formatMoney(1234.56, 'USD');
 
-      // Non-breaking spaces vary by runtime, so the separators are what is asserted.
       expect(brazilian).toContain('1.234,56');
       expect(american).toContain('1,234.56');
     });

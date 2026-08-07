@@ -48,12 +48,6 @@
           ></i>
         </button>
 
-        <!--
-          A p-popover of plain buttons rather than a p-menu: PrimeNG 22.0.0's Menu template
-          tracks its @for by a template context variable, which Angular hoists into a
-          context-free function, so rendering any item throws
-          "ReferenceError: parentId_r3 is not defined". Same workaround as the invoices page.
-        -->
         <button
           type="button"
           class="flex items-center gap-2 rounded p-1 hover:bg-[var(--p-content-hover-background)]"
@@ -87,10 +81,6 @@
               (onClick)="userMenu.hide()"
             />
 
-            <!--
-              Each language is written in its own name rather than translated, which is the
-              one label a speaker of the other language still recognises.
-            -->
             <div class="border-t border-[var(--p-content-border-color)] pt-1">
               <p class="px-3 py-1 text-xs text-[var(--p-text-muted-color)]">
                 {{ t('common.language') }}
@@ -129,11 +119,6 @@
 <p-toast position="bottom-right" />
 <p-confirmdialog />
 
-<!--
-  The brand sits in the sidebar and the top bar sits beside it, so their bottom borders read
-  as one line. Both are pinned to the same height instead of being left to whatever their
-  content happens to add up to.
--->
 <ng-template #brand>
   <a
     [routerLink]="homeRoute"

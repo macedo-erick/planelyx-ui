@@ -20,6 +20,9 @@ export type TranslateFn = (key: string, params?: TranslateParams) => string;
  *
  * Must be called from an injection context, i.e. a field initializer:
  * `protected readonly t = injectTranslate();`
+ *
+ * The returned function reads `activeLang` for the dependency, not for the value — `translate`
+ * resolves the active language itself, but nothing would re-run on a switch without that read.
  */
 export function injectTranslate(): TranslateFn {
   const transloco = inject(TranslocoService);
@@ -28,8 +31,6 @@ export function injectTranslate(): TranslateFn {
   });
 
   return (key, params) => {
-    // Read for the dependency, not for the value — `translate` resolves the active language
-    // itself, but nothing would re-run without this.
     activeLang();
     return transloco.translate(key, params);
   };

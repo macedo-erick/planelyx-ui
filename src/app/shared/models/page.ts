@@ -3,10 +3,11 @@
  *
  * Mirrors `dto/PageResponse` on the server, which is a hand-rolled record rather than
  * Spring's own `Page` — that one's JSON shape is documented as unstable.
+ *
+ * `page` is zero-based.
  */
 export interface PageResponse<T> {
   readonly content: readonly T[];
-  /** Zero-based. */
   readonly page: number;
   readonly size: number;
   readonly totalElements: number;

@@ -189,7 +189,6 @@ export class TransactionFormDialog {
     required(path.creditCardId, { message: this.t('validation.transactionCard') });
 
     required(path.categoryId, { message: this.t('validation.transactionCategory') });
-    // `min` alone lets an empty field through, now that the amount starts out null.
     required(path.amount, { message: this.t('validation.amountPositive') });
     min(path.amount, 0.01, { message: this.t('validation.amountPositive') });
     required(path.transactionDate, { message: this.t('validation.dateRequired') });
@@ -401,7 +400,6 @@ export class TransactionFormDialog {
       return;
     }
 
-    // Editing one of a series asks how far the change reaches before anything is sent.
     if (this.isSeries()) {
       this.scopeMode.set('save');
       this.scopeOpen.set(true);
@@ -431,7 +429,6 @@ export class TransactionFormDialog {
     const value = this.model();
     const existing = this.transaction();
     const recurring = value.repeats !== 'NONE';
-    // Nothing reaches here without a valid form, so the nullable fields are settled by now.
     const amount = value.amount as Money;
 
     const call: Observable<unknown> = existing
@@ -488,7 +485,6 @@ export class TransactionFormDialog {
         this.visible.set(false);
         this.saved.emit();
         this.invoice.reload();
-        // A card charge moves the invoice total, and with it the card's available limit.
         this.cards.reload();
       },
       error: () => this.saving.set(false),

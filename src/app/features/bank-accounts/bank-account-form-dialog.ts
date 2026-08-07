@@ -148,14 +148,16 @@ export class BankAccountFormDialog {
               this.visible.set(false);
               this.deleted.emit(current);
             },
-            // The interceptor raises the toast; the dialog stays open on purpose. Closing it
-            // would suggest the account had gone when it is still there.
             error: () => this.saving.set(false),
           });
       },
     });
   }
 
+  /**
+   * An edit never moves `initialBalance`, though the API still requires it: the live balance is
+   * derived from that figure, and correcting one is what "Adjust balance" is for.
+   */
   protected onSubmit(): void {
     this.f().markAsTouched();
     if (this.f().invalid()) {
@@ -169,8 +171,6 @@ export class BankAccountFormDialog {
       name: value.name.trim(),
       bankName: value.bankName.trim(),
       accountType: value.accountType as AccountType,
-      // The API still requires it, but editing must never move it — the balance is derived
-      // from it and correcting one is what "Adjust balance" is for.
       initialBalance: existing ? existing.initialBalance : (value.initialBalance ?? 0),
       currency: value.currency.trim().toUpperCase(),
     };

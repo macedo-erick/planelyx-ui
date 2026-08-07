@@ -38,9 +38,11 @@ export class BankAccountsPage {
   protected readonly selected = signal<BankAccount | null>(null);
   protected readonly accounts = computed(() => this.service.sorted());
 
+  /**
+   * Balances are refetched on every visit. Transactions posted on other pages move them without
+   * this service ever hearing about it, so what was cached last time cannot be trusted.
+   */
   constructor() {
-    // Transactions posted on other pages move these balances without this service ever
-    // hearing about it, so what was cached last visit cannot be trusted.
     this.service.reloadBalances();
   }
 

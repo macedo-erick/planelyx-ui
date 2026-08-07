@@ -100,11 +100,6 @@
       </div>
 
       @for (bill of billsDue(); track bill.id) {
-        <!--
-          The row is not a <button>: it holds the tick, which would be a button inside a
-          button. A stretched overlay carries the click instead — the same trick the account
-          cards use — with the checkbox lifted above it so it stays clickable in its own right.
-        -->
         <div
           class="relative flex items-center gap-3 border-b border-[var(--p-content-border-color)] px-4 py-3 last:border-b-0 hover:bg-[var(--p-content-hover-background)]"
         >
@@ -196,11 +191,6 @@
       </div>
 
       @for (invoice of upcomingInvoices(); track invoice.id) {
-        <!--
-          Goes to the invoices screen already showing this invoice, rather than to a detail
-          page of its own — the two had drifted into disagreeing about which month an
-          invoice belonged to.
-        -->
         <a
           routerLink="/invoices"
           [queryParams]="{ cardId: invoice.creditCardId, month: invoice.referenceMonth }"
@@ -233,10 +223,6 @@
   </div>
 </div>
 
-<!--
-  Editing a bill from here rather than sending the owner to the transactions page: a fixed cost
-  is rarely a fixed amount, and the reminder is where they meet it.
--->
 <planelyx-transaction-form-dialog
   [(visible)]="dialogOpen"
   [transaction]="selected()"

@@ -50,9 +50,11 @@ export class ProfilePage {
     email(path.email, { message: this.t('validation.email') });
   });
 
+  /**
+   * The profile arrives after the page does, so the form is filled from the response rather than
+   * at construction.
+   */
   constructor() {
-    // The profile arrives after the page does, so the form is filled from the response
-    // rather than at construction.
     effect(() => {
       const profile = this.service.profile();
       if (profile) {
@@ -69,6 +71,10 @@ export class ProfilePage {
     this.auth.openAccountManagement();
   }
 
+  /**
+   * Claims are refreshed after a successful save: the header reads the name off the token, which
+   * still holds the old one until Keycloak reissues it.
+   */
   protected onSubmit(): void {
     this.f().markAsTouched();
     if (this.f().invalid()) {
@@ -94,8 +100,6 @@ export class ProfilePage {
             summary: this.t('profile.updated'),
             life: 3000,
           });
-          // The header reads the name off the token, which still holds the old one until
-          // Keycloak reissues it.
           void this.auth.refreshClaims();
         },
         error: () => this.saving.set(false),
