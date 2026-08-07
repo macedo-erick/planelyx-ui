@@ -23,12 +23,6 @@
       [options]="typeOptions()"
     />
 
-    <!--
-      Only on create, where the account has no transactions yet and the balance and the
-      starting figure are the same number. Once there are transactions the balance is derived
-      from them, so editing it here would silently contradict the ledger — "Adjust balance"
-      below records the difference instead.
-    -->
     @if (!editing()) {
       <planelyx-money-input
         [formField]="f.initialBalance"

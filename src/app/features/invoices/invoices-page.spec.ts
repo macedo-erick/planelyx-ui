@@ -132,7 +132,6 @@ describe('InvoicesPage', () => {
   it('renders charges in the order the API sent them', async () => {
     showMonth(2026, 8);
 
-    // Bought on 25 June in 10x, so its August slice is dated 25 August by the API.
     const installment = charge({
       id: 'installment',
       templateId: TEMPLATE_ID,
@@ -159,7 +158,6 @@ describe('InvoicesPage', () => {
     );
     expect(requests).toHaveLength(1);
     requests[0].flush({
-      // Server order: newest purchase first, so the June installment comes last.
       content: [groceries, fuel, installment],
       page: 0,
       size: 2000,

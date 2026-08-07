@@ -77,8 +77,6 @@ export class AdjustInvoiceDialog {
   });
 
   constructor() {
-    // Opens on the figure it is replacing, so submitting untouched is a no-op rather than a
-    // correction to zero.
     effect(() => {
       if (!this.visible()) {
         return;
@@ -105,7 +103,6 @@ export class AdjustInvoiceDialog {
       return;
     }
 
-    // `unchanged()` already returned above for a cleared field, and the schema requires one.
     const target = this.model().targetAmount as Money;
 
     this.confirm.confirm({
@@ -120,7 +117,6 @@ export class AdjustInvoiceDialog {
       accept: () => {
         this.saving.set(true);
         this.service
-          // The API has no translations, so the charge is named from here or it reads English.
           .adjust(invoice.id, target, this.t('invoices.adjust.description'))
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({

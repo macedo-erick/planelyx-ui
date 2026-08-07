@@ -2,21 +2,33 @@ import { IsoDate, Money, Uuid } from './common';
 import { Invoice } from './invoice';
 import { Transaction } from './transaction';
 
-/** `GET /api/dashboard?month=YYYY-MM` — every figure the dashboard shows, in one round trip. */
+/**
+ * `GET /api/dashboard?month=YYYY-MM` — every figure the dashboard shows, in one round trip.
+ *
+ * Balances are cumulative as of the end of that month, which is what makes stepping forward a
+ * forecast: installments and recurring occurrences already exist as rows, so a future month simply
+ * includes rows that are there.
+ *
+ * Three figures are easy to double count. `accountBalanceTotal` is the plain sum of the accounts.
+ * `invoicesDueTotal` covers the unpaid invoices falling due by `periodEnd` — committed money that
+ * has not left any one account yet. `totalBalance` is the first less the second, so it deliberately
+ * does not match the accounts listed beside it. An invoice already paid is in neither: paying one
+ * posts a settlement, so it has left the balances already.
+ *
+ * `billsDue` is not a fourth figure of that kind. It lists the month's recurring account bills
+ * still to be ticked off, oldest first, and every one is an ordinary transaction already inside
+ * `accountBalanceTotal` — a reminder, nothing more. Subtracting `billsDueTotal` from anything
+ * counts the same money twice.
+ *
+ * `beyondGeneratedOccurrences` says the month sits past the last generated occurrence of an
+ * open-ended recurring rule, so its figures are incomplete rather than simply low.
+ */
 export interface Dashboard {
   readonly periodStart: IsoDate;
   readonly periodEnd: IsoDate;
   readonly accountBalances: readonly AccountBalance[];
-  /** `accountBalances` summed, so the subtraction below can be shown rather than explained. */
   readonly accountBalanceTotal: Money;
-  /**
-   * `accountBalanceTotal` less `invoicesDueTotal` — so it deliberately does not match that sum.
-   * An unpaid card invoice is committed money that has not left any one account yet, so it comes
-   * off the total only. Invoices already paid are not deducted here and need not be: paying one
-   * posts a settlement against an account, so it has already left the balances above.
-   */
   readonly totalBalance: Money;
-  /** Unpaid invoices falling due on or before `periodEnd`, already deducted from the total. */
   readonly invoicesDueTotal: Money;
   readonly invoicesDueCount: number;
   readonly income: Money;
@@ -24,46 +36,29 @@ export interface Dashboard {
   readonly categoryBreakdown: readonly CategoryBreakdown[];
   readonly outstandingInvoiceTotal: Money;
   readonly upcomingInvoices: readonly Invoice[];
-  /**
-   * This month's recurring account bills not yet ticked off — rent, power, internet — oldest
-   * first. The reminder.
-   *
-   * Every one is an ordinary transaction that already exists and is **already inside**
-   * `accountBalanceTotal`, because balances here run to the end of the month rather than stopping
-   * at today. Ticking one off moves no money and changes no figure. Never subtract `billsDueTotal`
-   * from anything — that double counts, which is exactly what this is here to prevent.
-   *
-   * Card invoices are not here: they are settled as one bill through `upcomingInvoices` and
-   * deducted through `invoicesDueTotal`, which is a different thing entirely.
-   */
   readonly billsDue: readonly Transaction[];
-  /** `billsDue` summed, for a heading. Not deducted from anything. */
   readonly billsDueTotal: Money;
   readonly billsDueCount: number;
-  /**
-   * The month sits past the last generated occurrence of an open-ended recurring rule, so its
-   * figures are incomplete rather than simply low. Surfaced to the user, not silently ignored.
-   */
   readonly beyondGeneratedOccurrences: boolean;
 }
 
+/** The balance is cumulative as of `periodEnd`, not movement within the month. */
 export interface AccountBalance {
   readonly bankAccountId: Uuid;
   readonly name: string;
   readonly bankName: string;
   readonly currency: string;
-  /** Cumulative as of `periodEnd`, not movement within the month. */
   readonly balance: Money;
 }
 
 /**
  * One slice of `expense`. The slices total `expense`, so the chart agrees with the tile.
+ *
+ * A null `categoryId` marks the single remainder slice carrying every category past the largest
+ * few. It stands for no one category, which is how it is told apart and labelled in the reader's
+ * language.
  */
 export interface CategoryBreakdown {
-  /**
-   * Null on the single remainder slice carrying every category past the largest few. It stands
-   * for no one category, which is how it is told apart and labelled in the reader's language.
-   */
   readonly categoryId: Uuid | null;
   readonly name: string;
   readonly color: string | null;

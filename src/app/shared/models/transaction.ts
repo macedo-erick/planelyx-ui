@@ -1,53 +1,53 @@
 import { IsoDate, IsoInstant, Money, Uuid } from './common';
 import { TransactionKind, TransactionScope } from './enums';
 
+/**
+ * One transaction as the API holds it.
+ *
+ * Which owner field is set follows the kind: an account kind carries `bankAccountId`, a CARD_CHARGE
+ * carries `creditCardId` and the `invoiceId` the server files it under. `templateId` is set on
+ * anything materialised from a recurring rule, and the installment fields only on an INSTALLMENT
+ * one, where `installmentNumber` is 1-based.
+ *
+ * It carries two dates because an installment needs both. `purchaseDate` is when the purchase was
+ * made, the same as `transactionDate` for anything bought outright; an installment's occurrences
+ * are generated a month apart, so a sofa bought on 25 January is dated 25 March inside the March
+ * invoice and this is the only field that still says January.
+ *
+ * `paid` only means anything on an ACCOUNT_DEBIT. A card charge is settled through its invoice
+ * rather than one at a time, and income is not a bill, so both are written true and the server
+ * refuses to flip them. It is a reminder and nothing more — balances run to the end of the month,
+ * so the money is deducted either way. See `Dashboard.billsDue`.
+ */
 export interface Transaction {
   readonly id: Uuid;
   readonly kind: TransactionKind;
-  /** Set iff kind is ACCOUNT_DEBIT or ACCOUNT_CREDIT. */
   readonly bankAccountId: Uuid | null;
-  /** Set iff kind is CARD_CHARGE. */
   readonly creditCardId: Uuid | null;
   readonly categoryId: Uuid;
-  /** Assigned automatically for card charges; null otherwise. */
   readonly invoiceId: Uuid | null;
-  /** Set when the transaction was materialized from a recurring template. */
   readonly templateId: Uuid | null;
-  /** 1-based position, populated only for INSTALLMENT templates. */
   readonly installmentNumber: number | null;
-  /** Total number of installments, populated only for INSTALLMENT templates. */
   readonly totalInstallments: number | null;
   readonly amount: Money;
   readonly transactionDate: IsoDate;
-  /**
-   * The day the purchase was made, resolved by the API.
-   *
-   * The same as `transactionDate` for anything bought outright. An installment's occurrences are
-   * generated a month apart, so a sofa bought on 25 January is dated 25 March inside the March
-   * invoice — this is the only field that still says January.
-   */
   readonly purchaseDate: IsoDate;
   readonly description: string;
-  /**
-   * Whether this has been ticked off.
-   *
-   * Only meaningful on an ACCOUNT_DEBIT. A card charge is always paid — it is settled through its
-   * invoice, not one at a time — and income is not a bill, so both are written true and the server
-   * refuses to flip them. The server sets it on create: a debit dated ahead of today has not
-   * happened yet, anything on or before today is being recorded after the fact.
-   *
-   * Purely a reminder. Balances run to the end of the month, so the money is already deducted
-   * either way — see `Dashboard.billsDue`.
-   */
   readonly paid: boolean;
   readonly createdAt: IsoInstant;
 }
 
+/**
+ * A transaction to write. `bankAccountId` and `creditCardId` are mutually exclusive, picked by the
+ * kind.
+ *
+ * `paid` is worth sending only for an ACCOUNT_DEBIT the caller disagrees with the date about:
+ * omitted, the server reads it off `transactionDate` — dated ahead means not yet paid, today or
+ * earlier means recorded after the fact. A card charge is always paid whatever this says.
+ */
 export interface TransactionRequest {
   kind: TransactionKind;
-  /** Required for account kinds, must be null for CARD_CHARGE. */
   bankAccountId: Uuid | null;
-  /** Required for CARD_CHARGE, must be null for account kinds. */
   creditCardId: Uuid | null;
   categoryId: Uuid;
   amount: Money;
@@ -59,21 +59,21 @@ export interface TransactionRequest {
 /**
  * PUT takes a deliberately narrower payload than POST — `kind`, `bankAccountId` and
  * `creditCardId` are immutable once created.
+ *
+ * `scope` says how far the edit reaches through a series, and omitted means `SINGLE`. The date is
+ * only ever applied to the edited row whatever the scope — the server keeps siblings on their own.
  */
 export interface TransactionUpdateRequest {
   categoryId: Uuid;
   amount: Money;
   transactionDate: IsoDate;
   description: string;
-  /**
-   * How far the edit reaches through a series. Omitted means `SINGLE`. The date is only ever
-   * applied to the edited row, whatever the scope — the server keeps siblings on their own dates.
-   */
   scope?: TransactionScope;
 }
 
 /**
- * Server-side filters and paging accepted by `GET /api/transactions`. All optional.
+ * Server-side filters and paging accepted by `GET /api/transactions`. All optional, with `from` and
+ * `to` inclusive and `page` zero-based.
  *
  * The same filter fields are accepted by `GET /api/transactions/summary`, which totals the
  * whole selection rather than a page.
@@ -83,11 +83,8 @@ export interface TransactionFilters {
   creditCardId?: Uuid;
   categoryId?: Uuid;
   kind?: TransactionKind;
-  /** Inclusive lower bound. */
   from?: IsoDate;
-  /** Inclusive upper bound. */
   to?: IsoDate;
-  /** Zero-based. */
   page?: number;
   size?: number;
 }

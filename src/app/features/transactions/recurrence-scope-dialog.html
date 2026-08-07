@@ -11,11 +11,6 @@
   </p>
 
   <div class="flex flex-col gap-3" role="radiogroup" [attr.aria-label]="heading()">
-    <!--
-      The radio sits beside the label rather than inside it: `for`/`inputId` is the association
-      the linter and screen readers both recognise, since p-radiobutton is a component wrapper
-      rather than a native input.
-    -->
     <div class="flex items-start gap-3">
       <p-radiobutton name="scope" value="SINGLE" inputId="scope-single" [(ngModel)]="scope" />
       <label for="scope-single" class="cursor-pointer">

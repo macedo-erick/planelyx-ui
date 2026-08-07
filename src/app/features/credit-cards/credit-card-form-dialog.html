@@ -25,11 +25,6 @@
     />
     <planelyx-money-input [formField]="f.creditLimit" [label]="t('cards.creditLimit')" />
 
-    <!--
-      Two day fields fit side by side on a full-width dialog and stack once the dialog is
-      capped by a narrow viewport. The spinner buttons are off: they would take a third of
-      each column for a value that is faster to type than to click up to.
-    -->
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <planelyx-number-input
         [formField]="f.closingDay"

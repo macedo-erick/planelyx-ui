@@ -25,11 +25,6 @@
   <div class="grid gap-4 md:grid-cols-2">
     @for (card of cards(); track card.id) {
       <planelyx-card class="group relative">
-        <!--
-          Overlay rather than wrapping the body in a <button>: the card holds an <h2> and a
-          progress bar, neither of which is valid button content. Delete lives in the edit
-          dialog, matching the transactions flow.
-        -->
         <button
           type="button"
           class="absolute inset-0 z-10 rounded-xl enabled:hover:cursor-pointer"

@@ -70,15 +70,7 @@
     }
 
     @if (paidVisible()) {
-      <!--
-        Applied on save with the rest of the form, not on click — Cancel is right there. The
-        tick moves no money either way: the entry is already counted in every balance.
-      -->
       <div class="flex items-start gap-2">
-        <!--
-          `standalone`, because this sits inside a <form> that NgForm attaches to but the field
-          itself belongs to the signal form above, not to it.
-        -->
         <p-checkbox
           inputId="transaction-paid"
           [binary]="true"
