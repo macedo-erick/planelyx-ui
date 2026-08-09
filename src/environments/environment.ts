@@ -3,6 +3,7 @@ import type { Environment } from './environment.model';
 export const environment: Environment = {
   production: false,
   apiUrl: 'http://localhost:8080/api',
+  ocrUrl: 'http://localhost:8084/ocr',
   keycloak: {
     url: 'http://localhost:8081/auth',
     realm: 'planelyx',

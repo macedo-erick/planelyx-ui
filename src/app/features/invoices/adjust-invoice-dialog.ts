@@ -20,7 +20,7 @@ import { injectTranslate } from '../../core/i18n/translate';
 import { PlanelyxMoneyInput } from '../../shared/controls/money-input';
 import { Money } from '../../shared/models/common';
 import { Invoice } from '../../shared/models/invoice';
-import { formatMoney, roundCents } from '../../shared/util/money';
+import { formatMoneyUnmasked, roundCents } from '../../shared/util/money';
 import { InvoiceService } from './invoice.service';
 
 interface AdjustInvoiceFormModel {
@@ -73,7 +73,7 @@ export class AdjustInvoiceDialog {
   protected readonly deltaLabel = computed(() => {
     const delta = this.delta();
     const sign = delta > 0 ? '+' : '−';
-    return `${sign} ${formatMoney(Math.abs(delta))}`;
+    return `${sign} ${formatMoneyUnmasked(Math.abs(delta))}`;
   });
 
   constructor() {
@@ -87,7 +87,7 @@ export class AdjustInvoiceDialog {
   }
 
   protected currentLabel(): string {
-    return formatMoney(this.current());
+    return formatMoneyUnmasked(this.current());
   }
 
   protected onSubmit(): void {
@@ -108,7 +108,7 @@ export class AdjustInvoiceDialog {
     this.confirm.confirm({
       header: this.t('invoices.adjust.header'),
       message: this.t('invoices.adjust.confirm', {
-        target: formatMoney(target),
+        target: formatMoneyUnmasked(target),
         delta: this.deltaLabel(),
       }),
       icon: 'pi pi-exclamation-triangle',
@@ -125,7 +125,9 @@ export class AdjustInvoiceDialog {
               this.messages.add({
                 severity: 'success',
                 summary: this.t('invoices.adjust.done'),
-                detail: this.t('invoices.adjust.doneDetail', { target: formatMoney(target) }),
+                detail: this.t('invoices.adjust.doneDetail', {
+                  target: formatMoneyUnmasked(target),
+                }),
                 life: 3000,
               });
               this.visible.set(false);

@@ -46,7 +46,7 @@ import {
   transactionKindLabels,
   transactionKindOptions,
 } from '../../shared/util/enum-labels';
-import { formatMoney, splitInstallments } from '../../shared/util/money';
+import { formatMoneyUnmasked, splitInstallments } from '../../shared/util/money';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
 import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
@@ -256,7 +256,7 @@ export class TransactionFormDialog {
       return '';
     }
     const parts = splitInstallments(total, count);
-    return `${parts.length} × ${formatMoney(parts[0])}`;
+    return `${parts.length} × ${formatMoneyUnmasked(parts[0])}`;
   });
 
   /** Only income categories make sense for money coming in. */

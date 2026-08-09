@@ -27,6 +27,20 @@ const apiUrlCondition = createInterceptorCondition<IncludeBearerTokenCondition>(
 });
 
 /**
+ * The same for `planelyx-ocr`, which is a second service on a base URL of its own.
+ *
+ * It needs its own condition rather than a widened pattern. `planelyx-ocr` validates the very
+ * same realm token and scopes every document to the `sub` inside it, so a request that arrives
+ * without one is refused — and the failure surfaces on the review screen as a 401 that reads
+ * like a broken login rather than a missing line here. Naming each host individually is also
+ * what keeps the access token from reaching anywhere it should not.
+ */
+const ocrUrlCondition = createInterceptorCondition<IncludeBearerTokenCondition>({
+  urlPattern: new RegExp(`^${escapeRegExp(environment.ocrUrl)}(/.*)?$`, 'i'),
+  bearerPrefix: 'Bearer',
+});
+
+/**
  * The silent-SSO redirect is resolved against `<base href>` rather than the bare origin:
  * production serves the app under `/ui/`, where `${origin}/silent-check-sso.html` would 404.
  */
@@ -51,8 +65,8 @@ export const provideKeycloakAuth = (): EnvironmentProviders =>
     providers: [AutoRefreshTokenService, UserActivityService],
   });
 
-/** Provider that scopes the bearer-token interceptor to the Planelyx API only. */
+/** Provider that scopes the bearer-token interceptor to the Planelyx services, and nothing else. */
 export const keycloakBearerTokenConfig: Provider = {
   provide: INCLUDE_BEARER_TOKEN_INTERCEPTOR_CONFIG,
-  useValue: [apiUrlCondition],
+  useValue: [apiUrlCondition, ocrUrlCondition],
 };

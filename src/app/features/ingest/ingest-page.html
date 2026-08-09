@@ -1,0 +1,84 @@
+<planelyx-page-header [title]="t('ingest.title')" [subtitle]="t('ingest.subtitle')">
+  <p-button
+    icon="pi pi-upload"
+    [label]="t('ingest.upload')"
+    [loading]="uploading()"
+    (onClick)="fileInput.click()"
+  />
+  <input
+    #fileInput
+    type="file"
+    class="sr-only"
+    accept=".ofx,.csv,.pdf,.jpg,.jpeg,.png"
+    [attr.aria-label]="t('ingest.upload')"
+    (change)="onFileSelected($event)"
+  />
+</planelyx-page-header>
+
+@if (service.isLoading()) {
+  <p class="text-[var(--p-text-muted-color)]">{{ t('common.loading') }}</p>
+} @else if (documents().length === 0) {
+  <planelyx-empty-state
+    icon="pi-file-import"
+    [title]="t('ingest.empty')"
+    [message]="t('ingest.emptyMessage')"
+  />
+} @else {
+  <div class="grid gap-4 md:grid-cols-2">
+    @for (document of documents(); track document.id) {
+      @let pending = pendingLabel(document);
+
+      <planelyx-card class="group relative">
+        <a
+          class="absolute inset-0 z-10 rounded-xl"
+          [routerLink]="['/ingest', document.id]"
+          [attr.aria-label]="t('ingest.reviewAria', { name: document.originalFilename })"
+        ></a>
+
+        <!--
+          h-full so the hover tint covers the card rather than only the part the content fills.
+          The bordered box is stretched to the tallest card in its grid row; this div is not, and
+          a card with fewer lines than its neighbour would otherwise highlight down to its last
+          line and leave a bare strip beneath it — while the link above still spans the whole
+          card, so the pointer is over something that looks unhovered.
+        -->
+        <div
+          class="flex h-full flex-col gap-3 p-4 group-hover:bg-[var(--p-content-hover-background)]"
+        >
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <h2 class="truncate text-lg font-medium text-[var(--p-text-color)]">
+                {{ document.originalFilename }}
+              </h2>
+              <p class="truncate text-sm text-[var(--p-text-muted-color)]">
+                {{ when(document.createdAt) }}
+              </p>
+            </div>
+            <p-tag
+              [value]="statusLabel(document.status)"
+              [severity]="statusSeverity(document.status)"
+            />
+          </div>
+
+          <!--
+            Skipped outright when there is nothing to count. An empty row still draws the column
+            gap above it, which on a document with no pending and no filed lines reads as the
+            card having lost a line.
+          -->
+          @if (pending !== null || document.filedCount > 0) {
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+              @if (pending !== null) {
+                <span class="font-medium text-[var(--p-text-color)]">{{ pending }}</span>
+              }
+              @if (document.filedCount > 0) {
+                <span class="text-[var(--p-text-muted-color)]">
+                  {{ t('ingest.filedCount', { count: document.filedCount }) }}
+                </span>
+              }
+            </div>
+          }
+        </div>
+      </planelyx-card>
+    }
+  </div>
+}

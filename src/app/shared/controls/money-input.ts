@@ -6,7 +6,7 @@ import { InputNumber } from 'primeng/inputnumber';
 import { environment } from '../../../environments/environment';
 import { Money } from '../models/common';
 import { currentLocale } from '../util/locale';
-import { formatMoney } from '../util/money';
+import { formatMoneyUnmasked } from '../util/money';
 import { generateControlId, PlanelyxControlBase } from './control-base';
 import { PlanelyxFieldShell } from './field-shell';
 
@@ -78,7 +78,7 @@ export class PlanelyxMoneyInput
 
   /** A zero in the caller's locale, so an empty field still reads as a money field. */
   protected readonly resolvedPlaceholder = computed(
-    () => this.placeholder() || formatMoney(0, this.currency()),
+    () => this.placeholder() || formatMoneyUnmasked(0, this.currency()),
   );
 
   protected onChange(next: number | null): void {
