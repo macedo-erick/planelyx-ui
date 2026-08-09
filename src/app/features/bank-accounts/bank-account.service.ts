@@ -13,6 +13,7 @@ import {
 import { Money, Uuid } from '../../shared/models/common';
 import { Transaction } from '../../shared/models/transaction';
 import { SelectOption } from '../../shared/util/enum-labels';
+import { qualifiedLabel } from '../../shared/util/option-label';
 
 @Service()
 export class BankAccountService extends CrudService<BankAccount, BankAccountRequest> {
@@ -37,7 +38,7 @@ export class BankAccountService extends CrudService<BankAccount, BankAccountRequ
 
   readonly options = computed<SelectOption<Uuid>[]>(() =>
     this.sorted().map((account) => ({
-      label: `${account.name} · ${account.bankName}`,
+      label: qualifiedLabel(account.name, account.bankName),
       value: account.id,
     })),
   );
