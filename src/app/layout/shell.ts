@@ -7,6 +7,7 @@ import { Drawer } from 'primeng/drawer';
 import { Popover } from 'primeng/popover';
 import { Toast } from 'primeng/toast';
 
+import { AmountVisibilityService } from '../core/amount-visibility.service';
 import { AuthService } from '../core/auth/auth.service';
 import { LocaleService } from '../core/i18n/locale.service';
 import { injectTranslate } from '../core/i18n/translate';
@@ -40,6 +41,7 @@ export class Shell {
   protected readonly auth = inject(AuthService);
   protected readonly theme = inject(ThemeService);
   protected readonly locale = inject(LocaleService);
+  protected readonly amounts = inject(AmountVisibilityService);
   protected readonly t = injectTranslate();
   protected readonly navItems = NAV_ITEMS;
   /** Where the brand takes you — the same landing page the empty route redirects to. */
