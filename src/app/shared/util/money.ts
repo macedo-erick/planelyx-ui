@@ -1,6 +1,7 @@
 import { environment } from '../../../environments/environment';
 import { Money } from '../models/common';
 import { MinorAmount } from '../models/ingest';
+import { amountsHidden } from './amount-visibility';
 import { currentLocale } from './locale';
 
 /**
@@ -21,15 +22,72 @@ export function sumMoney(values: Iterable<Money>): Money {
   return roundCents(total);
 }
 
+/** The digits stand in for any amount, so the mask never hints at how long the number was. */
+const MASK = '••••';
+
+/** The parts of a formatted amount that carry the figure, as opposed to symbol and spacing. */
+const NUMERIC_PARTS = new Set<Intl.NumberFormatPartTypes>([
+  'integer',
+  'group',
+  'decimal',
+  'fraction',
+]);
+
 /**
- * Reads `currentLocale()`, so every amount on screen reformats when the language changes —
- * templates calling this through a component method re-run as a matter of course.
+ * The display path for an amount, masked to `R$ ••••` while `amountsHidden` is set.
+ *
+ * Reads `currentLocale()` and `amountsHidden()`, so every amount on screen reformats when the
+ * language changes or the mask is toggled — templates calling this through a component method
+ * re-run as a matter of course.
+ *
+ * Masking lives here rather than at the call sites so a newly displayed amount is concealed by
+ * default; showing a real figure takes the deliberate step of reaching for `formatMoneyUnmasked`.
  */
 export function formatMoney(value: Money, currency = environment.defaultCurrency): string {
+  return amountsHidden() ? maskMoney(currency) : formatMoneyUnmasked(value, currency);
+}
+
+/**
+ * The same formatting, never masked — for amounts the reader is editing rather than reading.
+ *
+ * A balance you are correcting or an installment preview of the figure you just typed has to
+ * stay legible, or the field cannot be filled in. Reach for this only where the amount is part
+ * of an input, and prefer `formatMoney` everywhere else.
+ */
+export function formatMoneyUnmasked(value: Money, currency = environment.defaultCurrency): string {
   return new Intl.NumberFormat(currentLocale(), {
     style: 'currency',
     currency,
   }).format(value);
+}
+
+/**
+ * The currency's own rendering of an amount with the figure replaced by dots.
+ *
+ * Built from `formatToParts` rather than by blanking digits out of a finished string, so symbol
+ * placement and spacing stay whatever the locale does with them — `R$ ••••` in pt-BR, `$••••`
+ * in en-US — without this function knowing the rule.
+ */
+function maskMoney(currency: string): string {
+  const parts = new Intl.NumberFormat(currentLocale(), {
+    style: 'currency',
+    currency,
+  }).formatToParts(0);
+
+  let masked = false;
+
+  return parts
+    .map((part) => {
+      if (!NUMERIC_PARTS.has(part.type)) {
+        return part.value;
+      }
+      if (masked) {
+        return '';
+      }
+      masked = true;
+      return MASK;
+    })
+    .join('');
 }
 
 /**
@@ -52,6 +110,9 @@ export function minorUnitDigits(currency: string): number {
  * The division to a float happens here and nowhere else, at the last moment before the number
  * becomes text. Amounts stay integral everywhere they are compared, summed or sent back, which is
  * what keeps the reconciliation `planelyx-ocr` performs meaningful.
+ *
+ * Deliberately ignores `amountsHidden`: this formats the statement review's lines, and checking
+ * an OCR reading against the printed total is exactly the task a mask would make impossible.
  */
 export function formatMinor(amount: MinorAmount): string {
   const scale = 10 ** minorUnitDigits(amount.currency);
