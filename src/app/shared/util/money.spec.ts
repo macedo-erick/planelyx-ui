@@ -1,7 +1,16 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { amountsHidden } from './amount-visibility';
 import { currentLocale } from './locale';
-import { formatMoney, roundCents, splitInstallments, sumMoney } from './money';
+import {
+  currencySymbol,
+  formatMinor,
+  formatMoney,
+  formatMoneyUnmasked,
+  roundCents,
+  splitInstallments,
+  sumMoney,
+} from './money';
 
 describe('money utils', () => {
   /**
@@ -29,6 +38,92 @@ describe('money utils', () => {
       currentLocale.set('pt-BR');
 
       expect(formatMoney(10, 'USD')).toContain('US$');
+    });
+  });
+
+  /**
+   * The mask is the display default, so an amount added later is concealed without anyone
+   * remembering to conceal it. The tests below pin both halves of that: what masks, and the
+   * editing surfaces that must not.
+   */
+  describe('hiding amounts', () => {
+    const originalLocale = currentLocale();
+
+    /**
+     * `Intl` separates symbol from figure with a non-breaking space in pt-BR and with nothing
+     * at all in en-US. Normalising here keeps the assertions readable without pretending the
+     * difference does not exist — `maskMoney` reproduces whichever the locale chose.
+     */
+    const normalise = (value: string) => value.replace(/\u00A0/g, ' ');
+
+    afterEach(() => {
+      currentLocale.set(originalLocale);
+      amountsHidden.set(false);
+    });
+
+    it('keeps the currency symbol and drops the figure', () => {
+      currentLocale.set('pt-BR');
+      amountsHidden.set(true);
+
+      const masked = formatMoney(1234.56, 'BRL');
+
+      expect(masked).toContain('R$');
+      expect(masked).toContain('••••');
+      expect(masked).not.toMatch(/\d/);
+    });
+
+    it('places the symbol the way the locale does', () => {
+      amountsHidden.set(true);
+
+      currentLocale.set('pt-BR');
+      expect(normalise(formatMoney(10, 'BRL'))).toBe('R$ ••••');
+
+      currentLocale.set('en-US');
+      expect(normalise(formatMoney(10, 'USD'))).toBe('$••••');
+    });
+
+    it('masks every amount to the same width, whatever the figure', () => {
+      amountsHidden.set(true);
+
+      expect(formatMoney(7, 'BRL')).toBe(formatMoney(1_234_567.89, 'BRL'));
+    });
+
+    it('follows the language switch while masked', () => {
+      amountsHidden.set(true);
+      currentLocale.set('pt-BR');
+
+      const brazilian = formatMoney(10, 'USD');
+
+      currentLocale.set('en-US');
+      const american = formatMoney(10, 'USD');
+
+      expect(normalise(brazilian)).toBe('US$ ••••');
+      expect(normalise(american)).toBe('$••••');
+    });
+
+    it('leaves formatMoneyUnmasked alone, for fields being edited', () => {
+      currentLocale.set('pt-BR');
+      amountsHidden.set(true);
+
+      expect(formatMoneyUnmasked(1234.56, 'BRL')).toContain('1.234,56');
+    });
+
+    it('leaves the statement review readable', () => {
+      currentLocale.set('pt-BR');
+      amountsHidden.set(true);
+
+      expect(formatMinor({ amountMinor: 123456, currency: 'BRL' })).toContain('1.234,56');
+      expect(currencySymbol('BRL')).toBe('R$');
+    });
+
+    it('goes back to real figures when switched off', () => {
+      currentLocale.set('pt-BR');
+
+      amountsHidden.set(true);
+      expect(normalise(formatMoney(10, 'BRL'))).toBe('R$ ••••');
+
+      amountsHidden.set(false);
+      expect(formatMoney(10, 'BRL')).toContain('10,00');
     });
   });
 

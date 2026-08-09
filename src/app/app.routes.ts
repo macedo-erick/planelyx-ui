@@ -24,6 +24,17 @@ export const routes: Routes = [
       },
       { path: 'recurring', pathMatch: 'full', redirectTo: 'transactions' },
       {
+        path: 'ingest',
+        title: 'titles.ingest',
+        loadComponent: () => import('./features/ingest/ingest-page').then((m) => m.IngestPage),
+      },
+      {
+        path: 'ingest/:id',
+        title: 'titles.reviewDocument',
+        loadComponent: () =>
+          import('./features/ingest/document-review-page').then((m) => m.DocumentReviewPage),
+      },
+      {
         path: 'invoices',
         title: 'titles.invoices',
         loadComponent: () =>

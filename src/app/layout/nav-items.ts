@@ -14,6 +14,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { label: 'nav.accounts', icon: 'pi pi-building-columns', route: '/accounts' },
   { label: 'nav.cards', icon: 'pi pi-credit-card', route: '/cards' },
   { label: 'nav.transactions', icon: 'pi pi-arrow-right-arrow-left', route: '/transactions' },
+  { label: 'nav.ingest', icon: 'pi pi-file-import', route: '/ingest' },
   { label: 'nav.invoices', icon: 'pi pi-receipt', route: '/invoices' },
   { label: 'nav.categories', icon: 'pi pi-tags', route: '/categories' },
 ];
