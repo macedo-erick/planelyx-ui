@@ -17,6 +17,8 @@
     "accountMenu": "Account menu for {{name}}",
     "switchToLight": "Switch to light theme",
     "switchToDark": "Switch to dark theme",
+    "hideAmounts": "Hide amounts",
+    "showAmounts": "Show amounts",
     "type": "Type",
     "name": "Name",
     "amount": "Amount",

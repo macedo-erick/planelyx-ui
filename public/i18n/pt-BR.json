@@ -17,6 +17,8 @@
     "accountMenu": "Menu da conta de {{name}}",
     "switchToLight": "Mudar para o tema claro",
     "switchToDark": "Mudar para o tema escuro",
+    "hideAmounts": "Ocultar valores",
+    "showAmounts": "Mostrar valores",
     "type": "Tipo",
     "name": "Nome",
     "amount": "Valor",
