@@ -1,0 +1,336 @@
+@if (document(); as doc) {
+  <planelyx-page-header [title]="doc.originalFilename" [subtitle]="t('ingest.reviewSubtitle')">
+    <p-button
+      [outlined]="true"
+      size="small"
+      icon="pi pi-file"
+      [label]="t('ingest.viewOriginal')"
+      [disabled]="busy()"
+      (onClick)="openOriginal()"
+    />
+    @if (canRollback()) {
+      <p-button
+        severity="danger"
+        [outlined]="true"
+        icon="pi pi-undo"
+        [label]="t('ingest.rollback')"
+        [disabled]="busy()"
+        (onClick)="askRollback()"
+      />
+    } @else {
+      <p-button
+        severity="danger"
+        [text]="true"
+        icon="pi pi-trash"
+        [label]="t('ingest.delete')"
+        [disabled]="busy()"
+        (onClick)="askDelete()"
+      />
+    }
+  </planelyx-page-header>
+
+  @if (validation(); as check) {
+    @if (!check.ok) {
+      <div
+        class="mb-4 rounded-lg border border-red-300 bg-red-50 p-4 text-sm dark:border-red-900 dark:bg-red-950/40"
+        role="alert"
+      >
+        <p class="font-medium text-red-700 dark:text-red-300">
+          {{ t('ingest.validationFailed') }}
+        </p>
+        <ul class="mt-2 list-inside list-disc text-red-700 dark:text-red-300">
+          @for (issue of check.issues; track $index) {
+            <li>{{ issue.message }}</li>
+          }
+        </ul>
+      </div>
+    }
+  }
+
+  @if (service.detailLoading()) {
+    <p class="text-[var(--p-text-muted-color)]">{{ t('common.loading') }}</p>
+  } @else if (lines().length === 0) {
+    <planelyx-empty-state
+      icon="pi-inbox"
+      [title]="t('ingest.nothingStaged')"
+      [message]="t('ingest.nothingStagedMessage')"
+    />
+  } @else {
+    <planelyx-card [padded]="true" class="mb-4">
+      <!--
+        Full-width columns below `sm`, where two 14rem fields and a button pair cannot share a
+        line without one of them being squeezed to nothing. From `sm` up they go back to sitting
+        side by side and the buttons return to the right edge.
+      -->
+      <div class="flex flex-wrap items-end gap-4">
+        <div class="flex w-full flex-col gap-1 sm:w-auto sm:min-w-56">
+          <label class="text-xs font-medium text-[var(--p-text-muted-color)]" for="review-target">
+            {{ t('ingest.target') }}
+          </label>
+          <p-select
+            inputId="review-target"
+            styleClass="w-full"
+            optionLabel="label"
+            optionValue="value"
+            appendTo="body"
+            [options]="targetOptions()"
+            [ngModel]="target()"
+            [placeholder]="t('ingest.targetPlaceholder')"
+            (ngModelChange)="target.set($event)"
+          />
+        </div>
+
+        <div class="flex w-full flex-col gap-1 sm:w-auto sm:min-w-56">
+          <label class="text-xs font-medium text-[var(--p-text-muted-color)]" for="bulk-category">
+            {{ t('ingest.bulkCategory') }}
+          </label>
+          <p-select
+            inputId="bulk-category"
+            styleClass="w-full"
+            optionLabel="label"
+            optionValue="value"
+            appendTo="body"
+            [options]="categoryOptions()"
+            [ngModel]="null"
+            [placeholder]="t('ingest.bulkCategoryPlaceholder')"
+            [disabled]="selectedIds().size === 0"
+            (ngModelChange)="applyCategoryToSelection($event)"
+          />
+        </div>
+
+        <div class="flex w-full items-center gap-2 sm:ml-auto sm:w-auto">
+          <p-button
+            styleClass="flex-1 justify-center sm:flex-none"
+            severity="secondary"
+            [outlined]="true"
+            icon="pi pi-times"
+            [label]="t('ingest.reject')"
+            [disabled]="busy() || selectedIds().size === 0"
+            (onClick)="rejectSelection()"
+          />
+          <p-button
+            styleClass="flex-1 justify-center sm:flex-none"
+            icon="pi pi-check"
+            [label]="
+              selectedIds().size === 0
+                ? t('ingest.confirmNone')
+                : t('ingest.confirm', { count: selectedIds().size })
+            "
+            [disabled]="!canConfirm()"
+            [loading]="busy()"
+            (onClick)="confirmSelection()"
+          />
+        </div>
+      </div>
+
+      <p class="mt-2 text-xs text-[var(--p-text-muted-color)]">{{ t('ingest.targetHint') }}</p>
+
+      @if (selectedIds().size > 0 && missingCategory().length > 0) {
+        <p class="mt-3 text-sm text-amber-600 dark:text-amber-400">
+          {{ t('ingest.missingCategory', { count: missingCategory().length }) }}
+        </p>
+      }
+      @if (selectedIds().size > 0 && target() === null) {
+        <p class="mt-3 text-sm text-amber-600 dark:text-amber-400">
+          {{ t('ingest.missingTarget') }}
+        </p>
+      }
+    </planelyx-card>
+
+    <!--
+      Cards rather than a table, and container queries rather than viewport breakpoints.
+      A table cannot be made to fit a phone without either scrolling sideways or growing a
+      second mobile layout to keep in sync; one card whose internal grid reflows is a single
+      code path that does both. The query reads the width of this element, which is the width
+      the list actually gets — the shell's sidebar means that is not the viewport width.
+
+      Alignment across cards is what makes it still scan like rows: every control is `h-10`,
+      the date cell takes that as a minimum with its text centred, and the columns are fixed
+      widths so every card breaks at the same place.
+
+      There is no heading row over them. The columns are a date, a text box, a number box and a
+      category select — each self-evident from what it holds, and each control carries its own
+      `aria-label`, so a heading would only add a line of chrome above every document.
+    -->
+    <div class="@container">
+      <div
+        class="mb-2 flex items-center gap-3 rounded-xl border p-[0.85rem]"
+        [class]="bulkBarClasses()"
+      >
+        <p-checkbox
+          [binary]="true"
+          [ngModel]="allSelected()"
+          [ariaLabel]="t('ingest.selectAll')"
+          [disabled]="selectableLines().length === 0"
+          (ngModelChange)="toggleAll($event)"
+        />
+        <span class="text-sm font-medium">
+          {{
+            t('ingest.selectedCount', {
+              selected: selectedIds().size,
+              total: selectableLines().length,
+            })
+          }}
+        </span>
+        @if (selectedIds().size > 0) {
+          <button
+            type="button"
+            class="ml-auto text-xs font-semibold text-[var(--p-primary-color)] hover:underline"
+            (click)="clearSelection()"
+          >
+            {{ t('ingest.clearSelection') }}
+          </button>
+        }
+      </div>
+
+      <ul class="flex list-none flex-col gap-2 p-0" [attr.aria-label]="t('ingest.tableCaption')">
+        @for (line of lines(); track line.id) {
+          <li
+            class="grid grid-cols-[20px_minmax(0,1fr)] items-start gap-3 rounded-xl border p-[0.85rem]"
+            [class]="cardClasses(line)"
+          >
+            <!-- Centred on the control band, not the card, so it holds its line as cards grow. -->
+            <p-checkbox
+              class="mt-2.5"
+              [binary]="true"
+              [ngModel]="isSelected(line.id)"
+              [disabled]="blockedLabel(line) !== null"
+              [ariaLabel]="t('ingest.selectLine', { name: line.rawDescription })"
+              (ngModelChange)="toggle(line, $event)"
+            />
+
+            <div class="min-w-0" [class.opacity-60]="blockedLabel(line) !== null">
+              <div
+                class="grid items-start gap-2 @[620px]:grid-cols-[7rem_minmax(0,1fr)_8.5rem_12rem] @[620px]:gap-3"
+              >
+                <div class="flex min-h-10 flex-col justify-center text-sm tabular-nums">
+                  <span>{{ day(line.postingDate) }}</span>
+                  @if (line.purchaseDate !== line.postingDate) {
+                    <span class="text-xs text-[var(--p-text-muted-color)]">
+                      {{ t('ingest.bought', { date: day(line.purchaseDate) }) }}
+                    </span>
+                  }
+                </div>
+
+                <div class="flex min-w-0 flex-col gap-1">
+                  <input
+                    type="text"
+                    class="h-10 w-full rounded-md border border-[var(--p-content-border-color)] bg-transparent px-3 text-sm"
+                    [value]="line.normalizedDescription ?? line.rawDescription"
+                    [attr.aria-label]="t('ingest.description')"
+                    (change)="onDescriptionChange(line, $any($event.target).value)"
+                  />
+
+                  @if (line.normalizedDescription) {
+                    <span
+                      class="truncate text-xs text-[var(--p-text-muted-color)]"
+                      [title]="line.rawDescription"
+                    >
+                      {{ line.rawDescription }}
+                    </span>
+                  }
+
+                  @if (line.installment || line.needsAttention || line.duplicateOf) {
+                    <div class="flex flex-wrap items-center gap-2">
+                      @if (line.installment) {
+                        <p-tag
+                          severity="secondary"
+                          [value]="line.installment.number + '/' + line.installment.total"
+                        />
+                      }
+                      @if (line.needsAttention) {
+                        <p-tag
+                          severity="warn"
+                          icon="pi pi-exclamation-triangle"
+                          [value]="t('ingest.lowConfidence')"
+                          [title]="lowConfidenceFields(line)"
+                        />
+                      }
+                      @if (line.duplicateOf) {
+                        <p-tag severity="warn" [value]="t('ingest.possibleDuplicate')" />
+                      }
+                    </div>
+                  }
+                </div>
+
+                <!--
+                  The symbol sits inside the control so the box fills its column and every
+                  amount's right edge lands on the same pixel.
+                -->
+                <div class="flex flex-col gap-1">
+                  <div class="relative">
+                    <span
+                      class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-xs text-[var(--p-text-muted-color)]"
+                    >
+                      {{ symbol(line.amount) }}
+                    </span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      class="h-10 w-full rounded-md border border-[var(--p-content-border-color)] bg-transparent pr-3 pl-12 text-right text-sm tabular-nums"
+                      [value]="majorAmount(line.amount)"
+                      [attr.aria-label]="t('ingest.amount')"
+                      (change)="onAmountChange(line, $any($event.target).valueAsNumber)"
+                    />
+                  </div>
+                  @if (line.foreignExchange; as fx) {
+                    <span class="text-xs text-[var(--p-text-muted-color)]">
+                      {{ amount(fx.originalAmount) }}
+                    </span>
+                  }
+                </div>
+
+                <div class="flex min-w-0 flex-col gap-1">
+                  <!--
+                    `h-10` on the select's own host, matching the inputs beside it. PrimeNG sizes
+                    its control from its internal padding, which is a different number from the
+                    one Tailwind gives a native input — left alone the two differ by a couple of
+                    pixels and the row stops lining up.
+                  -->
+                  <p-select
+                    styleClass="h-10 w-full"
+                    optionLabel="label"
+                    optionValue="value"
+                    appendTo="body"
+                    [options]="categoryOptions()"
+                    [ngModel]="categoryFor(line.id)"
+                    [placeholder]="t('ingest.categoryPlaceholder')"
+                    [disabled]="blockedLabel(line) !== null"
+                    [attr.aria-label]="t('ingest.category')"
+                    (ngModelChange)="setCategory(line.id, $event)"
+                  />
+                  <!--
+                    A suggestion is labelled as one. Pre-filling silently is exactly how a wrong
+                    category gets confirmed without anybody reading it.
+                  -->
+                  @if (line.suggestionSource && categoryFor(line.id) === line.suggestedCategoryId) {
+                    <span class="text-xs text-[var(--p-text-muted-color)]">
+                      {{ t('ingest.suggested') }}
+                    </span>
+                  }
+                </div>
+
+                <!-- Its own full-width line: a reason crushed into a cell is a reason unread. -->
+                @if (blockedLabel(line); as blocked) {
+                  <p
+                    class="text-xs text-[var(--p-text-muted-color)] @[620px]:col-start-2 @[620px]:col-end-[-1]"
+                  >
+                    {{ blocked }}
+                  </p>
+                }
+              </div>
+            </div>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+} @else if (!service.detailLoading()) {
+  <planelyx-empty-state
+    icon="pi-file"
+    [title]="t('ingest.notFound')"
+    [message]="t('ingest.notFoundMessage')"
+  />
+}
+
+<p-confirmdialog />
