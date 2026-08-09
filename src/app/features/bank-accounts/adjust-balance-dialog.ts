@@ -21,7 +21,7 @@ import { PlanelyxMoneyInput } from '../../shared/controls/money-input';
 import { BankAccount } from '../../shared/models/bank-account';
 import { IsoDate, Money } from '../../shared/models/common';
 import { todayIso } from '../../shared/util/date';
-import { formatMoney, roundCents } from '../../shared/util/money';
+import { formatMoneyUnmasked, roundCents } from '../../shared/util/money';
 import { BankAccountService } from './bank-account.service';
 
 interface AdjustBalanceFormModel {
@@ -85,7 +85,7 @@ export class AdjustBalanceDialog {
   protected readonly deltaLabel = computed(() => {
     const delta = this.delta();
     const sign = delta > 0 ? '+' : '−';
-    return `${sign} ${formatMoney(Math.abs(delta), this.currency())}`;
+    return `${sign} ${formatMoneyUnmasked(Math.abs(delta), this.currency())}`;
   });
 
   /**
@@ -103,7 +103,7 @@ export class AdjustBalanceDialog {
   }
 
   protected currentLabel(): string {
-    return formatMoney(this.current(), this.currency());
+    return formatMoneyUnmasked(this.current(), this.currency());
   }
 
   protected onSubmit(): void {
@@ -126,7 +126,7 @@ export class AdjustBalanceDialog {
       header: this.t('accounts.adjust.header'),
       message: this.t('accounts.adjust.confirm', {
         name: account.name,
-        target: formatMoney(target, this.currency()),
+        target: formatMoneyUnmasked(target, this.currency()),
         delta: this.deltaLabel(),
       }),
       icon: 'pi pi-exclamation-triangle',
@@ -149,7 +149,7 @@ export class AdjustBalanceDialog {
                 summary: this.t('accounts.adjust.done'),
                 detail: this.t('accounts.adjust.doneDetail', {
                   name: account.name,
-                  target: formatMoney(target, this.currency()),
+                  target: formatMoneyUnmasked(target, this.currency()),
                 }),
                 life: 3000,
               });
