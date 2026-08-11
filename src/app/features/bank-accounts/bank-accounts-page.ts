@@ -38,15 +38,10 @@ export class BankAccountsPage {
   protected readonly selected = signal<BankAccount | null>(null);
   protected readonly accounts = computed(() => this.service.sorted());
 
-  /**
-   * Balances are refetched on every visit. Transactions posted on other pages move them without
-   * this service ever hearing about it, so what was cached last time cannot be trusted.
-   */
   constructor() {
     this.service.reloadBalances();
   }
 
-  /** How many cards bill against each account — the thing a delete would take with it. */
   private readonly cardCounts = computed(() => {
     const counts = new Map<Uuid, number>();
     for (const card of this.cards.items()) {
@@ -63,10 +58,7 @@ export class BankAccountsPage {
     return formatMoney(value, currency);
   }
 
-  /**
-   * The account's balance as of the end of this month, or its starting figure while the
-   * balances are still in flight — never a blank where an amount belongs.
-   */
+  /** The account's balance as of the end of this month. */
   protected balance(account: BankAccount): Money {
     return this.service.balanceFor(account.id) ?? account.initialBalance;
   }

@@ -44,7 +44,6 @@ export class Shell {
   protected readonly amounts = inject(AmountVisibilityService);
   protected readonly t = injectTranslate();
   protected readonly navItems = NAV_ITEMS;
-  /** Where the brand takes you — the same landing page the empty route redirects to. */
   protected readonly homeRoute = '/dashboard';
   protected mobileNavOpen = signal(false);
 }

@@ -40,14 +40,7 @@ import {
 import { AdjustInvoiceDialog } from './adjust-invoice-dialog';
 import { InvoiceService } from './invoice.service';
 
-/**
- * One card, one month at a time.
- *
- * A card's invoices are a monthly series, so paging through them a month at a time reads
- * far better than a flat table of every invoice ever. Filtering is client-side: the API
- * takes no date parameter, and the whole set is one row per card per month — small enough
- * that fetching it once and slicing locally beats a round trip per step.
- */
+/** One card, one month at a time. */
 @Component({
   selector: 'planelyx-invoices-page',
   imports: [
@@ -83,13 +76,6 @@ export class InvoicesPage {
 
   protected readonly cardOptions = computed(() => this.cards.options());
 
-  /**
-   * Optional query params naming the invoice to open, bound by `withComponentInputBinding`.
-   *
-   * The dashboard links here with both set, which is what replaced the separate detail page:
-   * clicking an invoice lands on this screen already showing it, rather than on whichever card
-   * and month the page would have picked for itself.
-   */
   readonly cardId = input<Uuid | undefined>(undefined);
   readonly month = input<MonthKey | undefined>(undefined);
 
@@ -101,22 +87,8 @@ export class InvoicesPage {
   protected readonly selected = signal<Transaction | null>(null);
   protected readonly prefill = signal<Partial<TransactionFormModel> | null>(null);
 
-  /**
-   * The card and month the page lands on: the oldest invoice that is still unpaid, since
-   * that is the one asking for money. Installments push open invoices months into the
-   * future, so landing on the newest one shows a bill nobody has to think about yet.
-   */
   private readonly firstUnpaid = computed(() => this.service.unpaid().at(-1) ?? null);
 
-  /**
-   * The invoice is keyed on `referenceMonth` — the month it falls due in.
-   *
-   * It used to be keyed on the month the period *closed* in, which is the same month only while
-   * the due day falls later in the month than the closing day. On a card closing the 28th and due
-   * the 5th, the period 29 Jul – 28 Aug closes in August but is paid in September, so it showed
-   * under "Ago" here while the dashboard listed it under its September due date. Both now read
-   * the one value the API derives.
-   */
   protected readonly invoice = computed(() => {
     const cardId = this.selectedCardId();
     const month = toMonthKey(this.selectedMonth());
@@ -133,25 +105,12 @@ export class InvoicesPage {
     );
   });
 
-  /**
-   * Zero-based page of the charge list, independent of the invoice summary above it. Switching
-   * card or month starts over at the first page — page 3 of the invoice you just left says
-   * nothing about the one you just opened, and a short invoice would render blank.
-   */
   protected readonly chargePage = linkedSignal({
     source: () => this.invoice()?.id ?? null,
     computation: () => 0,
   });
   protected readonly chargeSize = signal(25);
 
-  /**
-   * Charges come from their own paged endpoint rather than riding along on the invoice, so
-   * reloading them does not refetch the totals shown in the header.
-   *
-   * The whole invoice is fetched at once and the paginator below slices it locally. An invoice is
-   * a few dozen charges — the same reasoning that already has this screen slicing the invoice list
-   * locally.
-   */
   protected readonly detail = httpResource<PageResponse<Transaction>>(
     () => {
       const current = this.invoice();
@@ -165,7 +124,6 @@ export class InvoicesPage {
     { defaultValue: emptyPage<Transaction>() },
   );
 
-  /** Newest purchase first — the API's own order, so nothing is re-sorted here. */
   protected readonly charges = computed(() => this.detail.value().content);
 
   protected readonly chargeTotal = computed(() => this.charges().length);
@@ -175,10 +133,6 @@ export class InvoicesPage {
     return this.charges().slice(start, start + this.chargeSize());
   });
 
-  /**
-   * Lands on the unpaid invoice once the lists have arrived, then leaves the choice alone — a
-   * reload after pay or unpay must not yank the user back off the month they were on.
-   */
   constructor() {
     let seeded = false;
     effect(() => {
@@ -255,13 +209,7 @@ export class InvoicesPage {
     this.dialogOpen.set(true);
   }
 
-  /**
-   * Opens the dialog already pointed at this card and billing period.
-   *
-   * The date matters: the API files a charge onto whichever invoice its date falls in, so a
-   * date outside this period would silently open the next month's invoice instead. Today is
-   * used when it falls inside the period, and the closing date otherwise.
-   */
+  /** Opens the dialog already pointed at this card and billing period. */
   protected openCreate(inv: Invoice): void {
     const today = todayIso();
     const withinPeriod = today >= inv.billingPeriodStart && today <= inv.billingPeriodEnd;
@@ -309,10 +257,7 @@ export class InvoicesPage {
     });
   }
 
-  /**
-   * Deleting an invoice takes its charges with it, so the message says so — there is no way back
-   * from this one, and the amount is the clearest statement of what is about to go.
-   */
+  /** Deleting an invoice takes its charges with it, so the message says so. */
   protected confirmDelete(invoice: Invoice): void {
     this.confirm.confirm({
       header: this.t('invoices.deleteHeader'),

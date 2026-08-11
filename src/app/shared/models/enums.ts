@@ -1,8 +1,4 @@
-/**
- * Mirrors of the backend enums. Modelled as const arrays + union types rather than TS
- * `enum` so the wire values and the type stay in one place and can be iterated for
- * dropdown options.
- */
+/** Mirrors of the backend enums. */
 
 export const ACCOUNT_TYPES = ['CHECKING', 'SAVINGS'] as const;
 export type AccountType = (typeof ACCOUNT_TYPES)[number];
@@ -19,12 +15,7 @@ export type RecurrenceType = (typeof RECURRENCE_TYPES)[number];
 export const INVOICE_STATUSES = ['OPEN', 'CLOSED', 'PAID'] as const;
 export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
 
-/**
- * How far an edit or delete reaches through a series.
- *
- * Only meaningful for a transaction generated from a template (one with a `templateId`);
- * a one-off transaction is always `SINGLE`.
- */
+/** How far an edit or delete reaches through a series. */
 export const TRANSACTION_SCOPES = ['SINGLE', 'FUTURE', 'ALL'] as const;
 export type TransactionScope = (typeof TRANSACTION_SCOPES)[number];
 

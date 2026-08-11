@@ -2,16 +2,7 @@ import { IsoDate, IsoInstant } from '../models/common';
 import { fromIsoDate } from './date';
 import { currentLocale } from './locale';
 
-/**
- * Locale-aware date display, kept apart from `date.ts`.
- *
- * That file is ISO plumbing and deliberately locale-agnostic — it converts between the API's
- * `LocalDate` strings and `Date` without ever formatting. This one only formats, and reads
- * `currentLocale()` so every date on screen follows the language switch.
- *
- * Each helper falls back to the raw ISO string rather than rendering "Invalid Date" if the
- * value cannot be parsed.
- */
+/** Locale-aware date display, kept apart from `date.ts`. */
 
 /** e.g. "03 Aug" / "03 de ago." — for dense rows where the year is implied. */
 export function shortDate(iso: IsoDate): string {
@@ -34,10 +25,7 @@ export function dateTime(value: IsoInstant): string {
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString(currentLocale());
 }
 
-/**
- * The order a date picker should present, which differs between the two locales
- * (`03/08/2026` in pt-BR, `08/03/2026` in en-US). PrimeNG's own token syntax, not Intl's.
- */
+/** The order a date picker should present, which differs between the two locales. */
 export function datePickerFormat(): string {
   return currentLocale() === 'en-US' ? 'mm/dd/yy' : 'dd/mm/yy';
 }

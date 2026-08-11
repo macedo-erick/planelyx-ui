@@ -11,28 +11,12 @@ export class CategoryService extends CrudService<Category, CategoryRequest> {
     super('categories');
   }
 
-  /**
-   * The seeded categories are shared rows stored in English, so their display name is
-   * resolved here rather than in each dropdown. `PlanelyxCategoryBadge` does the same for the
-   * places that render a category as a badge.
-   */
   private readonly translateName = defaultCategoryNames();
 
   displayName(category: Category): string {
     return this.translateName()(category.name);
   }
 
-  /**
-   * The categories a user may pick or manage — every list, dropdown and the categories page
-   * reads this rather than `items()`.
-   *
-   * System categories are left out: they exist only to label the corrections the app posts
-   * itself, so offering one invites a write the API will refuse. They stay in `items()`, and
-   * so in `byIdMap`, because an existing correction still has to render its category name.
-   *
-   * Sorted on the *translated* name. The API sorts on the stored English one, which is not
-   * what a reader of another language sees.
-   */
   readonly selectable = computed(() =>
     [...this.items()]
       .filter((category) => !category.system)
@@ -52,6 +36,5 @@ export class CategoryService extends CrudService<Category, CategoryRequest> {
     })),
   );
 
-  /** Fast id -> category lookup for rendering names in transaction tables. */
   readonly byIdMap = computed(() => new Map(this.items().map((c) => [c.id, c])));
 }

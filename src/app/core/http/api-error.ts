@@ -1,11 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
-/**
- * The backend's `ApiError` record. Only `NotFoundException` (404) and
- * `IllegalArgument`/`IllegalState`/bean-validation (400) flow through
- * `GlobalExceptionHandler` — 401s, 500s and malformed-body errors fall through to
- * Spring's default shape, so this type is never guaranteed on the wire.
- */
+/** The backend's `ApiError` record. */
 export interface ApiError {
   readonly timestamp: string;
   readonly status: number;
@@ -13,23 +8,12 @@ export interface ApiError {
   readonly message: string;
 }
 
-/**
- * A shape the UI can always rely on, whichever error shape actually arrived.
- *
- * `titleKey` and `detailKey` are translation keys rather than text: this runs outside an
- * injection context, and the interceptor that shows the toast is the one holding `t()`. The
- * server's own `message` cannot be translated — it arrives already worded — so `detail` stays
- * literal and `detailKey` is only set when there is nothing better to show.
- */
+/** A shape the UI can always rely on, whichever error shape actually arrived. */
 export interface NormalizedApiError {
   readonly status: number;
   readonly titleKey: string;
   readonly detail: string;
   readonly detailKey?: string;
-  /**
-   * Bean-validation failures arrive as `"field: msg; field2: msg2"`. Split out so a form
-   * can map them back onto individual fields.
-   */
   readonly fieldErrors: ReadonlyMap<string, string>;
 }
 

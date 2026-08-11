@@ -15,14 +15,7 @@ import { PlanelyxTextInput } from './text-input';
 import { PlanelyxTextarea } from './textarea';
 import { provideTestingTransloco } from '../../../testing/transloco';
 
-/**
- * Every wrapper bound through `[formField]` at once.
- *
- * PrimeNG controls are `ControlValueAccessor`s, which `[formField]` does not bind as
- * signal-forms controls — the wrappers exist to implement `FormValueControl` /
- * `FormCheckboxControl` instead. This host proves each one actually satisfies that
- * contract, at compile time and at runtime.
- */
+/** Every wrapper bound through `[formField]` at once. */
 @Component({
   imports: [
     FormField,

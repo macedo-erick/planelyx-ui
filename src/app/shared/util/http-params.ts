@@ -1,9 +1,6 @@
 import { HttpParams } from '@angular/common/http';
 
-/**
- * Builds `HttpParams` from a filter object, dropping null/undefined/empty entries so an
- * unset filter never reaches the API as `?from=`.
- */
+/** Builds `HttpParams` from a filter object. */
 export function toHttpParams(
   filters: Record<string, string | number | boolean | null | undefined>,
 ): HttpParams {

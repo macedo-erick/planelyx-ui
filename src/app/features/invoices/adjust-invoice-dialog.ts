@@ -24,17 +24,10 @@ import { formatMoneyUnmasked, roundCents } from '../../shared/util/money';
 import { InvoiceService } from './invoice.service';
 
 interface AdjustInvoiceFormModel {
-  /** Nullable because the money input can be cleared; seeded with the current total on open. */
   targetAmount: Money | null;
 }
 
-/**
- * Corrects an invoice to the total on the statement the card issuer sent.
- *
- * The total is the sum of the invoice's charges, so nothing here overwrites it — the
- * difference is recorded as a charge of its own. That leaves the discrepancy visible among the
- * charges rather than silently absorbed, which is what the note in the dialog warns about.
- */
+/** Corrects an invoice to the total on the statement the card issuer sent. */
 @Component({
   selector: 'planelyx-adjust-invoice-dialog',
   imports: [Dialog, Button, FormField, FormsModule, PlanelyxMoneyInput],
@@ -49,7 +42,6 @@ export class AdjustInvoiceDialog {
   readonly visible = model.required<boolean>();
   readonly invoice = input<Invoice | null>(null);
 
-  /** The charge lists are separate resources; the pages holding them refetch on this. */
   readonly adjusted = output<void>();
 
   protected readonly t = injectTranslate();
@@ -63,7 +55,6 @@ export class AdjustInvoiceDialog {
     required(path.targetAmount, { message: this.t('validation.amountPositive') });
   });
 
-  /** Signed: positive is a charge to add, negative is one to take back off. */
   protected readonly delta = computed(() =>
     roundCents((this.f.targetAmount().value() ?? this.current()) - this.current()),
   );

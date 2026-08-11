@@ -3,17 +3,7 @@ import { translateObjectSignal } from '@jsverse/transloco';
 
 import { SelectOption } from '../../shared/util/enum-labels';
 
-/**
- * A small curated set of PrimeIcons that suit personal-finance categories.
- *
- * The icon is what is stored; the label only describes it in the picker, so it is translated
- * from `categories.groups` rather than saved anywhere.
- *
- * Every icon the API seeds its default categories with has to appear here. An icon missing from
- * this list leaves the picker blank on the category that uses it, which reads as "no icon" and
- * invites the user to save one away without meaning to. The dialog also keeps whatever is
- * already stored, so a value from outside this list survives an edit either way.
- */
+/** A small curated set of PrimeIcons that suit personal-finance categories. */
 const ICONS: readonly { readonly key: string; readonly icon: string }[] = [
   { key: 'Groceries', icon: 'pi-shopping-cart' },
   { key: 'Dining', icon: 'pi-shop' },

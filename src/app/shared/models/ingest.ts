@@ -1,15 +1,6 @@
 import { IsoDate, IsoInstant, Uuid } from './common';
 
-/**
- * The `planelyx-ocr` wire contract — imported statements and the lines staged out of them.
- *
- * This is a different service from the one every other model here describes, and it speaks a
- * different dialect of money. `planelyx-api` sends a `BigDecimal` as a JSON number; `planelyx-ocr`
- * sends an integer count of minor units, because its whole safety story rests on reconciling every
- * extracted line against the total the issuer printed, and that addition has to be exact. A float
- * that drifts by a centavo over sixty lines fails a reconciliation that should pass — or, worse,
- * passes one that should fail. So nothing here is ever a `Money`.
- */
+/** The `planelyx-ocr` wire contract — imported statements and the lines staged out of them. */
 
 /** An exact amount: a signed count of minor units, plus the currency that gives them scale. */
 export interface MinorAmount {
@@ -17,11 +8,7 @@ export interface MinorAmount {
   readonly currency: string;
 }
 
-/**
- * `failed` and `unsupported` are distinct and must stay so. `failed` means a parser ran and
- * something went wrong — reprocessing may succeed once it is fixed. `unsupported` means no parser
- * recognised the issuer at all, and the document is waiting on a human to say which one to use.
- */
+/** `failed` and `unsupported` are distinct and must stay so. */
 export const INGEST_DOCUMENT_STATUSES = [
   'pending',
   'processed',
@@ -34,11 +21,7 @@ export type IngestDocumentStatus = (typeof INGEST_DOCUMENT_STATUSES)[number];
 export const INGEST_DOCUMENT_TYPES = ['pdf_statement', 'csv', 'ofx', 'receipt_image'] as const;
 export type IngestDocumentType = (typeof INGEST_DOCUMENT_TYPES)[number];
 
-/**
- * Richer than "expense or not" on purpose: a fatura mixes purchases with fees, interest, IOF and
- * the payment of the previous invoice. The non-purchase lines are extracted and shown even though
- * most never become an expense, because the reconciliation sums every one of them.
- */
+/** Richer than "expense or not" on purpose: a fatura mixes purchases with fees. */
 export const INGEST_TRANSACTION_KINDS = [
   'purchase',
   'refund',
@@ -82,9 +65,7 @@ export interface IngestDocument {
   readonly declaredTotal: MinorAmount | null;
   readonly parserId: string | null;
   readonly parserVersion: string | null;
-  /** Staged lines still awaiting a decision — what the queue counts. */
   readonly pendingCount: number;
-  /** Lines already written through to the ledger, and therefore rollback-able. */
   readonly filedCount: number;
   readonly createdAt: IsoInstant;
 }
@@ -107,25 +88,14 @@ export interface ForeignExchange {
   readonly iof: MinorAmount | null;
 }
 
-/**
- * One staged line, as the reviewer sees it.
- *
- * `isCredit` is the field that decides whether a line can be filed at all, and it cannot be
- * resolved by the server alone: money coming back is an `ACCOUNT_CREDIT` against a bank account,
- * but there is no such thing as a negative card charge in `planelyx-api`. So the server states the
- * fact and the screen refuses the combination — a credit line pointed at a credit card — rather
- * than either side guessing.
- */
+/** One staged line, as the reviewer sees it. */
 export interface StagedTransaction {
   readonly id: Uuid;
   readonly documentId: Uuid;
   readonly documentCardId: Uuid | null;
-  /** When the purchase happened. May precede the statement period, which is not an error. */
   readonly purchaseDate: IsoDate;
-  /** When it posted. Canonical for the ledger. */
   readonly postingDate: IsoDate;
   readonly rawDescription: string;
-  /** The cleaned merchant name. Null when normalization had nothing to strip. */
   readonly normalizedDescription: string | null;
   readonly amount: MinorAmount;
   readonly kind: IngestTransactionKind;
@@ -134,12 +104,9 @@ export interface StagedTransaction {
   readonly foreignExchange: ForeignExchange | null;
   readonly cardLastFourDigits: string | null;
   readonly fieldConfidence: FieldConfidence;
-  /** Computed server-side from the weakest field, so both ends agree on what gets flagged. */
   readonly needsAttention: boolean;
   readonly suggestedCategoryId: Uuid | null;
-  /** Where the suggestion came from, so a guess is never shown as a fact. */
   readonly suggestionSource: 'rule' | 'manual' | null;
-  /** Set when this looks like a line already seen from another source. Never auto-discarded. */
   readonly duplicateOf: Uuid | null;
   readonly status: StagedTransactionStatus;
 }
@@ -147,14 +114,10 @@ export interface StagedTransaction {
 export interface ValidationIssue {
   readonly severity: 'error' | 'warning';
   readonly message: string;
-  /** Index into the document's staged lines, when the issue is attributable to one. */
   readonly transactionIndex?: number;
 }
 
-/**
- * The reconciliation. `ok` false means the extracted lines do not sum to the printed total, and
- * the document must not be filed until the difference is explained.
- */
+/** The reconciliation. */
 export interface ValidationSummary {
   readonly ok: boolean;
   readonly extractedTotal: MinorAmount;
@@ -179,20 +142,12 @@ export interface StagedTransactionEdit {
   readonly suggestedCategoryId?: Uuid | null;
 }
 
-/**
- * One line's filing instructions.
- *
- * The assignment lives in the request rather than in `planelyx-ocr` because that service holds no
- * catalogue of categories, cards or accounts — they belong to `planelyx-api`, and the person
- * reviewing is the one who knows which of them this line belongs to. Exactly one of
- * `bankAccountId` and `creditCardId`, matching what the API's own validator demands.
- */
+/** One line's filing instructions. */
 export interface ConfirmLine {
   readonly id: Uuid;
   readonly categoryId: Uuid;
   readonly bankAccountId?: Uuid | null;
   readonly creditCardId?: Uuid | null;
-  /** Required for a `payment` line, which settles an invoice instead of becoming an expense. */
   readonly invoiceId?: Uuid | null;
   readonly description?: string;
 }
@@ -201,13 +156,7 @@ export interface ConfirmRequest {
   readonly lines: readonly ConfirmLine[];
 }
 
-/**
- * Per line, never a single verdict for the batch.
- *
- * `planelyx-api` has no batch write, so the lines are filed one at a time and a run can genuinely
- * half-succeed. Reporting that honestly is the whole point — a partial result reported as failure
- * would invite a retry that files everything twice.
- */
+/** Per line, never a single verdict for the batch. */
 export interface ConfirmLineResult {
   readonly id: Uuid;
   readonly ledgerTransactionId: Uuid | null;
@@ -225,7 +174,6 @@ export interface RollbackLineResult {
   readonly extractedTransactionId: Uuid;
   readonly ledgerTransactionId: Uuid;
   readonly undone: boolean;
-  /** True when the ledger had already lost it — someone deleted it by hand. Counts as undone. */
   readonly alreadyGone: boolean;
   readonly error: string | null;
 }
@@ -245,3 +193,9 @@ export interface IngestResult {
   readonly transactionCount: number;
   readonly warnings: readonly string[];
 }
+
+/** How far along an import is, in the only two phases that are actually distinguishable. */
+export type UploadProgress =
+  | { readonly phase: 'sending'; readonly percent: number | null }
+  | { readonly phase: 'reading' }
+  | { readonly phase: 'done'; readonly result: IngestResult };

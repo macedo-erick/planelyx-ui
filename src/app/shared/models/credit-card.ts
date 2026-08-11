@@ -1,14 +1,6 @@
 import { IsoInstant, Money, Uuid } from './common';
 
-/**
- * A card as the API holds it, with its limit worked out server-side.
- *
- * `usedLimit` totals the card's invoices that have not been paid yet, and `availableLimit` is the
- * limit less that — negative once the card is over its limit.
- *
- * `closingDay` and `dueDay` are days of month, 1–31, clamped to the month's length server-side.
- * The due day rolls into the next month when it is on or before the closing day.
- */
+/** A card as the API holds it, with its limit worked out server-side. */
 export interface CreditCard {
   readonly id: Uuid;
   readonly bankAccountId: Uuid;

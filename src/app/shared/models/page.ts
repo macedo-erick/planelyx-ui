@@ -1,11 +1,4 @@
-/**
- * The API's page envelope.
- *
- * Mirrors `dto/PageResponse` on the server, which is a hand-rolled record rather than
- * Spring's own `Page` — that one's JSON shape is documented as unstable.
- *
- * `page` is zero-based.
- */
+/** The API's page envelope. */
 export interface PageResponse<T> {
   readonly content: readonly T[];
   readonly page: number;

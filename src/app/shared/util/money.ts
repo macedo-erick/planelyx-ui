@@ -4,10 +4,7 @@ import { MinorAmount } from '../models/ingest';
 import { amountsHidden } from './amount-visibility';
 import { currentLocale } from './locale';
 
-/**
- * Money arrives as a JSON number with two decimal places. Repeated float addition can
- * drift (0.1 + 0.2), so every aggregate rounds back to cents.
- */
+/** Money arrives as a JSON number with two decimal places. */
 
 /** Rounds to 2 decimal places, correcting float representation error. */
 export function roundCents(value: number): Money {
@@ -33,27 +30,12 @@ const NUMERIC_PARTS = new Set<Intl.NumberFormatPartTypes>([
   'fraction',
 ]);
 
-/**
- * The display path for an amount, masked to `R$ ••••` while `amountsHidden` is set.
- *
- * Reads `currentLocale()` and `amountsHidden()`, so every amount on screen reformats when the
- * language changes or the mask is toggled — templates calling this through a component method
- * re-run as a matter of course.
- *
- * Masking lives here rather than at the call sites so a newly displayed amount is concealed by
- * default; showing a real figure takes the deliberate step of reaching for `formatMoneyUnmasked`.
- */
+/** The display path for an amount, masked to `R$ ••••` while `amountsHidden` is set. */
 export function formatMoney(value: Money, currency = environment.defaultCurrency): string {
   return amountsHidden() ? maskMoney(currency) : formatMoneyUnmasked(value, currency);
 }
 
-/**
- * The same formatting, never masked — for amounts the reader is editing rather than reading.
- *
- * A balance you are correcting or an installment preview of the figure you just typed has to
- * stay legible, or the field cannot be filled in. Reach for this only where the amount is part
- * of an input, and prefer `formatMoney` everywhere else.
- */
+/** The same formatting, never masked — for amounts the reader is editing rather than reading. */
 export function formatMoneyUnmasked(value: Money, currency = environment.defaultCurrency): string {
   return new Intl.NumberFormat(currentLocale(), {
     style: 'currency',
@@ -61,13 +43,7 @@ export function formatMoneyUnmasked(value: Money, currency = environment.default
   }).format(value);
 }
 
-/**
- * The currency's own rendering of an amount with the figure replaced by dots.
- *
- * Built from `formatToParts` rather than by blanking digits out of a finished string, so symbol
- * placement and spacing stay whatever the locale does with them — `R$ ••••` in pt-BR, `$••••`
- * in en-US — without this function knowing the rule.
- */
+/** The currency's own rendering of an amount with the figure replaced by dots. */
 function maskMoney(currency: string): string {
   const parts = new Intl.NumberFormat(currentLocale(), {
     style: 'currency',
@@ -90,13 +66,7 @@ function maskMoney(currency: string): string {
     .join('');
 }
 
-/**
- * How many minor units make one major unit of a currency, as an exponent.
- *
- * Read off `Intl` rather than assumed to be 2, because the OCR service handles international
- * purchases and a zero-decimal currency does exist: 1000 JPY is 1000, not 10.00. Hard-coding a
- * hundred would inflate every yen amount by 100x on screen.
- */
+/** How many minor units make one major unit of a currency, as an exponent. */
 export function minorUnitDigits(currency: string): number {
   return (
     new Intl.NumberFormat(currentLocale(), { style: 'currency', currency }).resolvedOptions()
@@ -104,16 +74,7 @@ export function minorUnitDigits(currency: string): number {
   );
 }
 
-/**
- * Formats an exact minor-unit amount for display.
- *
- * The division to a float happens here and nowhere else, at the last moment before the number
- * becomes text. Amounts stay integral everywhere they are compared, summed or sent back, which is
- * what keeps the reconciliation `planelyx-ocr` performs meaningful.
- *
- * Deliberately ignores `amountsHidden`: this formats the statement review's lines, and checking
- * an OCR reading against the printed total is exactly the task a mask would make impossible.
- */
+/** Formats an exact minor-unit amount for display. */
 export function formatMinor(amount: MinorAmount): string {
   const scale = 10 ** minorUnitDigits(amount.currency);
 
@@ -123,12 +84,7 @@ export function formatMinor(amount: MinorAmount): string {
   }).format(amount.amountMinor / scale);
 }
 
-/**
- * Just the currency's symbol, for labelling a control whose value is the bare number.
- *
- * Read off `Intl` rather than mapped by hand so it follows the locale — `formatMinor` prints a
- * whole formatted amount, which is not what a control the reviewer types into can show.
- */
+/** Just the currency's symbol, for labelling a control whose value is the bare number. */
 export function currencySymbol(currency: string): string {
   const parts = new Intl.NumberFormat(currentLocale(), {
     style: 'currency',
@@ -151,12 +107,7 @@ export function majorToMinor(value: Money, currency: string): MinorAmount {
   };
 }
 
-/**
- * Mirrors the backend's installment split: `total / count` rounded DOWN to cents for the
- * first n-1, with the remainder landing on the last one (100.00 / 3 -> 33.33, 33.33, 33.34).
- *
- * Used only to preview the split before submitting — the server does the real division.
- */
+/** Mirrors the backend's installment split: the remainder lands on the last one. */
 export function splitInstallments(total: Money, count: number): Money[] {
   if (count < 1) {
     return [];

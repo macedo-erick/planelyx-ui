@@ -57,11 +57,6 @@
     />
   } @else {
     <planelyx-card [padded]="true" class="mb-4">
-      <!--
-        Full-width columns below `sm`, where two 14rem fields and a button pair cannot share a
-        line without one of them being squeezed to nothing. From `sm` up they go back to sitting
-        side by side and the buttons return to the right edge.
-      -->
       <div class="flex flex-wrap items-end gap-4">
         <div class="flex w-full flex-col gap-1 sm:w-auto sm:min-w-56">
           <label class="text-xs font-medium text-[var(--p-text-muted-color)]" for="review-target">
@@ -137,21 +132,6 @@
       }
     </planelyx-card>
 
-    <!--
-      Cards rather than a table, and container queries rather than viewport breakpoints.
-      A table cannot be made to fit a phone without either scrolling sideways or growing a
-      second mobile layout to keep in sync; one card whose internal grid reflows is a single
-      code path that does both. The query reads the width of this element, which is the width
-      the list actually gets — the shell's sidebar means that is not the viewport width.
-
-      Alignment across cards is what makes it still scan like rows: every control is `h-10`,
-      the date cell takes that as a minimum with its text centred, and the columns are fixed
-      widths so every card breaks at the same place.
-
-      There is no heading row over them. The columns are a date, a text box, a number box and a
-      category select — each self-evident from what it holds, and each control carries its own
-      `aria-label`, so a heading would only add a line of chrome above every document.
-    -->
     <div class="@container">
       <div
         class="mb-2 flex items-center gap-3 rounded-xl border p-[0.85rem]"
@@ -189,7 +169,6 @@
             class="grid grid-cols-[20px_minmax(0,1fr)] items-start gap-3 rounded-xl border p-[0.85rem]"
             [class]="cardClasses(line)"
           >
-            <!-- Centred on the control band, not the card, so it holds its line as cards grow. -->
             <p-checkbox
               class="mt-2.5"
               [binary]="true"
@@ -253,10 +232,6 @@
                   }
                 </div>
 
-                <!--
-                  The symbol sits inside the control so the box fills its column and every
-                  amount's right edge lands on the same pixel.
-                -->
                 <div class="flex flex-col gap-1">
                   <div class="relative">
                     <span
@@ -281,12 +256,6 @@
                 </div>
 
                 <div class="flex min-w-0 flex-col gap-1">
-                  <!--
-                    `h-10` on the select's own host, matching the inputs beside it. PrimeNG sizes
-                    its control from its internal padding, which is a different number from the
-                    one Tailwind gives a native input — left alone the two differ by a couple of
-                    pixels and the row stops lining up.
-                  -->
                   <p-select
                     styleClass="h-10 w-full"
                     optionLabel="label"
@@ -299,10 +268,6 @@
                     [attr.aria-label]="t('ingest.category')"
                     (ngModelChange)="setCategory(line.id, $event)"
                   />
-                  <!--
-                    A suggestion is labelled as one. Pre-filling silently is exactly how a wrong
-                    category gets confirmed without anybody reading it.
-                  -->
                   @if (line.suggestionSource && categoryFor(line.id) === line.suggestedCategoryId) {
                     <span class="text-xs text-[var(--p-text-muted-color)]">
                       {{ t('ingest.suggested') }}
@@ -310,7 +275,6 @@
                   }
                 </div>
 
-                <!-- Its own full-width line: a reason crushed into a cell is a reason unread. -->
                 @if (blockedLabel(line); as blocked) {
                   <p
                     class="text-xs text-[var(--p-text-muted-color)] @[620px]:col-start-2 @[620px]:col-end-[-1]"

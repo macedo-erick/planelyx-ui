@@ -15,9 +15,35 @@
   />
 </planelyx-page-header>
 
+@if (uploading()) {
+  @let percent = uploadPercent();
+
+  <planelyx-card class="mb-4 block" [padded]="true">
+    <div class="flex flex-col gap-3" aria-live="polite" aria-busy="true">
+      <div class="flex items-center gap-3">
+        <i class="pi pi-spin pi-spinner text-[var(--p-primary-color)]" aria-hidden="true"></i>
+        <div class="min-w-0">
+          <p class="truncate font-medium text-[var(--p-text-color)]">
+            {{ t('ingest.uploadingTitle', { name: uploadingName() }) }}
+          </p>
+          <p class="text-sm text-[var(--p-text-muted-color)]">{{ uploadMessage() }}</p>
+        </div>
+      </div>
+
+      <p-progressbar
+        [mode]="percent === null ? 'indeterminate' : 'determinate'"
+        [value]="percent ?? 0"
+        [showValue]="false"
+        [style]="{ height: '0.5rem' }"
+        [attr.aria-label]="uploadMessage()"
+      />
+    </div>
+  </planelyx-card>
+}
+
 @if (service.isLoading()) {
   <p class="text-[var(--p-text-muted-color)]">{{ t('common.loading') }}</p>
-} @else if (documents().length === 0) {
+} @else if (documents().length === 0 && !uploading()) {
   <planelyx-empty-state
     icon="pi-file-import"
     [title]="t('ingest.empty')"
@@ -35,13 +61,6 @@
           [attr.aria-label]="t('ingest.reviewAria', { name: document.originalFilename })"
         ></a>
 
-        <!--
-          h-full so the hover tint covers the card rather than only the part the content fills.
-          The bordered box is stretched to the tallest card in its grid row; this div is not, and
-          a card with fewer lines than its neighbour would otherwise highlight down to its last
-          line and leave a bare strip beneath it — while the link above still spans the whole
-          card, so the pointer is over something that looks unhovered.
-        -->
         <div
           class="flex h-full flex-col gap-3 p-4 group-hover:bg-[var(--p-content-hover-background)]"
         >
@@ -60,11 +79,6 @@
             />
           </div>
 
-          <!--
-            Skipped outright when there is nothing to count. An empty row still draws the column
-            gap above it, which on a document with no pending and no filed lines reads as the
-            card having lost a line.
-          -->
           @if (pending !== null || document.filedCount > 0) {
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
               @if (pending !== null) {

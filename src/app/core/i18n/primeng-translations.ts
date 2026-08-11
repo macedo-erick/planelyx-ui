@@ -2,17 +2,7 @@ import type { Translation } from 'primeng/api';
 
 import type { AppLocale } from '../../shared/util/locale';
 
-/**
- * PrimeNG's own strings — month and day names in the datepicker, its Today/Clear buttons, and
- * the paginator's row-count text.
- *
- * These live inside PrimeNG rather than in our templates, so they are not reachable through
- * Transloco. Left unset they stay English regardless of the chosen language, which is exactly
- * the sort of half-translated page that gets noticed.
- *
- * Only the keys the app actually renders are listed; PrimeNG falls back to its own defaults
- * for the rest.
- */
+/** PrimeNG's own strings — month and day names in the datepicker. */
 export const PRIMENG_TRANSLATIONS: Record<AppLocale, Translation> = {
   'en-US': {
     dayNames: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
