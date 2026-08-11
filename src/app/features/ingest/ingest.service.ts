@@ -16,16 +16,7 @@ import {
   UploadProgress,
 } from '../../shared/models/ingest';
 
-/**
- * Turns one HTTP event into an upload phase, or into nothing.
- *
- * Most of the stream is not worth reporting — `Sent`, response headers, download progress on a
- * body measured in bytes — so this returns null for them and the caller filters it out. The one
- * judgement here is the switch to `reading`: the last upload-progress event arrives when the
- * browser has handed over the final byte, and everything after it is the server working with no
- * further events until the response. Treating that moment as a phase change is what stops the
- * bar sitting at 100% for the length of a model call.
- */
+/** Turns one HTTP event into an upload phase, or into nothing. */
 function toProgress(event: HttpEvent<IngestResult>): UploadProgress | null {
   if (event.type === HttpEventType.UploadProgress) {
     if (event.total !== undefined && event.loaded >= event.total) {
@@ -45,16 +36,7 @@ function toProgress(event: HttpEvent<IngestResult>): UploadProgress | null {
   return null;
 }
 
-/**
- * The client for `planelyx-ocr`.
- *
- * Points at `environment.ocrUrl`, not `apiUrl` — a separate service with its own database. The
- * bearer-token interceptor has a condition for that host too (`core/auth/keycloak.providers.ts`);
- * without it every call here would arrive unauthenticated and come back 401.
- *
- * Shaped after `InvoiceService` rather than extending `CrudService`: there is no PUT, no plain
- * create, and the interesting operations are confirm and rollback.
- */
+/** The client for `planelyx-ocr`. */
 @Service()
 export class IngestService {
   private readonly http = inject(HttpClient);
@@ -66,15 +48,12 @@ export class IngestService {
   readonly isLoading = computed(() => this.resource.isLoading());
   readonly hasError = computed(() => this.resource.error() !== undefined);
 
-  /** Newest first — an import queue is read from the thing you just added. */
   readonly sorted = computed(() =>
     [...this.items()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
   );
 
-  /** Anything still holding lines nobody has decided about. */
   readonly awaitingReview = computed(() => this.sorted().filter((d) => d.pendingCount > 0));
 
-  /** The document currently open for review; null on the queue screen. */
   private readonly openDocumentId = signal<Uuid | null>(null);
 
   readonly detail = httpResource<DocumentDetail | undefined>(() => {
@@ -89,14 +68,7 @@ export class IngestService {
     this.openDocumentId.set(id);
   }
 
-  /**
-   * Uploads a statement. Sent as multipart because the payload is the file's own bytes — the
-   * service hashes them to decide whether this document has been seen before, so re-encoding
-   * would change the hash and defeat deduplication.
-   *
-   * `force` reprocesses something already ingested, which is what you want after a parser is
-   * fixed and not otherwise.
-   */
+  /** Uploads a statement. */
   upload(file: File, force = false): Observable<UploadProgress> {
     const body = new FormData();
     body.append('file', file, file.name);
@@ -134,13 +106,7 @@ export class IngestService {
       .pipe(tap(() => this.reloadAll()));
   }
 
-  /**
-   * Files the selected lines to `planelyx-api`.
-   *
-   * The result is per line and may be partial: the API takes one transaction at a time, so a run
-   * can genuinely half-succeed, and the caller has to show which lines landed rather than assume
-   * all or nothing.
-   */
+  /** Files the selected lines to `planelyx-api`. */
   confirm(documentId: Uuid, request: ConfirmRequest): Observable<ConfirmResult> {
     return this.http
       .post<ConfirmResult>(`${this.baseUrl}/${documentId}/confirm`, request)
@@ -161,25 +127,12 @@ export class IngestService {
       .pipe(tap(() => this.reloadAll()));
   }
 
-  /**
-   * Removes an import outright, staged lines and all.
-   *
-   * Refused by `planelyx-ocr` once anything has been filed: undoing those is a rollback, and
-   * deleting the document would take with it the links that make one possible. Only the queue is
-   * reloaded — the detail resource for a document that no longer exists would answer 404.
-   */
+  /** Removes an import outright, staged lines and all. */
   delete(documentId: Uuid): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${documentId}`).pipe(tap(() => this.reload()));
   }
 
-  /**
-   * The original file, for checking a line against what the issuer actually printed.
-   *
-   * Fetched as a blob rather than handed over as a URL for an `<a href>` to load. A link is a
-   * browser navigation, not an `HttpClient` request, so the bearer-token interceptor never sees
-   * it and `planelyx-ocr` — which authenticates every document route — answers 401. Going through
-   * `HttpClient` is what attaches the token; the caller turns the result into an object URL.
-   */
+  /** The original file, for checking a line against what the issuer actually printed. */
   original(documentId: Uuid): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/${documentId}/original`, { responseType: 'blob' });
   }

@@ -13,13 +13,7 @@ import { PlanelyxPageHeader } from '../../shared/ui/page-header';
 import { dateTime } from '../../shared/util/date-format';
 import { IngestService } from './ingest.service';
 
-/**
- * The import queue: what has been ingested, and what still needs a decision.
- *
- * Deliberately not a place where anything reaches the ledger. Uploading only stages, and every
- * write goes through the review screen — so this page can be used freely without it becoming a
- * way to file a statement nobody has read.
- */
+/** The import queue: what has been ingested, and what still needs a decision. */
 @Component({
   selector: 'planelyx-ingest-page',
   imports: [
@@ -43,24 +37,12 @@ export class IngestPage {
   private readonly messages = inject(MessageService);
   protected readonly t = injectTranslate();
 
-  /**
-   * The import in flight, or null.
-   *
-   * Held as the progress itself rather than a boolean so the template can say *which* phase it is
-   * in. An import is not a quick round trip: the request is held open while `planelyx-ocr` reads
-   * the statement, and for one no deterministic parser recognises that includes a model call. A
-   * spinner alone leaves the user unsure whether anything is happening, which is what gets a file
-   * uploaded twice.
-   */
   protected readonly upload = signal<UploadProgress | null>(null);
-  /** Empty rather than null: it is only read while an import is in flight, and the translation
-   * parameter takes a string. */
   protected readonly uploadingName = signal('');
 
   protected readonly uploading = computed(() => this.upload() !== null);
   protected readonly documents = computed(() => this.service.sorted());
 
-  /** Null while the file is still going up, which is what makes the bar indeterminate. */
   protected readonly uploadPercent = computed(() => {
     const progress = this.upload();
 
@@ -81,10 +63,7 @@ export class IngestPage {
     return this.t(`ingest.status.${status}`);
   }
 
-  /**
-   * `unsupported` is a warning rather than an error: nothing went wrong, no parser simply
-   * recognised the issuer yet. The original is kept and can be imported again once one exists.
-   */
+  /** `unsupported` is a warning rather than an error. */
   protected statusSeverity(
     status: IngestDocumentStatus,
   ): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
@@ -117,18 +96,10 @@ export class IngestPage {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
 
-    /**
-     * Re-entry is guarded here as well as by disabling the button, because the button is not the
-     * only way in — a keyboard activation on the hidden input, or a second `change` from a
-     * picker that was already open, reaches this directly. Two imports of the same bytes race
-     * each other on the content hash and one of them loses.
-     */
     if (!file || this.uploading()) {
       return;
     }
 
-    /* Cleared now rather than on completion, so choosing the same file again later still fires a
-       `change` event. Left set, re-picking it would silently do nothing. */
     input.value = '';
 
     this.uploadingName.set(file.name);

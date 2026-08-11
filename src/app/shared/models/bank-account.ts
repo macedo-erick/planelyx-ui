@@ -1,14 +1,7 @@
 import { IsoDate, IsoInstant, Money, Uuid } from './common';
 import { AccountType } from './enums';
 
-/**
- * A bank account as the API holds it.
- *
- * `initialBalance` is the account's starting point, not what it holds today — transactions are
- * applied on top of it. For the live figure use `BankAccountBalance` from `/bank-accounts/balances`.
- *
- * `active` is not settable through the API: always true on create, never toggled. Display only.
- */
+/** A bank account as the API holds it. */
 export interface BankAccount {
   readonly id: Uuid;
   readonly name: string;
@@ -20,10 +13,7 @@ export interface BankAccount {
   readonly createdAt: IsoInstant;
 }
 
-/**
- * An account's balance at the close of `asOf`, which the API defaults to the end of the
- * current month — the same figure and the same meaning as the dashboard's.
- */
+/** An account's balance at the close of `asOf`. */
 export interface BankAccountBalance {
   readonly bankAccountId: Uuid;
   readonly currency: string;
@@ -31,14 +21,7 @@ export interface BankAccountBalance {
   readonly asOf: IsoDate;
 }
 
-/**
- * A balance to set the account to, not an amount to move. The API posts the difference as an
- * adjustment transaction and answers 204 when the balance already matched.
- *
- * A null `transactionDate` means today, and it is the date whose balance is corrected. Omitting
- * `description` leaves the user reading "Balance adjustment" whatever language they are in — the
- * API holds no translations.
- */
+/** A balance to set the account to, not an amount to move. */
 export interface BalanceAdjustmentRequest {
   targetBalance: Money;
   transactionDate: IsoDate | null;

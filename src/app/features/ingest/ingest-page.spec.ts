@@ -22,13 +22,7 @@ const UPLOADED: IngestResult = {
   warnings: [],
 };
 
-/**
- * A `change` event as the hidden file input would raise one.
- *
- * Built by hand rather than through `DataTransfer`, whose file list is not writable in jsdom.
- * The component only ever reads `files[0]` and clears `value`, so this is the whole surface it
- * touches.
- */
+/** A `change` event as the hidden file input would raise one. */
 function fileEvent(name = 'fatura.pdf'): Event {
   const input = {
     files: [new File(['%PDF-1.4'], name, { type: 'application/pdf' })],
@@ -38,14 +32,6 @@ function fileEvent(name = 'fatura.pdf'): Event {
   return { target: input } as unknown as Event;
 }
 
-/**
- * The upload feedback, which exists because an import is slow enough to look broken.
- *
- * `planelyx-ocr` holds the POST open for the whole pipeline — decrypt, extract the text layer,
- * and for a layout no deterministic parser recognises, a model call. Without something on screen
- * saying so, the reasonable thing for a user to do after twenty silent seconds is press import
- * again, and two imports of the same bytes race each other on the content hash.
- */
 describe('IngestPage upload feedback', () => {
   let fixture: ComponentFixture<IngestPage>;
   let http: HttpTestingController;
@@ -70,8 +56,6 @@ describe('IngestPage upload feedback', () => {
     http = TestBed.inject(HttpTestingController);
     http.match(() => true).forEach((request) => request.flush([]));
 
-    /* The queue is an `httpResource`, so its signal settles a microtask after the flush. Without
-       waiting, every test would start on a screen still showing "Loading…". */
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -101,11 +85,6 @@ describe('IngestPage upload feedback', () => {
     expect(text()).toContain('Sending the file');
   });
 
-  /**
-   * The phase that actually matters. Everything after the last byte is the server reading the
-   * statement, with no events until the response — so the copy has to explain the silence rather
-   * than leave a bar sitting at 100%.
-   */
   it('says the statement is being read once the bytes are all sent', () => {
     startUpload();
 
@@ -117,11 +96,6 @@ describe('IngestPage upload feedback', () => {
     expect(text()).toContain('Reading the statement');
   });
 
-  /**
-   * The reason any of this exists. The disabled button covers the ordinary path, but the input
-   * can be reached without it, and a second import of the same bytes is a race on the content
-   * hash rather than a harmless duplicate.
-   */
   it('refuses a second file while one is still importing', () => {
     startUpload();
     http.expectOne(`${environment.ocrUrl}/documents`);
@@ -152,7 +126,6 @@ describe('IngestPage upload feedback', () => {
     expect(text()).not.toContain('Sending the file');
   });
 
-  /** "Nothing imported yet" while something is importing is a contradiction on screen. */
   it('does not offer the empty state while an import is in flight', () => {
     expect(text()).toContain('Nothing imported yet');
 

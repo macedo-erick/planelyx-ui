@@ -7,11 +7,6 @@ describe('qualifiedLabel', () => {
     expect(qualifiedLabel('Conta corrente', 'Itau')).toBe('Conta corrente · Itau');
   });
 
-  /**
-   * The case this exists for. Naming an account after its bank is the obvious thing to do, and
-   * the straightforward template renders "Itau · Itau" — the name twice, for the most ordinary
-   * data there is.
-   */
   it('drops a qualifier that only repeats the name', () => {
     expect(qualifiedLabel('Itau', 'Itau')).toBe('Itau');
   });

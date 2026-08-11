@@ -29,10 +29,6 @@ describe('AmountVisibilityService', () => {
     expect(amountsHidden()).toBe(false);
   });
 
-  /**
-   * The choice has to survive a reload, or hiding amounts lasts exactly as long as the tab —
-   * the same bargain `ThemeService` and `LocaleService` strike under their `planelyx.*` keys.
-   */
   it('persists the choice', () => {
     const service = TestBed.inject(AmountVisibilityService);
 

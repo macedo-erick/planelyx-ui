@@ -4,13 +4,7 @@ import { injectTranslate } from '../../core/i18n/translate';
 import { Category } from '../models/category';
 import { defaultCategoryNames } from '../util/enum-labels';
 
-/**
- * A category rendered as its coloured icon.
- *
- * In dense tables the icon stands in for the name, but the name is never actually
- * dropped: it stays as a `title` for hover and as visually-hidden text so screen readers
- * and search-in-page still find it. Set `showName` where there is room for both.
- */
+/** A category rendered as its coloured icon. */
 @Component({
   selector: 'planelyx-category-badge',
   template: `
@@ -38,19 +32,12 @@ import { defaultCategoryNames } from '../util/enum-labels';
   `,
 })
 export class PlanelyxCategoryBadge {
-  /** Undefined when the category was deleted but transactions still reference it. */
   readonly category = input<Category | undefined>(undefined);
   readonly showName = input(false);
-  /** `md` is the list-row circle; `sm` is the dense inline one. */
   readonly size = input<'sm' | 'md'>('sm');
 
   private readonly t = injectTranslate();
 
-  /**
-   * Every category name in the app goes through this badge, which makes it the one place the
-   * seeded English names have to be translated. A category the user named themselves has no
-   * entry and comes through as typed.
-   */
   private readonly translateName = defaultCategoryNames();
 
   protected readonly name = computed(() => {

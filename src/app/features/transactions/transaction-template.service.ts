@@ -9,12 +9,7 @@ import {
   TransactionTemplateRequest,
 } from '../../shared/models/transaction-template';
 
-/**
- * Recurring rules — both "fixed" entries and installment purchases.
- *
- * Deliberately not a `CrudService`: the API has no PUT, and DELETE is a soft deactivate
- * rather than a removal.
- */
+/** Recurring rules — both "fixed" entries and installment purchases. */
 @Service()
 export class TransactionTemplateService {
   private readonly http = inject(HttpClient);
@@ -33,10 +28,6 @@ export class TransactionTemplateService {
 
   readonly active = computed(() => this.sorted().filter((t) => t.active));
 
-  /**
-   * Lookup used by the transactions table to turn `installmentNumber` into "1/12" — the
-   * transaction itself only carries its own position, not the total.
-   */
   readonly byIdMap = computed(() => new Map(this.items().map((t) => [t.id, t])));
 
   create(request: TransactionTemplateRequest): Observable<TransactionTemplate> {

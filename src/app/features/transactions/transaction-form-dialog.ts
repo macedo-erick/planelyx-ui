@@ -72,7 +72,6 @@ export interface TransactionFormModel {
   bankAccountId: Uuid | null;
   creditCardId: Uuid | null;
   categoryId: Uuid | null;
-  /** Null until the user types one — the field opens empty rather than at `R$ 0,00`. */
   amount: number | null;
   transactionDate: IsoDate | null;
   description: string;
@@ -122,10 +121,6 @@ export class TransactionFormDialog {
 
   readonly visible = model.required<boolean>();
   readonly transaction = input<Transaction | null>(null);
-  /**
-   * Seeds a *new* transaction — ignored when editing. Lets the invoice screen open the dialog
-   * already pointed at that card and billing period.
-   */
   readonly prefill = input<Partial<TransactionFormModel> | null>(null);
   readonly saved = output<void>();
   readonly deleted = output<Transaction>();
@@ -141,27 +136,10 @@ export class TransactionFormDialog {
   protected readonly saving = signal(false);
   protected readonly editing = computed(() => this.transaction() !== null);
 
-  /**
-   * Whether this bill has been ticked off, held outside the form.
-   *
-   * The API takes it on endpoints of its own rather than in the update payload, so it is not a
-   * form field. It is still applied on save rather than on click: Cancel sits right there, and a
-   * tick that had already gone through would make that button a lie.
-   */
   protected readonly paid = signal(true);
 
-  /**
-   * Set once the user works the checkbox, so the default below stops overwriting their answer.
-   */
   private readonly paidTouched = signal(false);
 
-  /**
-   * Only an account debit can be ticked off. A card charge is always paid — it is settled through
-   * its invoice, all at once — and income is not a bill, so the server refuses both.
-   *
-   * A recurring rule is excluded as well. It materialises months of occurrences, each falling on
-   * its own day and classified on its own terms, and one checkbox could not speak for all of them.
-   */
   protected readonly paidVisible = computed(
     () => this.f.kind().value() === 'ACCOUNT_DEBIT' && !this.isRecurring(),
   );
@@ -169,10 +147,8 @@ export class TransactionFormDialog {
   protected readonly scopeOpen = signal(false);
   protected readonly scopeMode = signal<'delete' | 'save'>('delete');
 
-  /** Generated from a template, so an edit or delete can reach past this one row. */
   protected readonly isSeries = computed(() => this.transaction()?.templateId != null);
 
-  /** Installments read as "installments"; open-ended rules read as "occurrences". */
   protected readonly isInstallmentSeries = computed(
     () => this.transaction()?.installmentNumber != null,
   );
@@ -239,13 +215,6 @@ export class TransactionFormDialog {
     ),
   );
 
-  /**
-   * Preview of the installment amount, e.g. "12 × R$ 833,33".
-   *
-   * Shows the per-installment value only. The server puts any leftover cents on the last
-   * installment, but surfacing that split here is noise — the number people want to see
-   * is what they will be charged each month.
-   */
   protected readonly previewSummary = computed(() => {
     if (!this.isInstallment()) {
       return '';
@@ -259,7 +228,6 @@ export class TransactionFormDialog {
     return `${parts.length} × ${formatMoneyUnmasked(parts[0])}`;
   });
 
-  /** Only income categories make sense for money coming in. */
   protected readonly categoryOptions = computed(() => {
     const kind = this.f.kind().value();
     const list =
@@ -338,13 +306,7 @@ export class TransactionFormDialog {
     return this.kindLabels()[kind];
   }
 
-  /**
-   * Delete lives in here rather than on the row because the rows are click-to-edit — this
-   * dialog is the only place a single transaction is ever the subject of an action.
-   *
-   * A transaction belonging to a series asks how far to reach first; a one-off keeps the plain
-   * confirm it always had.
-   */
+  /** Delete lives in here rather than on the row because the rows are click-to-edit. */
   protected confirmDelete(): void {
     const current = this.transaction();
     if (!current) {
@@ -409,14 +371,7 @@ export class TransactionFormDialog {
     this.performSave('SINGLE');
   }
 
-  /**
-   * Sends the tick, if it moved. Nothing to send otherwise.
-   *
-   * Only on an edit. Creating carries `paid` in the payload itself, but PUT deliberately does not:
-   * an edit reaches across a series through `scope`, and each month's bill is paid on its own day,
-   * so ticking March off must not claim April was paid too. The API keeps it on endpoints that
-   * name one row, and this is the call to them.
-   */
+  /** Sends the tick, if it moved. Nothing to send otherwise. */
   private applyPaid(existing: Transaction): Observable<unknown> {
     if (!this.paidVisible() || this.paid() === existing.paid) {
       return of(null);

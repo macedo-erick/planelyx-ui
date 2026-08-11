@@ -5,12 +5,7 @@ import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Profile, ProfileRequest } from '../../shared/models/profile';
 
-/**
- * The signed-in user's profile.
- *
- * There is no id anywhere in here on purpose — the API takes the user from the token, so this
- * can only ever read or write the caller's own profile.
- */
+/** The signed-in user's profile. */
 @Service()
 export class ProfileService {
   private readonly http = inject(HttpClient);

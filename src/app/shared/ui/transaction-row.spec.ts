@@ -7,13 +7,6 @@ import { amountsHidden } from '../util/amount-visibility';
 import { currentLocale } from '../util/locale';
 import { PlanelyxTransactionRow } from './transaction-row';
 
-/**
- * The row is where the amount mask has to prove itself: `formatMoney` reads `amountsHidden`
- * from inside a `computed`, and nothing subscribes to anything. If that read were ever hoisted
- * out — cached in a pipe, or resolved once at construction — the toggle would go quiet and the
- * figure would stay on screen. Deliberately no `detectChanges()` here: the assertion is that
- * flipping the signal is enough on its own to schedule the re-render.
- */
 describe('PlanelyxTransactionRow', () => {
   it('re-renders the amount when amounts are hidden', async () => {
     TestBed.configureTestingModule({ imports: [provideTestingTransloco()] });

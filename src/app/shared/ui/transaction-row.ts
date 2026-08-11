@@ -8,16 +8,7 @@ import { defaultCategoryNames } from '../util/enum-labels';
 import { formatMoney } from '../util/money';
 import { PlanelyxCategoryBadge } from './category-badge';
 
-/**
- * One transaction as a list row: coloured category circle, description over a muted
- * category line, and the amount over its date on the right.
- *
- * Shared by the transactions page, the monthly invoice view and the invoice detail page —
- * a charge and an account transaction are the same shape, so they read the same way.
- *
- * The row is a `<button>` rather than a `<div>` with a click handler so that click-to-edit
- * is reachable by keyboard for free.
- */
+/** One transaction as a list row. */
 @Component({
   selector: 'planelyx-transaction-row',
   imports: [PlanelyxCategoryBadge],
@@ -30,36 +21,19 @@ import { PlanelyxCategoryBadge } from './category-badge';
 })
 export class PlanelyxTransactionRow {
   readonly transaction = input.required<Transaction>();
-  /** Undefined when the category was deleted but the transaction still references it. */
   readonly category = input<Category | undefined>(undefined);
-  /**
-   * Appended after the category name. The card or account on the transactions page; left
-   * empty inside an invoice, where the card is already the heading.
-   */
   readonly secondary = input('');
   readonly clickable = input(true);
 
-  /** Named `edit` rather than `select` — `select` is a native DOM event. */
   readonly edit = output<Transaction>();
 
   protected readonly t = injectTranslate();
   private readonly translateCategory = defaultCategoryNames();
 
-  /**
-   * Balance and invoice corrections are posted by the API against a system category. They only
-   * make sense next to the figure they correct, so they are not editable — the row refuses the
-   * click rather than opening a dialog that could not save.
-   */
   protected readonly locked = computed(() => this.category()?.system === true);
 
   protected readonly interactive = computed(() => this.clickable() && !this.locked());
 
-  /**
-   * A bill still to be paid, marked so the list says which ones are open without being opened.
-   *
-   * Account debits only. A card charge is settled through its invoice rather than one at a time,
-   * so `paid` says nothing about it, and income is not a bill at all.
-   */
   protected readonly unpaid = computed(() => {
     const tx = this.transaction();
     return tx.kind === 'ACCOUNT_DEBIT' && !tx.paid;
@@ -72,7 +46,6 @@ export class PlanelyxTransactionRow {
       : this.t('categoryDefaults.Uncategorised');
   });
 
-  /** "2/6" for an installment, nothing otherwise. */
   protected readonly installment = computed(() => {
     const tx = this.transaction();
     return tx.installmentNumber ? `${tx.installmentNumber}/${tx.totalInstallments}` : null;
@@ -87,12 +60,5 @@ export class PlanelyxTransactionRow {
     this.transaction().kind === 'ACCOUNT_CREDIT' ? 'text-green-600' : 'text-red-500',
   );
 
-  /**
-   * The day of the purchase, not the day this entry falls on.
-   *
-   * The two differ only for an installment, whose later entries are dated months after anything
-   * was bought. Showing the occurrence there put a January sofa in the middle of August; the
-   * purchase date is what identifies the charge, and it is the date an invoice already shows.
-   */
   protected readonly date = computed(() => longDate(this.transaction().purchaseDate));
 }

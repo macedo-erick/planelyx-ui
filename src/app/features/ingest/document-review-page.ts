@@ -30,14 +30,7 @@ interface LedgerTarget {
 /** Why a line cannot be filed. Null means it can. */
 type BlockedReason = 'payment' | 'balanceCarry' | 'creditOnCard' | 'decided' | null;
 
-/**
- * The review screen — the only door to the ledger.
- *
- * Everything here exists to make a wrong line visible before it is confirmed, because a
- * transaction recorded with the wrong amount looks exactly like a real one and quietly corrupts
- * every report built on top of it. A line that cannot be filed honestly is refused rather than
- * approximated.
- */
+/** The review screen — the only door to the ledger. */
 @Component({
   selector: 'planelyx-document-review-page',
   imports: [
@@ -60,7 +53,6 @@ type BlockedReason = 'payment' | 'balanceCarry' | 'creditOnCard' | 'decided' | n
   `,
 })
 export class DocumentReviewPage {
-  /** Bound from the route by `withComponentInputBinding()`. */
   readonly id = input.required<Uuid>();
 
   protected readonly service = inject(IngestService);
@@ -87,15 +79,6 @@ export class DocumentReviewPage {
     this.categories.items().map((category) => ({ label: category.name, value: category.id })),
   );
 
-  /**
-   * One list of both cards and accounts, because a statement is filed against exactly one of
-   * them and `planelyx-api` refuses any request carrying both.
-   *
-   * Each label carries its kind because the two namespaces are independent — a card and an
-   * account can both be called "Itaú", and mixing them in one list makes an unlabelled name
-   * genuinely ambiguous. The prefix rather than an option group: a group heading disappears once
-   * the panel closes, taking the answer with it, while the prefix stays visible on the trigger.
-   */
   protected readonly targetOptions = computed(() => [
     ...this.cards.items().map((card) => ({
       label: `${this.t('ingest.targetKind.card')} · ${card.name}`,
@@ -109,13 +92,6 @@ export class DocumentReviewPage {
 
   protected readonly target = signal<LedgerTarget | null>(null);
 
-  /**
-   * The category chosen per line, seeded from whatever the rule dictionary suggested.
-   *
-   * A `linkedSignal` rather than a plain one: the seed has to follow the staged lines as they
-   * load and reload, but a choice the reviewer has already made must survive that. Rebuilding
-   * the map on every reload keeps a line that was re-extracted from carrying a stale category.
-   */
   protected readonly categoryByLine = linkedSignal<
     readonly StagedTransaction[],
     Record<Uuid, Uuid | null>
@@ -144,7 +120,6 @@ export class DocumentReviewPage {
     return selectable.length > 0 && selectable.every((line) => this.selectedIds().has(line.id));
   });
 
-  /** Selected lines still missing the one thing the API will not accept a null for. */
   protected readonly missingCategory = computed(() =>
     [...this.selectedIds()].filter((id) => !this.categoryByLine()[id]),
   );
@@ -157,29 +132,11 @@ export class DocumentReviewPage {
       this.missingCategory().length === 0,
   );
 
-  /**
-   * Which of the two destructive actions this document is subject to, and never both.
-   *
-   * Once a line has been filed the import is no longer a thing to throw away: the ledger holds
-   * transactions that only these staged rows identify, and `planelyx-ocr` refuses the delete for
-   * exactly that reason. Undoing the import is what makes it disposable again.
-   *
-   * Deliberately independent of `busy()` — the buttons take that as `disabled`. Folding it in
-   * here would make the header swap one action for the other while a request is in flight.
-   */
   protected readonly canRollback = computed(() => (this.document()?.filedCount ?? 0) > 0);
 
   protected readonly canDelete = computed(() => (this.document()?.filedCount ?? 0) === 0);
 
-  /**
-   * Why a line is not selectable — and it is a reason, never a silent omission.
-   *
-   * `payment` settles the invoice whose purchases are already being filed; counting it as an
-   * expense too would double the same money. A credit pointed at a credit card has no honest
-   * representation in `planelyx-api` at all: amounts there are positive and there is no negative
-   * card charge, so the choices are to invent a bank credit or flip a sign, and both produce a
-   * wrong number that looks real.
-   */
+  /** Why a line is not selectable — and it is a reason, never a silent omission. */
   protected blockedReason(line: StagedTransaction): BlockedReason {
     if (line.status !== 'pending' && line.status !== 'edited') {
       return 'decided';
@@ -233,11 +190,6 @@ export class DocumentReviewPage {
     this.selectedIds.set(new Set());
   }
 
-  /**
-   * Conditional classes are built here rather than bound per-class in the template: the theme
-   * variables belong inside arbitrary-value utilities, and `[class.border-[var(--x)]]` nests
-   * brackets the template parser cannot read.
-   */
   protected readonly bulkBarClasses = computed(() =>
     this.selectedIds().size > 0
       ? 'border-[var(--p-primary-color)] bg-[var(--p-highlight-background)]'
@@ -306,14 +258,7 @@ export class DocumentReviewPage {
       .join(', ');
   }
 
-  /**
-   * Opens the stored original in a new tab.
-   *
-   * The bytes are fetched first and opened as an object URL, because a plain link carries no
-   * bearer token and comes back 401 (see `IngestService.original`). The URL is revoked on a timer
-   * rather than immediately — revoking it in the same tick races the new tab's own load, and the
-   * tab keeps the document once it has read it.
-   */
+  /** Opens the stored original in a new tab. */
   protected openOriginal(): void {
     this.busy.set(true);
     this.service.original(this.id()).subscribe({
@@ -406,11 +351,6 @@ export class DocumentReviewPage {
         this.busy.set(false);
         this.selectedIds.set(new Set());
 
-        /**
-         * A partial result is reported as one, never rounded to success or failure. The lines
-         * that landed are already in the ledger, so telling the reviewer "it failed" would
-         * invite a retry that files them a second time.
-         */
         if (result.failed > 0) {
           this.messages.add({
             severity: 'warn',

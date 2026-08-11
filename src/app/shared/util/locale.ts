@@ -8,15 +8,7 @@ export const APP_LOCALES: readonly AppLocale[] = ['pt-BR', 'en-US'];
 
 export const LOCALE_STORAGE_KEY = 'planelyx.locale';
 
-/**
- * The locale every `Intl` call in the app formats against.
- *
- * A plain signal rather than a service so the formatting helpers can stay pure functions —
- * they are called from templates, and reading a signal there is what makes every amount and
- * date re-render when the language changes, with no subscription anywhere.
- *
- * `LocaleService` owns writing to it; nothing else should.
- */
+/** The locale every `Intl` call in the app formats against. */
 export const currentLocale = signal<AppLocale>(initialLocale());
 
 document.documentElement.lang = currentLocale();
@@ -25,14 +17,7 @@ export function isAppLocale(value: string | null | undefined): value is AppLocal
   return APP_LOCALES.includes(value as AppLocale);
 }
 
-/**
- * Resolved at module load, not on first render, so the very first amount formatted is already
- * in the right locale.
- *
- * A stored choice wins, then the browser's preference, then the environment's default. The
- * browser is matched on its language subtag, so `pt`, `pt-PT` and `pt-BR` all land on Brazilian
- * Portuguese rather than falling through to English.
- */
+/** Resolved at module load, so the first amount formatted is already in the right locale. */
 function initialLocale(): AppLocale {
   const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
   if (isAppLocale(stored)) {

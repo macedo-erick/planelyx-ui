@@ -25,19 +25,11 @@ import { formatMoneyUnmasked, roundCents } from '../../shared/util/money';
 import { BankAccountService } from './bank-account.service';
 
 interface AdjustBalanceFormModel {
-  /** Nullable because the money input can be cleared; seeded with the current balance on open. */
   targetBalance: Money | null;
   transactionDate: IsoDate | null;
 }
 
-/**
- * Corrects an account to the balance the owner reads off their bank.
- *
- * A balance is derived from transactions rather than stored, so there is nothing here to
- * overwrite. The difference is posted as an ordinary transaction, which is why this is a
- * separate action from editing the account instead of a field on that form — it writes to the
- * ledger, and the dialog says so before it does.
- */
+/** Corrects an account to the balance the owner reads off their bank. */
 @Component({
   selector: 'planelyx-adjust-balance-dialog',
   imports: [Dialog, Button, FormField, FormsModule, PlanelyxMoneyInput, PlanelyxDatePicker],
@@ -59,7 +51,6 @@ export class AdjustBalanceDialog {
     () => this.account()?.currency ?? this.service.items()[0]?.currency ?? 'BRL',
   );
 
-  /** What the account is worth today, before any correction. */
   protected readonly current = computed<Money>(() => {
     const account = this.account();
     return account ? (this.service.balanceFor(account.id) ?? account.initialBalance) : 0;
@@ -75,7 +66,6 @@ export class AdjustBalanceDialog {
     required(path.transactionDate, { message: this.t('validation.adjustmentDate') });
   });
 
-  /** Signed: positive is money the ledger is missing, negative is money it over-counted. */
   protected readonly delta = computed(() =>
     roundCents((this.f.targetBalance().value() ?? this.current()) - this.current()),
   );
@@ -88,10 +78,6 @@ export class AdjustBalanceDialog {
     return `${sign} ${formatMoneyUnmasked(Math.abs(delta), this.currency())}`;
   });
 
-  /**
-   * Seeds the field from the current balance, so it opens on the number it is replacing and
-   * submitting untouched is a no-op rather than a correction to zero.
-   */
   constructor() {
     effect(() => {
       if (!this.visible()) {

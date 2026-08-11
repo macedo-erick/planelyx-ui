@@ -1,12 +1,6 @@
 import { Component, input } from '@angular/core';
 
-/**
- * The Planelyx mark — the same rounded square and rising bars as `public/favicon.svg`, so the
- * browser tab and the in-app brand read as one icon rather than two unrelated ones.
- *
- * Kept as markup instead of an `<img src="favicon.svg">` so it inherits the surrounding text
- * size and never flashes in unstyled while the file loads.
- */
+/** The Planelyx mark — the same rounded square and rising bars as `public/favicon.svg`. */
 @Component({
   selector: 'planelyx-logo',
   template: `
@@ -36,13 +30,8 @@ import { Component, input } from '@angular/core';
   `,
 })
 export class PlanelyxLogo {
-  /** Any CSS length; the mark is always square. */
   readonly size = input('1.5rem');
 
-  /**
-   * The gradient is referenced by `url(#…)`, which is document-scoped — two logos on the page
-   * with the same id would be invalid markup, so each instance gets its own.
-   */
   protected readonly gradientId = `planelyx-logo-${++instances}`;
 }
 

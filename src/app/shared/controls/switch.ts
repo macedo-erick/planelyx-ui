@@ -5,10 +5,7 @@ import { ToggleSwitch } from 'primeng/toggleswitch';
 
 import { generateControlId, PlanelyxControlBase } from './control-base';
 
-/**
- * Boolean toggle. Implements `FormCheckboxControl`, so it exposes `checked` rather than
- * `value` — the two contracts are mutually exclusive.
- */
+/** Boolean toggle. */
 @Component({
   selector: 'planelyx-switch',
   imports: [ToggleSwitch, FormsModule],

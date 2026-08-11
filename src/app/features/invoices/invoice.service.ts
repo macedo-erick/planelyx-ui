@@ -7,10 +7,7 @@ import { Money, Uuid } from '../../shared/models/common';
 import { Invoice, InvoiceFilters } from '../../shared/models/invoice';
 import { toHttpParams } from '../../shared/util/http-params';
 
-/**
- * Invoices are system-generated when a card charge is posted — there is no create or update.
- * The mutations are pay, unpay, adjusting the total, and deleting the invoice outright.
- */
+/** Invoices are system-generated when a card charge is posted — there is no create or update. */
 @Service()
 export class InvoiceService {
   private readonly http = inject(HttpClient);
@@ -26,12 +23,6 @@ export class InvoiceService {
   readonly items = computed(() => this.resource.value());
   readonly isLoading = computed(() => this.resource.isLoading());
 
-  /**
-   * Newest first, by the month the invoice is known by.
-   *
-   * Sorted on `referenceMonth` rather than the billing period so this list runs in the same order
-   * as the dashboard, which has always gone by the due date.
-   */
   readonly sorted = computed(() =>
     [...this.items()].sort((a, b) => b.referenceMonth.localeCompare(a.referenceMonth)),
   );
@@ -42,28 +33,14 @@ export class InvoiceService {
     this.filters.set(filters);
   }
 
-  /**
-   * Marks the invoice settled. The server posts a debit against the card's account for it, so the
-   * money actually leaves — a paid invoice is no longer deducted from the projected total.
-   *
-   * `description` names that debit, for the same reason `adjust` takes one: the API holds no
-   * translations, so without it the row reads "Invoice payment" whatever language the user is in.
-   */
+  /** Marks the invoice settled. */
   pay(id: Uuid, description: string): Observable<Invoice> {
     return this.http
       .post<Invoice>(`${this.baseUrl}/${id}/pay`, { description })
       .pipe(tap(() => this.resource.reload()));
   }
 
-  /**
-   * Sets the invoice total to `targetAmount`.
-   *
-   * The total is the sum of the invoice's charges, so the server records the difference as a
-   * charge of its own rather than overwriting the figure. Refused once the invoice is paid.
-   *
-   * `description` names that charge. The API holds no translations, so the text has to come from
-   * here — without it the charge reads "Invoice adjustment" whatever language the user is in.
-   */
+  /** Sets the invoice total to `targetAmount`. */
   adjust(id: Uuid, targetAmount: Money, description: string): Observable<Invoice> {
     return this.http
       .post<Invoice>(`${this.baseUrl}/${id}/adjust`, { targetAmount, description })

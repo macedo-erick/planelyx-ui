@@ -39,7 +39,6 @@ import { monthYear } from '../util/date-format';
   `,
 })
 export class PlanelyxMonthNav {
-  /** Always normalised to the first of the month so equality checks stay simple. */
   readonly month = model.required<Date>();
 
   protected readonly t = injectTranslate();
