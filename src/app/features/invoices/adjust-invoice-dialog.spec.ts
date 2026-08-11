@@ -34,18 +34,11 @@ const INVOICE: Invoice = {
   createdAt: '2026-07-11T00:00:00Z',
 };
 
-/**
- * The invoice total is the sum of its charges, so correcting it downwards has to be able to
- * produce a negative difference — the case most likely to be broken by a well-meaning
- * "amounts are positive" change on either side of the wire.
- */
 describe('AdjustInvoiceDialog', () => {
   let fixture: ComponentFixture<AdjustInvoiceDialog>;
   let http: HttpTestingController;
-  /** Protected members are reached deliberately; this dialog has no public test surface. */
   let dialog: AdjustInvoiceInternals;
 
-  /** Every post is gated behind a confirm; accepting it is what actually fires the request. */
   function acceptConfirmation(): void {
     TestBed.inject(ConfirmationService).requireConfirmation$.subscribe((options) =>
       options?.accept?.(),

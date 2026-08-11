@@ -21,13 +21,7 @@ interface InvoicesPageInternals {
 const CARD_ID = '22222222-2222-2222-2222-222222222222';
 const TEMPLATE_ID = '33333333-3333-3333-3333-333333333333';
 
-/**
- * Two consecutive periods on a card closing the 28th and due the 5th.
- *
- * Both close a month before they are paid, which is exactly the shape that used to break: the
- * screen keyed an invoice on the month its period ended in, so the one paid on 5 September
- * showed up under August while the dashboard listed it under September.
- */
+/** Two consecutive periods on a card closing the 28th and due the 5th. */
 const AUGUST_CLOSE_SEPTEMBER_DUE: Invoice = {
   id: '44444444-4444-4444-4444-444444444444',
   creditCardId: CARD_ID,
@@ -75,7 +69,6 @@ const charge = (overrides: Partial<Transaction>): Transaction => ({
 
 describe('InvoicesPage', () => {
   let fixture: ComponentFixture<InvoicesPage>;
-  /** Protected members are reached deliberately; the month keying has no public surface. */
   let page: InvoicesPageInternals;
 
   function showMonth(year: number, monthIndex: number): Invoice | null {
@@ -123,12 +116,6 @@ describe('InvoicesPage', () => {
     expect(showMonth(2026, 9)?.id).toBe(SEPTEMBER_CLOSE_OCTOBER_DUE.id);
   });
 
-  /**
-   * Ordering by purchase date is the API's job — it sorts on the column, so an installment bought
-   * months ago already arrives below the month's own purchases. This screen must hand that order
-   * straight through: re-sorting a server page here would put the same charge in a different place
-   * depending on which page it landed on.
-   */
   it('renders charges in the order the API sent them', async () => {
     showMonth(2026, 8);
 

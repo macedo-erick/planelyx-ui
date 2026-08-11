@@ -2,26 +2,29 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
+import { ProgressBar } from 'primeng/progressbar';
 import { Tag } from 'primeng/tag';
 
 import { injectTranslate } from '../../core/i18n/translate';
-import { IngestDocument, IngestDocumentStatus } from '../../shared/models/ingest';
+import { IngestDocument, IngestDocumentStatus, UploadProgress } from '../../shared/models/ingest';
 import { PlanelyxCard } from '../../shared/ui/card';
 import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
 import { PlanelyxPageHeader } from '../../shared/ui/page-header';
 import { dateTime } from '../../shared/util/date-format';
 import { IngestService } from './ingest.service';
 
-/**
- * The import queue: what has been ingested, and what still needs a decision.
- *
- * Deliberately not a place where anything reaches the ledger. Uploading only stages, and every
- * write goes through the review screen — so this page can be used freely without it becoming a
- * way to file a statement nobody has read.
- */
+/** The import queue: what has been ingested, and what still needs a decision. */
 @Component({
   selector: 'planelyx-ingest-page',
-  imports: [Button, Tag, RouterLink, PlanelyxCard, PlanelyxPageHeader, PlanelyxEmptyState],
+  imports: [
+    Button,
+    Tag,
+    ProgressBar,
+    RouterLink,
+    PlanelyxCard,
+    PlanelyxPageHeader,
+    PlanelyxEmptyState,
+  ],
   templateUrl: './ingest-page.html',
   styles: `
     :host {
@@ -34,8 +37,23 @@ export class IngestPage {
   private readonly messages = inject(MessageService);
   protected readonly t = injectTranslate();
 
-  protected readonly uploading = signal(false);
+  protected readonly upload = signal<UploadProgress | null>(null);
+  protected readonly uploadingName = signal('');
+
+  protected readonly uploading = computed(() => this.upload() !== null);
   protected readonly documents = computed(() => this.service.sorted());
+
+  protected readonly uploadPercent = computed(() => {
+    const progress = this.upload();
+
+    return progress?.phase === 'sending' ? progress.percent : null;
+  });
+
+  protected uploadMessage(): string {
+    return this.upload()?.phase === 'sending'
+      ? this.t('ingest.uploadingSending')
+      : this.t('ingest.uploadingReading');
+  }
 
   protected when(value: string): string {
     return dateTime(value);
@@ -45,10 +63,7 @@ export class IngestPage {
     return this.t(`ingest.status.${status}`);
   }
 
-  /**
-   * `unsupported` is a warning rather than an error: nothing went wrong, no parser simply
-   * recognised the issuer yet. The original is kept and can be imported again once one exists.
-   */
+  /** `unsupported` is a warning rather than an error. */
   protected statusSeverity(
     status: IngestDocumentStatus,
   ): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
@@ -81,15 +96,26 @@ export class IngestPage {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
 
-    if (!file) {
+    if (!file || this.uploading()) {
       return;
     }
 
-    this.uploading.set(true);
+    input.value = '';
+
+    this.uploadingName.set(file.name);
+    this.upload.set({ phase: 'sending', percent: null });
+
     this.service.upload(file).subscribe({
-      next: (result) => {
-        this.uploading.set(false);
-        input.value = '';
+      next: (progress) => {
+        if (progress.phase !== 'done') {
+          this.upload.set(progress);
+
+          return;
+        }
+
+        const result = progress.result;
+        this.upload.set(null);
+        this.uploadingName.set('');
 
         if (result.duplicate) {
           this.messages.add({
@@ -121,8 +147,8 @@ export class IngestPage {
         });
       },
       error: () => {
-        this.uploading.set(false);
-        input.value = '';
+        this.upload.set(null);
+        this.uploadingName.set('');
       },
     });
   }

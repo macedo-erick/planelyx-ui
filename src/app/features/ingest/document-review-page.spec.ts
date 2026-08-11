@@ -117,10 +117,6 @@ describe('DocumentReviewPage', () => {
     });
   });
 
-  /**
-   * RF-07.2. The flag comes from the server so both ends agree on what counts as doubtful, and
-   * the row has to actually say so — an unmarked bad line is one that gets confirmed unread.
-   */
   it('marks a line the parser was unsure about', async () => {
     await render([line({ id: 'shaky', needsAttention: true, fieldConfidence: { amount: 0.4 } })]);
 
@@ -133,10 +129,6 @@ describe('DocumentReviewPage', () => {
     expect(fixture.nativeElement.textContent).toContain('Possible duplicate');
   });
 
-  /**
-   * The invoice payment is the settlement of the charges being filed alongside it. Filing it as
-   * an expense too counts the same money twice, and nothing downstream would show it.
-   */
   it('refuses to file an invoice payment as an expense', async () => {
     await render([line({ id: 'payment', kind: 'payment' })]);
 
@@ -144,11 +136,6 @@ describe('DocumentReviewPage', () => {
     expect(page.selectableLines()).toHaveLength(0);
   });
 
-  /**
-   * There is no negative card charge in planelyx-api — amounts are positive and the kinds do not
-   * include one. Filing a refund against a card would mean inventing a bank credit or flipping a
-   * sign, and both put a number in the ledger that is simply wrong.
-   */
   it('blocks money coming back on a card, but not on an account', async () => {
     await render([line({ id: 'refund', kind: 'refund', isCredit: true })]);
 
@@ -161,8 +148,6 @@ describe('DocumentReviewPage', () => {
     expect(page.blockedReason(page.lines()[0])).toBeNull();
   });
 
-  /** A suggestion pre-fills the picker, because starting from nothing on sixty lines is the
-   * thing that makes review not happen. It is still only a suggestion. */
   it('starts from the suggested category', async () => {
     await render([
       line({ id: 'suggested', suggestedCategoryId: CATEGORY_ID, suggestionSource: 'rule' }),
@@ -171,11 +156,6 @@ describe('DocumentReviewPage', () => {
     expect(page.categoryByLine()['suggested']).toBe(CATEGORY_ID);
   });
 
-  /**
-   * Select-all moved out of a table header into the bulk bar above the card list, so what it
-   * covers is worth pinning: the lines that cannot be filed must stay out of it, or a payment
-   * line rides along with one click and gets counted as an expense.
-   */
   it('selects every reviewable line and skips the ones that are blocked', async () => {
     await render([line({ id: 'buyable' }), line({ id: 'settles', kind: 'payment' })]);
 
@@ -195,11 +175,6 @@ describe('DocumentReviewPage', () => {
     expect(page.lines()).toHaveLength(1);
   });
 
-  /**
-   * An import that produced ledger transactions is not a thing to throw away: the staged rows are
-   * the only record tying those transactions back to the document they came from. Undoing it is
-   * what makes it disposable again, so the screen offers exactly one of the two at a time.
-   */
   it('offers deletion only while nothing has been filed', async () => {
     await render([line({ id: 'line-1' })]);
 
@@ -214,10 +189,6 @@ describe('DocumentReviewPage', () => {
     expect(page.canRollback()).toBe(true);
   });
 
-  /**
-   * planelyx-ocr holds no catalogue of categories, cards or accounts, so the assignment the
-   * reviewer made is the only thing that can satisfy the API. It has to reach the wire intact.
-   */
   it('sends the reviewer’s assignment when confirming', async () => {
     await render([line({ id: 'line-1' })]);
 

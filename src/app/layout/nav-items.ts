@@ -1,14 +1,10 @@
 export interface NavItem {
-  /** Translation key, resolved in the template — the sidebar follows the language switch. */
   readonly label: string;
   readonly icon: string;
   readonly route: string;
 }
 
-/**
- * Ordered the way money is set up rather than the way it is reviewed: the accounts and cards
- * a transaction needs come before the transactions themselves.
- */
+/** Ordered the way money is set up rather than the way it is reviewed. */
 export const NAV_ITEMS: readonly NavItem[] = [
   { label: 'nav.dashboard', icon: 'pi pi-chart-pie', route: '/dashboard' },
   { label: 'nav.accounts', icon: 'pi pi-building-columns', route: '/accounts' },

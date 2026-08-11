@@ -55,17 +55,14 @@ export class TransactionsPage {
 
   protected readonly t = injectTranslate();
   protected readonly kindOptions = transactionKindOptions();
-  /** The picker's own token format, which differs between the two locales. */
   protected readonly dateFormat = computed(() => datePickerFormat());
   protected dialogOpen = signal(false);
   protected rulesOpen = signal(false);
   protected readonly selected = signal<Transaction | null>(null);
 
-  /** Zero-based, matching the API. */
   protected readonly page = signal(0);
   protected readonly size = signal(25);
 
-  /** Every filter is applied by the API; nothing is narrowed again on this side. */
   protected readonly kindFilter = signal<TransactionKind | null>(null);
   protected readonly categoryFilter = signal<Uuid | null>(null);
   protected readonly range = signal<{ from: IsoDate; to: IsoDate } | null>(null);
@@ -82,10 +79,6 @@ export class TransactionsPage {
 
   protected readonly rows = computed(() => this.service.items());
 
-  /**
-   * Income minus everything else across the whole selection, not just the visible page —
-   * which is why it comes from the API's summary endpoint rather than from `rows`.
-   */
   protected readonly net = computed(() => this.service.summary().net);
 
   constructor() {
@@ -139,11 +132,7 @@ export class TransactionsPage {
     });
   }
 
-  /**
-   * A narrower filter can leave fewer rows than the current offset, which would show an empty
-   * page with no obvious way back — so any filter change also returns to the first page. Both
-   * writes land before the effect runs, keeping it to a single request.
-   */
+  /** A narrower filter can leave fewer rows than the current offset. */
   private applyFilter(change: () => void): void {
     change();
     this.page.set(0);

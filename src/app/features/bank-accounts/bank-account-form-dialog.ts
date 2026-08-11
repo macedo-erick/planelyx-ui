@@ -31,7 +31,6 @@ interface BankAccountFormModel {
   name: string;
   bankName: string;
   accountType: AccountType | null;
-  /** Empty means "no opening balance", so it is sent as zero rather than being required. */
   initialBalance: number | null;
   currency: string;
 }
@@ -111,20 +110,13 @@ export class BankAccountFormDialog {
     });
   }
 
-  /**
-   * Hands off to the adjustment dialog, closing this one so the two are never stacked.
-   *
-   * The account stays selected on the page, so the adjustment dialog still has it.
-   */
+  /** Hands off to the adjustment dialog, closing this one so the two are never stacked. */
   protected openAdjust(): void {
     this.visible.set(false);
     this.adjustOpen.set(true);
   }
 
-  /**
-   * Delete lives in here rather than on the card because the cards are click-to-edit —
-   * this dialog is the only place a single account is ever the subject of an action.
-   */
+  /** Delete lives in here rather than on the card because the cards are click-to-edit. */
   protected confirmDelete(): void {
     const current = this.account();
     if (!current) {
@@ -154,10 +146,7 @@ export class BankAccountFormDialog {
     });
   }
 
-  /**
-   * An edit never moves `initialBalance`, though the API still requires it: the live balance is
-   * derived from that figure, and correcting one is what "Adjust balance" is for.
-   */
+  /** An edit never moves `initialBalance`, though the API still requires it. */
   protected onSubmit(): void {
     this.f().markAsTouched();
     if (this.f().invalid()) {

@@ -13,11 +13,6 @@ import {
 } from './money';
 
 describe('money utils', () => {
-  /**
-   * The one thing tying money to the language switch: `formatMoney` reads `currentLocale`, so
-   * a template calling it re-renders when the language changes. Refactoring that back to a
-   * constant would silently leave every amount in the old locale.
-   */
   describe('formatMoney', () => {
     const original = currentLocale();
 
@@ -41,19 +36,9 @@ describe('money utils', () => {
     });
   });
 
-  /**
-   * The mask is the display default, so an amount added later is concealed without anyone
-   * remembering to conceal it. The tests below pin both halves of that: what masks, and the
-   * editing surfaces that must not.
-   */
   describe('hiding amounts', () => {
     const originalLocale = currentLocale();
 
-    /**
-     * `Intl` separates symbol from figure with a non-breaking space in pt-BR and with nothing
-     * at all in en-US. Normalising here keeps the assertions readable without pretending the
-     * difference does not exist — `maskMoney` reproduces whichever the locale chose.
-     */
     const normalise = (value: string) => value.replace(/\u00A0/g, ' ');
 
     afterEach(() => {

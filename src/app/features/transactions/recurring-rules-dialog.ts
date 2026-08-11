@@ -20,13 +20,7 @@ import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
 import { TransactionTemplateService } from './transaction-template.service';
 
-/**
- * Management surface for recurring rules.
- *
- * Rules are created from the transaction form (a transaction that repeats), so this only
- * lists them and stops them — which is all the API allows, since there is no update
- * endpoint and DELETE is a soft deactivate.
- */
+/** Management surface for recurring rules. */
 @Component({
   selector: 'planelyx-recurring-rules-dialog',
   imports: [Dialog, Tag, Button, PlanelyxCard, PlanelyxEmptyState, PlanelyxCategoryBadge],

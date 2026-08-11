@@ -15,24 +15,14 @@ interface PlanelyxTokenClaims {
 export class AuthService {
   private readonly keycloak = inject(Keycloak);
 
-  /**
-   * Redirect URIs must carry the deployed base href — production serves the app under
-   * /ui/, and Keycloak rejects redirect URIs it has not been registered with.
-   */
   private readonly location = inject(Location);
 
-  /**
-   * Keycloak mutates its own instance rather than emitting signals, so we snapshot the
-   * claims once at construction. `provideKeycloak` finishes init before the app
-   * bootstraps, so the token is already present here.
-   */
   private readonly claims = signal<PlanelyxTokenClaims>(
     (this.keycloak.tokenParsed ?? {}) as PlanelyxTokenClaims,
   );
 
   readonly isAuthenticated = computed(() => this.keycloak.authenticated ?? false);
 
-  /** The backend derives `owner_id` from this exact claim, so it is the user's identity. */
   readonly userId = computed(() => this.claims().sub ?? null);
 
   readonly username = computed(() => this.claims().preferred_username ?? '');
@@ -44,7 +34,6 @@ export class AuthService {
     return c.name || c.given_name || c.preferred_username || 'User';
   });
 
-  /** Two-letter avatar fallback, e.g. "Demo User" -> "DU". */
   readonly initials = computed(() =>
     this.displayName()
       .split(/\s+/)
@@ -53,13 +42,7 @@ export class AuthService {
       .join(''),
   );
 
-  /**
-   * Re-reads the claims after the profile has been edited elsewhere.
-   *
-   * The snapshot above is taken once, so a saved name or email would otherwise keep showing
-   * the old value in the header until the next sign-in. Forcing a token refresh is what makes
-   * Keycloak reissue the token with the updated claims.
-   */
+  /** Re-reads the claims after the profile has been edited elsewhere. */
   async refreshClaims(): Promise<void> {
     await this.keycloak.updateToken(-1);
     this.claims.set((this.keycloak.tokenParsed ?? {}) as PlanelyxTokenClaims);

@@ -13,12 +13,7 @@ export function generateControlId(prefix: string): string {
   return `${prefix}-${nextControlId}`;
 }
 
-/**
- * The optional half of the `FormUiControl` contract, shared by every wrapper.
- *
- * The `FormField` directive discovers these by name and keeps them in sync with the bound
- * field, so declaring them here means each wrapper only has to declare its `value`.
- */
+/** The optional half of the `FormUiControl` contract, shared by every wrapper. */
 @Directive()
 export abstract class PlanelyxControlBase {
   readonly label = input.required<string>();
@@ -33,9 +28,5 @@ export abstract class PlanelyxControlBase {
   readonly required = input<boolean>(false);
   readonly errors = input<readonly WithOptionalFieldTree<ValidationError>[]>([]);
 
-  /**
-   * Must be emitted on blur (not focus) or the field never registers as touched and
-   * errors stay invisible.
-   */
   readonly touch = output<void>();
 }

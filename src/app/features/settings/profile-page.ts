@@ -20,12 +20,7 @@ interface ProfileFormModel {
 
 const empty = (): ProfileFormModel => ({ firstName: '', lastName: '', email: '' });
 
-/**
- * The signed-in user's profile, which is held by Keycloak rather than by Planelyx.
- *
- * Everything except the password is edited here; a credential change goes out to Keycloak's own
- * account console, which is the only place equipped to do it safely.
- */
+/** The signed-in user's profile, which is held by Keycloak rather than by Planelyx. */
 @Component({
   selector: 'planelyx-profile-page',
   imports: [Button, FormField, FormsModule, PlanelyxTextInput, PlanelyxCard, PlanelyxPageHeader],
@@ -50,10 +45,6 @@ export class ProfilePage {
     email(path.email, { message: this.t('validation.email') });
   });
 
-  /**
-   * The profile arrives after the page does, so the form is filled from the response rather than
-   * at construction.
-   */
   constructor() {
     effect(() => {
       const profile = this.service.profile();
@@ -71,10 +62,7 @@ export class ProfilePage {
     this.auth.openAccountManagement();
   }
 
-  /**
-   * Claims are refreshed after a successful save: the header reads the name off the token, which
-   * still holds the old one until Keycloak reissues it.
-   */
+  /** Claims are refreshed after a successful save. */
   protected onSubmit(): void {
     this.f().markAsTouched();
     if (this.f().invalid()) {

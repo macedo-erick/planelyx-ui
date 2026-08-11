@@ -7,12 +7,7 @@ import { RadioButton } from 'primeng/radiobutton';
 import { injectTranslate } from '../../core/i18n/translate';
 import { TransactionScope } from '../../shared/models/enums';
 
-/**
- * Asks how far an edit or delete should reach through an installment or recurring series.
- *
- * A plain confirm cannot express this — `ConfirmationService` only models accept and reject,
- * and there are three answers here.
- */
+/** Asks how far an edit or delete should reach through an installment or recurring series. */
 @Component({
   selector: 'planelyx-recurrence-scope-dialog',
   imports: [Dialog, Button, RadioButton, FormsModule],
@@ -20,9 +15,7 @@ import { TransactionScope } from '../../shared/models/enums';
 })
 export class RecurrenceScopeDialog {
   readonly visible = model.required<boolean>();
-  /** Changes the wording and the severity of the confirm button; the choices are the same. */
   readonly mode = input<'delete' | 'save'>('delete');
-  /** Installments read as "installments"; open-ended rules read as "occurrences". */
   readonly installment = input(false);
 
   readonly confirmed = output<TransactionScope>();
@@ -39,10 +32,6 @@ export class RecurrenceScopeDialog {
     ),
   );
 
-  /**
-   * Singular and plural both, because "occurrence" + "s" only works in English — Portuguese
-   * needs the two forms spelled out, and the agreeing article with them.
-   */
   protected readonly unitParams = computed(() => {
     const suffix = this.installment() ? 'Installment' : 'Occurrence';
 

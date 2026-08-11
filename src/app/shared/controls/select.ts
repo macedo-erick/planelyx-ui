@@ -14,7 +14,6 @@ import { PlanelyxFieldShell } from './field-shell';
 })
 export class PlanelyxSelect<T> extends PlanelyxControlBase implements FormValueControl<T | null> {
   readonly value = model<T | null>(null);
-  /** Mutable array type on purpose — PrimeNG's `options` input is not readonly. */
   readonly options = input.required<SelectOption<T>[]>();
   readonly showClear = input(false);
 
