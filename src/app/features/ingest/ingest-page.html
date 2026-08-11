@@ -15,9 +15,35 @@
   />
 </planelyx-page-header>
 
+@if (uploading()) {
+  @let percent = uploadPercent();
+
+  <planelyx-card class="mb-4 block" [padded]="true">
+    <div class="flex flex-col gap-3" aria-live="polite" aria-busy="true">
+      <div class="flex items-center gap-3">
+        <i class="pi pi-spin pi-spinner text-[var(--p-primary-color)]" aria-hidden="true"></i>
+        <div class="min-w-0">
+          <p class="truncate font-medium text-[var(--p-text-color)]">
+            {{ t('ingest.uploadingTitle', { name: uploadingName() }) }}
+          </p>
+          <p class="text-sm text-[var(--p-text-muted-color)]">{{ uploadMessage() }}</p>
+        </div>
+      </div>
+
+      <p-progressbar
+        [mode]="percent === null ? 'indeterminate' : 'determinate'"
+        [value]="percent ?? 0"
+        [showValue]="false"
+        [style]="{ height: '0.5rem' }"
+        [attr.aria-label]="uploadMessage()"
+      />
+    </div>
+  </planelyx-card>
+}
+
 @if (service.isLoading()) {
   <p class="text-[var(--p-text-muted-color)]">{{ t('common.loading') }}</p>
-} @else if (documents().length === 0) {
+} @else if (documents().length === 0 && !uploading()) {
   <planelyx-empty-state
     icon="pi-file-import"
     [title]="t('ingest.empty')"

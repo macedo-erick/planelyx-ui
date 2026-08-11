@@ -2,10 +2,11 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
+import { ProgressBar } from 'primeng/progressbar';
 import { Tag } from 'primeng/tag';
 
 import { injectTranslate } from '../../core/i18n/translate';
-import { IngestDocument, IngestDocumentStatus } from '../../shared/models/ingest';
+import { IngestDocument, IngestDocumentStatus, UploadProgress } from '../../shared/models/ingest';
 import { PlanelyxCard } from '../../shared/ui/card';
 import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
 import { PlanelyxPageHeader } from '../../shared/ui/page-header';
@@ -21,7 +22,15 @@ import { IngestService } from './ingest.service';
  */
 @Component({
   selector: 'planelyx-ingest-page',
-  imports: [Button, Tag, RouterLink, PlanelyxCard, PlanelyxPageHeader, PlanelyxEmptyState],
+  imports: [
+    Button,
+    Tag,
+    ProgressBar,
+    RouterLink,
+    PlanelyxCard,
+    PlanelyxPageHeader,
+    PlanelyxEmptyState,
+  ],
   templateUrl: './ingest-page.html',
   styles: `
     :host {
@@ -34,8 +43,35 @@ export class IngestPage {
   private readonly messages = inject(MessageService);
   protected readonly t = injectTranslate();
 
-  protected readonly uploading = signal(false);
+  /**
+   * The import in flight, or null.
+   *
+   * Held as the progress itself rather than a boolean so the template can say *which* phase it is
+   * in. An import is not a quick round trip: the request is held open while `planelyx-ocr` reads
+   * the statement, and for one no deterministic parser recognises that includes a model call. A
+   * spinner alone leaves the user unsure whether anything is happening, which is what gets a file
+   * uploaded twice.
+   */
+  protected readonly upload = signal<UploadProgress | null>(null);
+  /** Empty rather than null: it is only read while an import is in flight, and the translation
+   * parameter takes a string. */
+  protected readonly uploadingName = signal('');
+
+  protected readonly uploading = computed(() => this.upload() !== null);
   protected readonly documents = computed(() => this.service.sorted());
+
+  /** Null while the file is still going up, which is what makes the bar indeterminate. */
+  protected readonly uploadPercent = computed(() => {
+    const progress = this.upload();
+
+    return progress?.phase === 'sending' ? progress.percent : null;
+  });
+
+  protected uploadMessage(): string {
+    return this.upload()?.phase === 'sending'
+      ? this.t('ingest.uploadingSending')
+      : this.t('ingest.uploadingReading');
+  }
 
   protected when(value: string): string {
     return dateTime(value);
@@ -81,15 +117,34 @@ export class IngestPage {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
 
-    if (!file) {
+    /**
+     * Re-entry is guarded here as well as by disabling the button, because the button is not the
+     * only way in — a keyboard activation on the hidden input, or a second `change` from a
+     * picker that was already open, reaches this directly. Two imports of the same bytes race
+     * each other on the content hash and one of them loses.
+     */
+    if (!file || this.uploading()) {
       return;
     }
 
-    this.uploading.set(true);
+    /* Cleared now rather than on completion, so choosing the same file again later still fires a
+       `change` event. Left set, re-picking it would silently do nothing. */
+    input.value = '';
+
+    this.uploadingName.set(file.name);
+    this.upload.set({ phase: 'sending', percent: null });
+
     this.service.upload(file).subscribe({
-      next: (result) => {
-        this.uploading.set(false);
-        input.value = '';
+      next: (progress) => {
+        if (progress.phase !== 'done') {
+          this.upload.set(progress);
+
+          return;
+        }
+
+        const result = progress.result;
+        this.upload.set(null);
+        this.uploadingName.set('');
 
         if (result.duplicate) {
           this.messages.add({
@@ -121,8 +176,8 @@ export class IngestPage {
         });
       },
       error: () => {
-        this.uploading.set(false);
-        input.value = '';
+        this.upload.set(null);
+        this.uploadingName.set('');
       },
     });
   }
