@@ -1,12 +1,6 @@
 import { IsoDate, MonthKey } from '../models/common';
 
-/**
- * Conversions between the API's `LocalDate` strings and JS `Date` objects.
- *
- * These exist because `new Date('2026-08-03')` is parsed as UTC midnight, which renders
- * as 2026-08-02 anywhere west of Greenwich. Every conversion in the app goes through
- * here and works purely in local date parts, so a date never drifts by a day.
- */
+/** Conversions between the API's `LocalDate` strings and JS `Date` objects. */
 
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
@@ -72,10 +66,7 @@ export function isSameMonth(iso: IsoDate, reference: Date = new Date()): boolean
   );
 }
 
-/**
- * Whole days from today until `iso`. Negative when in the past.
- * Both ends are normalized to local midnight so DST transitions cannot round oddly.
- */
+/** Whole days from today until `iso`. */
 export function daysUntil(iso: IsoDate, reference: Date = new Date()): number | null {
   const target = fromIsoDate(iso);
   if (!target) {

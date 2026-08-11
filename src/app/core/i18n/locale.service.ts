@@ -10,22 +10,12 @@ import {
 } from '../../shared/util/locale';
 import { PRIMENG_TRANSLATIONS } from './primeng-translations';
 
-/**
- * The one place a language change is applied.
- *
- * Four things have to move together or the page ends up half-translated: Transloco's active
- * language, the `Intl` locale behind every amount and date, PrimeNG's own component text, and
- * the document's `lang`. Keeping them in a single effect means adding a language later is one
- * edit rather than four.
- *
- * Modelled on `ThemeService`, down to persisting the choice under a `planelyx.*` key.
- */
+/** The one place a language change is applied. */
 @Service()
 export class LocaleService {
   private readonly transloco = inject(TranslocoService);
   private readonly primeng = inject(PrimeNG);
 
-  /** Seeded from the same resolution the formatters already used at module load. */
   readonly locale = signal<AppLocale>(currentLocale());
 
   readonly available = APP_LOCALES;

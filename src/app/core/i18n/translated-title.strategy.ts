@@ -6,12 +6,7 @@ import { TranslocoService } from '@jsverse/transloco';
 /** Appended to every page title, and not translated — it is the product's name. */
 const SUFFIX = 'Planelyx';
 
-/**
- * Resolves a route's `title` as a translation key rather than as literal text.
- *
- * Also re-runs on a language change: the browser tab keeps whatever was set last, so without
- * this the title would stay in the previous language until the next navigation.
- */
+/** Resolves a route's `title` as a translation key rather than as literal text. */
 @Injectable({ providedIn: 'root' })
 export class TranslatedTitleStrategy extends TitleStrategy {
   private readonly title = inject(Title);

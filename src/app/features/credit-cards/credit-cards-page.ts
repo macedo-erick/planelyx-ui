@@ -53,10 +53,7 @@ export class CreditCardsPage {
     return formatMoney(value);
   }
 
-  /**
-   * How much of the limit is committed. Can exceed 100% — the server does not stop a
-   * charge that takes the card past its limit, so the number has to be able to say so.
-   */
+  /** How much of the limit is committed. */
   protected usedPercent(card: CreditCard): number {
     if (card.creditLimit <= 0) {
       return card.usedLimit > 0 ? 100 : 0;

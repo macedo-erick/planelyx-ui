@@ -25,11 +25,6 @@ describe('IngestService', () => {
     http = TestBed.inject(HttpTestingController);
   });
 
-  /**
-   * The whole reason `ocrUrl` exists. Hitting `apiUrl` would reach the wrong service, and — more
-   * quietly — the bearer-token interceptor is scoped per host, so a request to an unlisted URL
-   * leaves without a token and comes back 401 looking like a broken login.
-   */
   it('addresses planelyx-ocr, not the API', () => {
     service
       .confirm(DOCUMENT_ID, {
@@ -43,11 +38,6 @@ describe('IngestService', () => {
     expect(request.request.url.startsWith(environment.apiUrl)).toBe(false);
   });
 
-  /**
-   * The assignment has to survive the trip: `planelyx-ocr` holds no catalogue of categories or
-   * cards, so whatever the reviewer picked is the only thing that can satisfy the API's
-   * not-null category and its exactly-one-of card/account rule.
-   */
   it('sends the per-line assignment the reviewer made', () => {
     service
       .confirm(DOCUMENT_ID, {
@@ -64,11 +54,6 @@ describe('IngestService', () => {
     });
   });
 
-  /**
-   * The bytes go up untouched. The service deduplicates by hashing the file's own content, so
-   * anything that re-encodes on the way changes the hash and a re-import stops being recognised
-   * as one.
-   */
   it('uploads the file as multipart without re-encoding it', async () => {
     const file = new File(['OFXHEADER:100'], 'fatura.ofx', { type: 'application/x-ofx' });
 
@@ -83,18 +68,12 @@ describe('IngestService', () => {
     expect(await sent.text()).toBe('OFXHEADER:100');
   });
 
-  /** `force` is what reprocesses a document already seen — needed after a parser is fixed. */
   it('asks for reprocessing explicitly', () => {
     service.upload(new File(['x'], 'fatura.ofx'), true).subscribe();
 
     http.expectOne(`${environment.ocrUrl}/documents?force=true`);
   });
 
-  /**
-   * An import is not a quick round trip — the POST is held open while `planelyx-ocr` reads the
-   * statement, which for an unrecognised layout includes a model call — so the upload reports
-   * phases rather than resolving once.
-   */
   describe('upload progress', () => {
     const UPLOADED: IngestResult = {
       documentId: DOCUMENT_ID,
@@ -121,11 +100,6 @@ describe('IngestService', () => {
       expect(seen).toEqual([{ phase: 'sending', percent: 20 }]);
     });
 
-    /**
-     * The moment the last byte lands, not the moment the response arrives. Everything between the
-     * two is the server working with no events to report, and a bar left at 100% for the length
-     * of a model call reads as a hung request.
-     */
     it('switches to reading once the last byte is sent', () => {
       const seen = uploadAndCollect();
 
@@ -163,7 +137,6 @@ describe('IngestService', () => {
     expect(request.request.method).toBe('POST');
   });
 
-  /** The document itself, not `/staging` — that one keeps the document and drops its lines. */
   it('deletes a whole import through the document endpoint', () => {
     service.delete(DOCUMENT_ID).subscribe();
 

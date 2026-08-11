@@ -30,7 +30,6 @@ interface CreditCardFormModel {
   bankAccountId: Uuid | null;
   name: string;
   brand: string;
-  /** Empty means "no limit tracked", so it is sent as zero rather than being required. */
   creditLimit: number | null;
   closingDay: number | null;
   dueDay: number | null;
@@ -115,10 +114,7 @@ export class CreditCardFormDialog {
     });
   }
 
-  /**
-   * Delete lives in here rather than on the card because the cards are click-to-edit —
-   * this dialog is the only place a single card is ever the subject of an action.
-   */
+  /** Delete lives in here rather than on the card because the cards are click-to-edit. */
   protected confirmDelete(): void {
     const current = this.card();
     if (!current) {

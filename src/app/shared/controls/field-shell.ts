@@ -3,13 +3,7 @@ import type { ValidationError, WithOptionalFieldTree } from '@angular/forms/sign
 
 import { injectTranslate } from '../../core/i18n/translate';
 
-/**
- * Label + control + error chrome shared by every `planelyx-*` control.
- *
- * Centralising it here is what keeps the accessibility contract (label association,
- * `aria-describedby`, `role="alert"` on errors) correct in one place rather than in
- * every form across the app.
- */
+/** Label + control + error chrome shared by every `planelyx-*` control. */
 @Component({
   selector: 'planelyx-field-shell',
   template: `
@@ -52,7 +46,6 @@ export class PlanelyxFieldShell {
   readonly touched = input(false);
   readonly errors = input<readonly WithOptionalFieldTree<ValidationError>[]>([]);
 
-  /** Errors stay hidden until the user has actually left the field. */
   readonly showErrors = computed(
     () => this.touched() && this.invalid() && this.messages().length > 0,
   );
@@ -62,7 +55,6 @@ export class PlanelyxFieldShell {
 
   protected readonly t = injectTranslate();
 
-  /** `message` is optional on ValidationError, so fall back to a generic one per rule. */
   readonly messages = computed(() =>
     this.errors().map((error) => error.message ?? this.t(defaultMessageKey(error.kind))),
   );

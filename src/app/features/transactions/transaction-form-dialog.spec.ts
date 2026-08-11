@@ -21,15 +21,9 @@ interface TransactionFormDialogInternals {
   onPaidChange(paid: boolean): void;
 }
 
-/**
- * The form posts to one of two different endpoints depending on the "Repeats" choice,
- * and each has server-side rules that return 400 when violated. These tests pin the
- * routing and payload shaping so a regression shows up here rather than as an API error.
- */
 describe('TransactionFormDialog', () => {
   let fixture: ComponentFixture<TransactionFormDialog>;
   let http: HttpTestingController;
-  /** Protected members are reached deliberately; this dialog has no public test surface. */
   let form: TransactionFormDialogInternals;
 
   const ACCOUNT = '11111111-1111-1111-1111-111111111111';
@@ -68,7 +62,6 @@ describe('TransactionFormDialog', () => {
     f.transactionDate().value.set('2026-08-03');
     f.description().value.set('PS5');
     for (const [key, value] of Object.entries(overrides)) {
-      /** Each key writes a different value type, so the write side is narrowed structurally. */
       const field = f[key as keyof TransactionFormModel]() as unknown as {
         value: WritableSignal<unknown>;
       };
@@ -158,11 +151,6 @@ describe('TransactionFormDialog', () => {
     expect(form.previewSummary()).toBe('');
   });
 
-  /**
-   * The tick is offered on a new transaction too, not only on an edit — a bill can be filed
-   * before it is paid. Only where it means anything: a card charge is settled through its
-   * invoice, and a recurring rule generates months of occurrences that one box cannot answer for.
-   */
   describe('the paid tick', () => {
     function tick(): void {
       fixture.detectChanges();
@@ -183,7 +171,6 @@ describe('TransactionFormDialog', () => {
       expect(form.paidVisible()).toBe(false);
     });
 
-    /** The same rule the server applies, so what the box shows is what would be stored. */
     it('follows the date until the user sets it', () => {
       fill({ kind: 'ACCOUNT_DEBIT', bankAccountId: ACCOUNT, repeats: 'NONE' });
       tick();
@@ -199,10 +186,6 @@ describe('TransactionFormDialog', () => {
       expect(form.paid()).toBe(true);
     });
 
-    /**
-     * Carried by the row that creates it, in one call. Correcting it afterwards would file the
-     * bill as paid for as long as the second request took, and leave it that way if it failed.
-     */
     it('rides along in the create payload', () => {
       fill({ kind: 'ACCOUNT_DEBIT', bankAccountId: ACCOUNT, repeats: 'NONE' });
       form.onPaidChange(false);
@@ -218,7 +201,6 @@ describe('TransactionFormDialog', () => {
       http.expectNone(`${environment.apiUrl}/transactions/${CREATED}/unpay`);
     });
 
-    /** Where the tick means nothing, no opinion is sent and the server decides on its own. */
     it('is left out of the payload for a card charge', () => {
       fill({ kind: 'CARD_CHARGE', creditCardId: CARD, repeats: 'NONE' });
       form.onSubmit();

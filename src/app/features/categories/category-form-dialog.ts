@@ -46,7 +46,6 @@ export class CategoryFormDialog {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly visible = model.required<boolean>();
-  /** Null means "create"; a category means "edit". */
   readonly category = input<Category | null>(null);
   readonly saved = output<void>();
   readonly deleted = output<Category>();
@@ -55,13 +54,6 @@ export class CategoryFormDialog {
   protected readonly typeOptions = categoryTypeOptions();
   private readonly curatedIcons = categoryIconOptions();
 
-  /**
-   * The curated icons, plus the one the category already carries when that is not among them.
-   *
-   * PrimeNG matches the value against the options: with no entry for it the field renders empty,
-   * which reads as "no icon" — and a save from there writes the icon away. Keeping it listed
-   * means an icon set outside the picker survives an edit that never touched it.
-   */
   protected readonly iconOptions = computed<SelectOption<string>[]>(() => {
     const options = this.curatedIcons();
     const current = this.category()?.icon;
@@ -101,10 +93,7 @@ export class CategoryFormDialog {
     this.f.color().value.set((event.target as HTMLInputElement).value);
   }
 
-  /**
-   * Delete lives in here rather than on the card because the cards are click-to-edit —
-   * this dialog is the only place a single category is ever the subject of an action.
-   */
+  /** Delete lives in here rather than on the card because the cards are click-to-edit. */
   protected confirmDelete(): void {
     const current = this.category();
     if (!current) {

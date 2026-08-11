@@ -32,25 +32,11 @@ const ACCOUNT: BankAccount = {
   createdAt: '2026-01-01T00:00:00Z',
 };
 
-/**
- * A balance is derived, so this dialog's only real job is turning "what it should read" into
- * "what to post". The sign of that difference decides whether the ledger gains or loses money,
- * which makes it the thing worth pinning.
- */
 describe('AdjustBalanceDialog', () => {
   let fixture: ComponentFixture<AdjustBalanceDialog>;
   let http: HttpTestingController;
-  /** Protected members are reached deliberately; this dialog has no public test surface. */
   let dialog: AdjustBalanceInternals;
 
-  /**
-   * The balance the account actually stands at, as the balances endpoint reports it.
-   *
-   * Opened only once that response has settled. Two things make the ordering matter: an
-   * `httpResource` publishes its value a microtask after the flush, hence `whenStable`, and
-   * the dialog seeds its field the moment it becomes visible — so opening any earlier would
-   * seed from the account's initial balance and quietly test the wrong number.
-   */
   async function open(currentBalance: number): Promise<void> {
     fixture = TestBed.createComponent(AdjustBalanceDialog);
     fixture.componentRef.setInput('visible', false);
@@ -78,7 +64,6 @@ describe('AdjustBalanceDialog', () => {
     dialog = fixture.componentInstance as unknown as AdjustBalanceInternals;
   }
 
-  /** Every post is gated behind a confirm; accepting it is what actually fires the request. */
   function acceptConfirmation(): void {
     TestBed.inject(ConfirmationService).requireConfirmation$.subscribe((options) =>
       options?.accept?.(),

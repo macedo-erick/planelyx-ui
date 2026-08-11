@@ -14,19 +14,7 @@ import {
   TransactionKind,
 } from '../models/enums';
 
-/**
- * Enum labels, and the select options built from them.
- *
- * These were plain constants, evaluated once at import time. That cannot survive a language
- * switch — the strings would be fixed before the user ever picked a language — so each is now
- * a factory returning a signal. Reading one in a template or a `computed` re-renders it.
- *
- * Every factory must be called from an injection context, which in practice means a component
- * field initializer. That is where all the callers already used the old constants.
- *
- * The API's enum values double as the translation keys, so a new member only needs an entry in
- * the language files.
- */
+/** Enum labels, and the select options built from them. */
 
 /** Option shape consumed by `planelyx-select`. */
 export interface SelectOption<T> {
@@ -56,10 +44,7 @@ export function categoryTypeLabels(): Signal<Record<CategoryType, string>> {
   return labels('categoryType');
 }
 
-/**
- * The API names are ledger-side. If you prefer the BR convention (débito = account purchase,
- * crédito = card purchase), only the language files change.
- */
+/** The API names are ledger-side. */
 export function transactionKindLabels(): Signal<Record<TransactionKind, string>> {
   return labels('transactionKind');
 }
@@ -99,14 +84,7 @@ export const INVOICE_STATUS_SEVERITY: Record<InvoiceStatus, 'success' | 'warn' |
   PAID: 'success',
 };
 
-/**
- * Translates the names of the categories seeded for every user.
- *
- * Those rows are shared (`owner_id IS NULL`) and stored in English, so they cannot be
- * translated in the database without picking one language for everybody. Matching on the
- * seeded name here leaves the data alone, and a category the user named themselves has no
- * entry and falls through unchanged.
- */
+/** Translates the names of the categories seeded for every user. */
 export function defaultCategoryNames(): Signal<(name: string) => string> {
   const translations = translateObjectSignal('categoryDefaults');
 

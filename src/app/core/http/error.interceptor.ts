@@ -6,12 +6,7 @@ import { catchError, throwError } from 'rxjs';
 
 import { normalizeApiError } from './api-error';
 
-/**
- * Surfaces failed requests as a toast, then rethrows so callers can still react.
- *
- * 401 is skipped: keycloak-angular's auto-refresh handles expiry, and a toast on the way
- * to a login redirect is just noise.
- */
+/** Surfaces failed requests as a toast, then rethrows so callers can still react. */
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const messages = inject(MessageService);
   const transloco = inject(TranslocoService);

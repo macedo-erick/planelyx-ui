@@ -1,11 +1,4 @@
-/**
- * The signed-in user's profile, which lives in Keycloak rather than in the Planelyx database.
- *
- * Reached through the API's `/me` endpoints rather than Keycloak directly, so the browser never
- * needs admin-scoped credentials.
- *
- * `username` is read-only: the realm does not allow it to change.
- */
+/** The signed-in user's profile, which lives in Keycloak rather than in the Planelyx database. */
 export interface Profile {
   readonly username: string;
   readonly firstName: string;

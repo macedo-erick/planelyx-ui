@@ -9,13 +9,7 @@ import { datePickerFormat } from '../util/date-format';
 import { generateControlId, PlanelyxControlBase } from './control-base';
 import { PlanelyxFieldShell } from './field-shell';
 
-/**
- * Date input whose model value is the API's `LocalDate` string, not a `Date`.
- *
- * The `Date` the picker needs is derived with `linkedSignal` (the documented
- * value-transformation pattern) and both directions go through `shared/util/date.ts`,
- * which works in local date parts — so the selected day never shifts by a timezone offset.
- */
+/** Date input whose model value is the API's `LocalDate` string, not a `Date`. */
 @Component({
   selector: 'planelyx-date-picker',
   imports: [DatePicker, FormsModule, PlanelyxFieldShell],
@@ -54,11 +48,9 @@ export class PlanelyxDatePicker
 {
   readonly value = model<IsoDate | null>(null);
 
-  /** `dd/mm/yy` or `mm/dd/yy` depending on the language — PrimeNG's own token syntax. */
   protected readonly dateFormat = computed(() => datePickerFormat());
   protected readonly inputId = generateControlId('planelyx-date');
 
-  /** Follows `value()` but is what the picker actually binds to. */
   protected readonly displayValue = linkedSignal(() => fromIsoDate(this.value()));
 
   protected onChange(next: Date | null): void {

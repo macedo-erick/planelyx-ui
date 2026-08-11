@@ -5,26 +5,11 @@ import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Uuid } from '../../shared/models/common';
 
-/**
- * Shared shape for the three resources with plain CRUD (`bank-accounts`, `categories`,
- * `credit-cards`).
- *
- * Reads go through `httpResource` so the list is a signal the templates can read
- * directly. Mutations use `HttpClient` and return Observables — never promises — and
- * refresh the list via `tap` — through `reload()` rather than the resource directly, so a
- * subclass holding a second resource can keep it in step by overriding that one method.
- *
- * Transactions, templates and invoices deviate from this shape (filters, no PUT,
- * pay/unpay) and are written out explicitly instead.
- */
+/** Shared shape for the three resources with plain CRUD. */
 export abstract class CrudService<TModel, TRequest> {
   protected readonly http = inject(HttpClient);
   private readonly baseUrl: string;
 
-  /**
-   * `baseUrl` is still undefined when this initializer runs, but the request function is
-   * only invoked once effects flush — after the constructor has completed.
-   */
   readonly resource = httpResource<TModel[]>(() => this.baseUrl, { defaultValue: [] });
 
   readonly items = computed(() => this.resource.value());

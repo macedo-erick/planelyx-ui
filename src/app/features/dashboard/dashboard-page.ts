@@ -55,14 +55,8 @@ export class DashboardPage {
   private readonly categories = inject(CategoryService);
   private readonly transactions = inject(TransactionService);
 
-  /** Drives the whole page; stepping it is what makes past and future months viewable. */
   protected readonly month = signal(startOfMonth(new Date()));
 
-  /**
-   * Every figure is computed server-side. Balances come back cumulative as of the end of the
-   * selected month, so stepping forward reads as a forecast over the installments and recurring
-   * occurrences already scheduled — no projection needed, those rows exist.
-   */
   private readonly resource = httpResource<Dashboard>(() => ({
     url: `${environment.apiUrl}/dashboard`,
     params: { month: monthParam(this.month()) },
@@ -80,7 +74,6 @@ export class DashboardPage {
 
   protected readonly monthLabel = computed(() => monthYear(this.month()));
 
-  /** e.g. "Across 3 account(s), end of month" — the tail only when reading a future month. */
   protected readonly accountBalanceTotal = computed(() => this.data()?.accountBalanceTotal ?? 0);
 
   protected readonly accountsLabel = computed(() =>
@@ -90,7 +83,6 @@ export class DashboardPage {
     }),
   );
 
-  /** True once the selected month is later than the one we are actually in. */
   protected readonly isFuture = computed(
     () => this.month().getTime() > startOfMonth(new Date()).getTime(),
   );
@@ -105,7 +97,6 @@ export class DashboardPage {
   );
   protected readonly balances = computed(() => [...(this.data()?.accountBalances ?? [])]);
   protected readonly upcomingInvoices = computed(() => [...(this.data()?.upcomingInvoices ?? [])]);
-  /** The bill being edited, and whether its dialog is up. */
   protected readonly dialogOpen = signal(false);
   protected readonly selected = signal<Transaction | null>(null);
 
@@ -115,34 +106,18 @@ export class DashboardPage {
   protected readonly accountCount = computed(() => this.balances().length);
   protected readonly openInvoiceCount = computed(() => this.upcomingInvoices().length);
 
-  /**
-   * Ticks a bill off the reminder, or puts it back.
-   *
-   * Nothing above moves — the bill is an ordinary transaction already counted in every balance —
-   * but the dashboard is refetched anyway, because the list it was read from has changed.
-   */
+  /** Ticks a bill off the reminder, or puts it back. */
   protected toggleBill(bill: Transaction, paid: boolean): void {
     this.transactions.setPaid(bill.id, paid).subscribe(() => this.resource.reload());
   }
 
-  /**
-   * Opens a bill for editing without leaving the dashboard.
-   *
-   * A fixed cost is rarely a fixed amount — the condomínio, the power bill and the water bill
-   * arrive at a different figure every month. The reminder is where the owner meets them, so it
-   * is where the figure has to be correctable.
-   */
+  /** Opens a bill for editing without leaving the dashboard. */
   protected openEdit(bill: Transaction): void {
     this.selected.set(bill);
     this.dialogOpen.set(true);
   }
 
-  /**
-   * Refetches every figure on the page.
-   *
-   * Editing a bill can move its amount, and the amount is inside the month's spending and every
-   * balance below it — so the whole response is stale, not just the reminder list.
-   */
+  /** Refetches every figure on the page. */
   protected reload(): void {
     this.resource.reload();
   }
@@ -179,10 +154,7 @@ export class DashboardPage {
     () => (this.data()?.categoryBreakdown ?? []).length > 0,
   );
 
-  /**
-   * The remainder slice carries no category id — it stands for the tail the chart does not draw
-   * individually, so it is named here rather than translated as if it were a category.
-   */
+  /** The remainder slice carries no category id. */
   private sliceLabel(row: CategoryBreakdown): string {
     return row.categoryId === null
       ? this.t('dashboard.otherCategories')

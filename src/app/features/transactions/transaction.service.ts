@@ -20,7 +20,6 @@ export class TransactionService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/transactions`;
 
-  /** Filters and paging both live here. Changing this re-issues both requests automatically. */
   readonly filters = signal<TransactionFilters>({});
 
   readonly resource = httpResource<PageResponse<Transaction>>(
@@ -28,12 +27,6 @@ export class TransactionService {
     { defaultValue: emptyPage<Transaction>() },
   );
 
-  /**
-   * Totals for the whole selection, which the page alone cannot supply.
-   *
-   * Paging must not re-issue it, so `page` and `size` are stripped — otherwise every page
-   * change would refetch a figure that did not move.
-   */
   readonly summaryResource = httpResource<TransactionSummary>(() => {
     const current = this.filters();
     return {
@@ -49,7 +42,6 @@ export class TransactionService {
     };
   });
 
-  /** The current page of results. Ordering is the API's: newest first. */
   readonly items = computed(() => this.resource.value().content);
   readonly totalElements = computed(() => this.resource.value().totalElements);
   readonly isLoading = computed(() => this.resource.isLoading());
@@ -68,24 +60,14 @@ export class TransactionService {
     return this.http.post<Transaction>(this.baseUrl, request).pipe(tap(() => this.reload()));
   }
 
-  /**
-   * PUT accepts a narrower payload — kind and the account/card link are immutable. `scope` on
-   * the request widens the edit across a series.
-   */
+  /** PUT accepts a narrower payload — kind and the account/card link are immutable. */
   update(id: Uuid, request: TransactionUpdateRequest): Observable<Transaction> {
     return this.http
       .put<Transaction>(`${this.baseUrl}/${id}`, request)
       .pipe(tap(() => this.reload()));
   }
 
-  /**
-   * Ticks a bill off the dashboard's reminder, or puts it back on.
-   *
-   * Account debits only — a card charge is always paid, settled through its invoice rather than
-   * one at a time, and the server refuses anything else. Nothing but the flag moves: the entry is
-   * already counted in every balance, so this changes no figure. That is the opposite of
-   * `InvoiceService.pay`, which posts a real debit against an account.
-   */
+  /** Ticks a bill off the dashboard's reminder, or puts it back on. */
   setPaid(id: Uuid, paid: boolean): Observable<Transaction> {
     return this.http
       .post<Transaction>(`${this.baseUrl}/${id}/${paid ? 'pay' : 'unpay'}`, null)
