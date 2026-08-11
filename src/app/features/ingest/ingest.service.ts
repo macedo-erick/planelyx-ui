@@ -1,6 +1,6 @@
-import { HttpClient, httpResource } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpEventType, httpResource } from '@angular/common/http';
 import { computed, inject, Service, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { filter, map, Observable, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { Uuid } from '../../shared/models/common';
@@ -13,7 +13,37 @@ import {
   RollbackResult,
   StagedTransaction,
   StagedTransactionEdit,
+  UploadProgress,
 } from '../../shared/models/ingest';
+
+/**
+ * Turns one HTTP event into an upload phase, or into nothing.
+ *
+ * Most of the stream is not worth reporting — `Sent`, response headers, download progress on a
+ * body measured in bytes — so this returns null for them and the caller filters it out. The one
+ * judgement here is the switch to `reading`: the last upload-progress event arrives when the
+ * browser has handed over the final byte, and everything after it is the server working with no
+ * further events until the response. Treating that moment as a phase change is what stops the
+ * bar sitting at 100% for the length of a model call.
+ */
+function toProgress(event: HttpEvent<IngestResult>): UploadProgress | null {
+  if (event.type === HttpEventType.UploadProgress) {
+    if (event.total !== undefined && event.loaded >= event.total) {
+      return { phase: 'reading' };
+    }
+
+    return {
+      phase: 'sending',
+      percent: event.total === undefined ? null : Math.round((event.loaded / event.total) * 100),
+    };
+  }
+
+  if (event.type === HttpEventType.Response && event.body !== null) {
+    return { phase: 'done', result: event.body };
+  }
+
+  return null;
+}
 
 /**
  * The client for `planelyx-ocr`.
@@ -67,13 +97,23 @@ export class IngestService {
    * `force` reprocesses something already ingested, which is what you want after a parser is
    * fixed and not otherwise.
    */
-  upload(file: File, force = false): Observable<IngestResult> {
+  upload(file: File, force = false): Observable<UploadProgress> {
     const body = new FormData();
     body.append('file', file, file.name);
 
     const url = force ? `${this.baseUrl}?force=true` : this.baseUrl;
 
-    return this.http.post<IngestResult>(url, body).pipe(tap(() => this.reload()));
+    return this.http
+      .post<IngestResult>(url, body, { observe: 'events', reportProgress: true })
+      .pipe(
+        map((event) => toProgress(event)),
+        filter((progress): progress is UploadProgress => progress !== null),
+        tap((progress) => {
+          if (progress.phase === 'done') {
+            this.reload();
+          }
+        }),
+      );
   }
 
   /** Edits one staged line. The line becomes `edited`, which is distinct from untouched. */

@@ -245,3 +245,21 @@ export interface IngestResult {
   readonly transactionCount: number;
   readonly warnings: readonly string[];
 }
+
+/**
+ * How far along an import is, in the only two phases that are actually distinguishable.
+ *
+ * `sending` is the browser pushing bytes, and is genuinely measurable. `reading` is everything
+ * `planelyx-ocr` does once it has them — decrypting, extracting the text layer, and for a
+ * statement no deterministic parser recognises, a model call — and it is *not* measurable: the
+ * request is a single POST held open until the whole pipeline finishes, so there is no progress
+ * to report, only the fact that it is still running.
+ *
+ * Two phases rather than one percentage, precisely so the UI cannot imply otherwise. A bar that
+ * creeps to 100% and then sits there reads as a hung request; an indeterminate bar with a
+ * sentence saying what is happening does not.
+ */
+export type UploadProgress =
+  | { readonly phase: 'sending'; readonly percent: number | null }
+  | { readonly phase: 'reading' }
+  | { readonly phase: 'done'; readonly result: IngestResult };

@@ -1,9 +1,10 @@
-import { provideHttpClient } from '@angular/common/http';
+import { HttpEventType, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { environment } from '../../../environments/environment';
+import { IngestResult, UploadProgress } from '../../shared/models/ingest';
 import { IngestService } from './ingest.service';
 
 const DOCUMENT_ID = '11111111-1111-1111-1111-111111111111';
@@ -87,6 +88,71 @@ describe('IngestService', () => {
     service.upload(new File(['x'], 'fatura.ofx'), true).subscribe();
 
     http.expectOne(`${environment.ocrUrl}/documents?force=true`);
+  });
+
+  /**
+   * An import is not a quick round trip — the POST is held open while `planelyx-ocr` reads the
+   * statement, which for an unrecognised layout includes a model call — so the upload reports
+   * phases rather than resolving once.
+   */
+  describe('upload progress', () => {
+    const UPLOADED: IngestResult = {
+      documentId: DOCUMENT_ID,
+      status: 'processed',
+      duplicate: false,
+      transactionCount: 3,
+      warnings: [],
+    };
+
+    function uploadAndCollect(): UploadProgress[] {
+      const seen: UploadProgress[] = [];
+      service.upload(new File(['x'], 'fatura.pdf')).subscribe((progress) => seen.push(progress));
+
+      return seen;
+    }
+
+    it('reports how much of the file has gone up', () => {
+      const seen = uploadAndCollect();
+
+      http
+        .expectOne(`${environment.ocrUrl}/documents`)
+        .event({ type: HttpEventType.UploadProgress, loaded: 40, total: 200 });
+
+      expect(seen).toEqual([{ phase: 'sending', percent: 20 }]);
+    });
+
+    /**
+     * The moment the last byte lands, not the moment the response arrives. Everything between the
+     * two is the server working with no events to report, and a bar left at 100% for the length
+     * of a model call reads as a hung request.
+     */
+    it('switches to reading once the last byte is sent', () => {
+      const seen = uploadAndCollect();
+
+      http
+        .expectOne(`${environment.ocrUrl}/documents`)
+        .event({ type: HttpEventType.UploadProgress, loaded: 200, total: 200 });
+
+      expect(seen).toEqual([{ phase: 'reading' }]);
+    });
+
+    it('reports an unmeasurable upload as sending, without inventing a percentage', () => {
+      const seen = uploadAndCollect();
+
+      http
+        .expectOne(`${environment.ocrUrl}/documents`)
+        .event({ type: HttpEventType.UploadProgress, loaded: 40 });
+
+      expect(seen).toEqual([{ phase: 'sending', percent: null }]);
+    });
+
+    it('ends with the result the pipeline returned', () => {
+      const seen = uploadAndCollect();
+
+      http.expectOne(`${environment.ocrUrl}/documents`).flush(UPLOADED);
+
+      expect(seen).toEqual([{ phase: 'done', result: UPLOADED }]);
+    });
   });
 
   it('rolls an import back through its own endpoint', () => {
