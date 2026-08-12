@@ -76,7 +76,10 @@ export class DocumentReviewPage {
   protected readonly lines = computed(() => this.detail()?.transactions ?? []);
 
   protected readonly categoryOptions = computed(() =>
-    this.categories.items().map((category) => ({ label: category.name, value: category.id })),
+    this.categories.selectable().map((category) => ({
+      label: this.categories.displayName(category),
+      value: category.id,
+    })),
   );
 
   protected readonly targetOptions = computed(() => [
