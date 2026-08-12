@@ -57,7 +57,12 @@
       [label]="t('common.category')"
       [options]="categoryOptions()"
     />
-    <planelyx-money-input [formField]="f.amount" [label]="amountLabel()" [hint]="amountHint()" />
+    <planelyx-money-input
+      [formField]="f.amount"
+      [label]="amountLabel()"
+      [hint]="amountHint()"
+      [currency]="currency()"
+    />
     <planelyx-date-picker [formField]="f.transactionDate" [label]="dateLabel()" />
     <planelyx-text-input
       [formField]="f.description"

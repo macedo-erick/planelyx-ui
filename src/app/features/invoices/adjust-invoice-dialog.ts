@@ -21,6 +21,7 @@ import { PlanelyxMoneyInput } from '../../shared/controls/money-input';
 import { Money } from '../../shared/models/common';
 import { Invoice } from '../../shared/models/invoice';
 import { formatMoneyUnmasked, roundCents } from '../../shared/util/money';
+import { CurrencyService } from '../bank-accounts/currency.service';
 import { InvoiceService } from './invoice.service';
 
 interface AdjustInvoiceFormModel {
@@ -38,6 +39,7 @@ export class AdjustInvoiceDialog {
   private readonly messages = inject(MessageService);
   private readonly confirm = inject(ConfirmationService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly currencies = inject(CurrencyService);
 
   readonly visible = model.required<boolean>();
   readonly invoice = input<Invoice | null>(null);
@@ -48,6 +50,11 @@ export class AdjustInvoiceDialog {
   protected readonly saving = signal(false);
 
   protected readonly current = computed<Money>(() => this.invoice()?.totalAmount ?? 0);
+
+  /** The invoice settles against its card's account, which is what fixes the currency. */
+  protected readonly currency = computed(() =>
+    this.currencies.forCard(this.invoice()?.creditCardId),
+  );
 
   protected readonly model = signal<AdjustInvoiceFormModel>({ targetAmount: null });
 
@@ -64,7 +71,7 @@ export class AdjustInvoiceDialog {
   protected readonly deltaLabel = computed(() => {
     const delta = this.delta();
     const sign = delta > 0 ? '+' : '−';
-    return `${sign} ${formatMoneyUnmasked(Math.abs(delta))}`;
+    return `${sign} ${formatMoneyUnmasked(Math.abs(delta), this.currency())}`;
   });
 
   constructor() {
@@ -78,7 +85,7 @@ export class AdjustInvoiceDialog {
   }
 
   protected currentLabel(): string {
-    return formatMoneyUnmasked(this.current());
+    return formatMoneyUnmasked(this.current(), this.currency());
   }
 
   protected onSubmit(): void {
@@ -99,7 +106,7 @@ export class AdjustInvoiceDialog {
     this.confirm.confirm({
       header: this.t('invoices.adjust.header'),
       message: this.t('invoices.adjust.confirm', {
-        target: formatMoneyUnmasked(target),
+        target: formatMoneyUnmasked(target, this.currency()),
         delta: this.deltaLabel(),
       }),
       icon: 'pi pi-exclamation-triangle',
@@ -117,7 +124,7 @@ export class AdjustInvoiceDialog {
                 severity: 'success',
                 summary: this.t('invoices.adjust.done'),
                 detail: this.t('invoices.adjust.doneDetail', {
-                  target: formatMoneyUnmasked(target),
+                  target: formatMoneyUnmasked(target, this.currency()),
                 }),
                 life: 3000,
               });

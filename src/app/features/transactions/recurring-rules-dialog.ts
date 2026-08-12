@@ -16,6 +16,7 @@ import { shortDate } from '../../shared/util/date-format';
 import { recurrenceTypeLabels } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
+import { CurrencyService } from '../bank-accounts/currency.service';
 import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
 import { TransactionTemplateService } from './transaction-template.service';
@@ -32,6 +33,7 @@ export class RecurringRulesDialog {
   private readonly cards = inject(CreditCardService);
   private readonly categories = inject(CategoryService);
   private readonly confirm = inject(ConfirmationService);
+  private readonly currencies = inject(CurrencyService);
 
   readonly visible = model.required<boolean>();
 
@@ -57,8 +59,8 @@ export class RecurringRulesDialog {
     );
   }
 
-  protected money(value: number): string {
-    return formatMoney(value);
+  protected money(value: number, tpl: TransactionTemplate): string {
+    return formatMoney(value, this.currencies.forSource(tpl));
   }
 
   protected shortDate(iso: IsoDate): string {
