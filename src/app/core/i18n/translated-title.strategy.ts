@@ -7,7 +7,7 @@ import { TranslocoService } from '@jsverse/transloco';
 const SUFFIX = 'Planelyx';
 
 /** Resolves a route's `title` as a translation key rather than as literal text. */
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class TranslatedTitleStrategy extends TitleStrategy {
   private readonly title = inject(Title);
   private readonly transloco = inject(TranslocoService);
