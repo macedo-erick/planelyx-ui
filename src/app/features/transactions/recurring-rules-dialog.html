@@ -50,11 +50,13 @@
             <div class="flex items-baseline justify-between gap-2 text-sm">
               <span class="text-[var(--p-text-muted-color)]">{{ t('common.amount') }}</span>
               <span class="text-right">
-                <span class="font-medium tabular-nums">{{ money(tpl.totalAmount) }}</span>
+                <span class="font-medium tabular-nums">{{ money(tpl.totalAmount, tpl) }}</span>
                 @if (tpl.recurrenceType === 'INSTALLMENT' && tpl.totalOccurrences) {
                   <span class="block text-xs tabular-nums text-[var(--p-text-muted-color)]">
                     {{
-                      t('recurring.each', { amount: money(tpl.totalAmount / tpl.totalOccurrences) })
+                      t('recurring.each', {
+                        amount: money(tpl.totalAmount / tpl.totalOccurrences, tpl),
+                      })
                     }}
                   </span>
                 }

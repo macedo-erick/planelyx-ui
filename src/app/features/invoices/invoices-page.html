@@ -138,6 +138,7 @@
           <planelyx-transaction-row
             [transaction]="tx"
             [category]="category(tx.categoryId)"
+            [currency]="currencyFor(tx)"
             (edit)="openEdit(tx)"
           />
         }

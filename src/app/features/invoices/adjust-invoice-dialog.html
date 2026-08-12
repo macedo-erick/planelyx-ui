@@ -13,6 +13,7 @@
     </div>
 
     <planelyx-money-input
+      [currency]="currency()"
       [formField]="f.targetAmount"
       [label]="t('invoices.adjust.newTotal')"
       [hint]="t('invoices.adjust.newTotalHint')"

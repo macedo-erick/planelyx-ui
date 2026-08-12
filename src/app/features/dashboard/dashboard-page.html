@@ -132,7 +132,7 @@
 
           <span class="shrink-0 text-right">
             <span class="block font-medium tabular-nums text-red-500">
-              {{ money(bill.amount) }}
+              {{ moneyForBill(bill) }}
             </span>
             <span class="block text-sm tabular-nums text-[var(--p-text-muted-color)]">
               {{ shortDate(bill.transactionDate) }}
@@ -208,7 +208,7 @@
             </span>
           </span>
           <span class="shrink-0 text-right">
-            <span class="block font-medium tabular-nums">{{ money(invoice.totalAmount) }}</span>
+            <span class="block font-medium tabular-nums">{{ moneyForInvoice(invoice) }}</span>
             <p-tag
               class="mt-1 inline-block"
               [value]="statusLabel(invoice.status)"

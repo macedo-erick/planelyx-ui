@@ -31,6 +31,7 @@ import {
 import { shortDate } from '../../shared/util/date-format';
 import { INVOICE_STATUS_SEVERITY, invoiceStatusLabels } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
+import { CurrencyService } from '../bank-accounts/currency.service';
 import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
 import {
@@ -76,6 +77,7 @@ export class InvoicesPage {
   private readonly cards = inject(CreditCardService);
   private readonly categories = inject(CategoryService);
   private readonly confirm = inject(ConfirmationService);
+  private readonly currencies = inject(CurrencyService);
 
   protected readonly t = injectTranslate();
   private readonly statusLabels = invoiceStatusLabels();
@@ -202,8 +204,15 @@ export class InvoicesPage {
     return INVOICE_STATUS_SEVERITY[status];
   }
 
+  /** Every figure on the page belongs to the selected card, so they share its currency. */
+  protected readonly currency = computed(() => this.currencies.forCard(this.selectedCardId()));
+
   protected money(value: number): string {
-    return formatMoney(value);
+    return formatMoney(value, this.currency());
+  }
+
+  protected currencyFor(tx: Transaction): string {
+    return this.currencies.forSource(tx);
   }
 
   protected shortDate(iso: IsoDate): string {
@@ -256,7 +265,9 @@ export class InvoicesPage {
   protected confirmPay(invoice: Invoice): void {
     this.confirm.confirm({
       header: this.t('invoices.payHeader'),
-      message: this.t('invoices.payMessage', { amount: formatMoney(invoice.totalAmount) }),
+      message: this.t('invoices.payMessage', {
+        amount: formatMoney(invoice.totalAmount, this.currencies.forCard(invoice.creditCardId)),
+      }),
       icon: 'pi pi-check-circle',
       acceptButtonProps: { label: this.t('invoices.markPaid') },
       rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },
@@ -285,7 +296,9 @@ export class InvoicesPage {
   protected confirmDelete(invoice: Invoice): void {
     this.confirm.confirm({
       header: this.t('invoices.deleteHeader'),
-      message: this.t('invoices.deleteMessage', { amount: formatMoney(invoice.totalAmount) }),
+      message: this.t('invoices.deleteMessage', {
+        amount: formatMoney(invoice.totalAmount, this.currencies.forCard(invoice.creditCardId)),
+      }),
       icon: 'pi pi-exclamation-triangle',
       acceptButtonProps: { label: this.t('common.delete'), severity: 'danger' },
       rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },

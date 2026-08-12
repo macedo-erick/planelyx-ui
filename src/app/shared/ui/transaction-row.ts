@@ -1,5 +1,6 @@
 import { Component, computed, input, output } from '@angular/core';
 
+import { environment } from '../../../environments/environment';
 import { injectTranslate } from '../../core/i18n/translate';
 import { Category } from '../models/category';
 import { Transaction } from '../models/transaction';
@@ -24,6 +25,8 @@ export class PlanelyxTransactionRow {
   readonly category = input<Category | undefined>(undefined);
   readonly secondary = input('');
   readonly clickable = input(true);
+  /** Resolved by the page from the account or card the row settles against. */
+  readonly currency = input(environment.defaultCurrency);
 
   readonly edit = output<Transaction>();
 
@@ -53,7 +56,8 @@ export class PlanelyxTransactionRow {
 
   protected readonly amount = computed(() => {
     const tx = this.transaction();
-    return `${tx.kind === 'ACCOUNT_CREDIT' ? '+' : '−'}${formatMoney(Math.abs(tx.amount))}`;
+    const sign = tx.kind === 'ACCOUNT_CREDIT' ? '+' : '−';
+    return `${sign}${formatMoney(Math.abs(tx.amount), this.currency())}`;
   });
 
   protected readonly amountClasses = computed(() =>

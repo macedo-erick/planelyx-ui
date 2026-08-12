@@ -22,6 +22,7 @@ import { BankAccount } from '../../shared/models/bank-account';
 import { IsoDate, Money } from '../../shared/models/common';
 import { todayIso } from '../../shared/util/date';
 import { formatMoneyUnmasked, roundCents } from '../../shared/util/money';
+import { environment } from '../../../environments/environment';
 import { BankAccountService } from './bank-account.service';
 
 interface AdjustBalanceFormModel {
@@ -48,7 +49,8 @@ export class AdjustBalanceDialog {
   protected readonly saving = signal(false);
 
   protected readonly currency = computed(
-    () => this.account()?.currency ?? this.service.items()[0]?.currency ?? 'BRL',
+    () =>
+      this.account()?.currency ?? this.service.items()[0]?.currency ?? environment.defaultCurrency,
   );
 
   protected readonly current = computed<Money>(() => {
