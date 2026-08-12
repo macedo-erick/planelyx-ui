@@ -61,6 +61,44 @@
     />
   </div>
 
+  @if (accountFilterVisible()) {
+    <div class="flex flex-col gap-1">
+      <label for="filter-account" class="text-xs font-medium text-[var(--p-text-muted-color)]">
+        {{ t('cards.bankAccount') }}
+      </label>
+      <p-select
+        inputId="filter-account"
+        [options]="accountOptions()"
+        optionLabel="label"
+        optionValue="value"
+        [ngModel]="bankAccountFilter()"
+        (ngModelChange)="onBankAccountChange($event)"
+        [placeholder]="t('transactions.filters.anyAccount')"
+        [showClear]="true"
+        appendTo="body"
+      />
+    </div>
+  }
+
+  @if (cardFilterVisible()) {
+    <div class="flex flex-col gap-1">
+      <label for="filter-card" class="text-xs font-medium text-[var(--p-text-muted-color)]">
+        {{ t('transactions.creditCard') }}
+      </label>
+      <p-select
+        inputId="filter-card"
+        [options]="cardOptions()"
+        optionLabel="label"
+        optionValue="value"
+        [ngModel]="creditCardFilter()"
+        (ngModelChange)="onCreditCardChange($event)"
+        [placeholder]="t('transactions.filters.anyCard')"
+        [showClear]="true"
+        appendTo="body"
+      />
+    </div>
+  }
+
   <p-button
     severity="secondary"
     [text]="true"

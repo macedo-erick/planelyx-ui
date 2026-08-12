@@ -21,5 +21,14 @@ export class CreditCardService extends CrudService<CreditCard, CreditCardRequest
     })),
   );
 
+  readonly selectable = computed(() => this.sorted().filter((card) => card.active));
+
+  readonly selectableOptions = computed<SelectOption<Uuid>[]>(() =>
+    this.selectable().map((card) => ({
+      label: qualifiedLabel(card.name, card.brand),
+      value: card.id,
+    })),
+  );
+
   readonly byIdMap = computed(() => new Map(this.items().map((c) => [c.id, c])));
 }

@@ -222,6 +222,8 @@
       "anyType": "Any type",
       "category": "Category",
       "anyCategory": "Any category",
+      "anyAccount": "Any account",
+      "anyCard": "Any card",
       "from": "From",
       "to": "To",
       "anyDate": "Any date",

@@ -8,7 +8,7 @@ import { Select } from 'primeng/select';
 import { injectTranslate } from '../../core/i18n/translate';
 import { Category } from '../../shared/models/category';
 import { IsoDate, Uuid } from '../../shared/models/common';
-import { TransactionKind } from '../../shared/models/enums';
+import { isCardKind, TransactionKind } from '../../shared/models/enums';
 import { Transaction } from '../../shared/models/transaction';
 import { PlanelyxCard } from '../../shared/ui/card';
 import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
@@ -49,8 +49,8 @@ import { TransactionService } from './transaction.service';
 })
 export class TransactionsPage {
   protected readonly service = inject(TransactionService);
-  private readonly accounts = inject(BankAccountService);
-  private readonly cards = inject(CreditCardService);
+  protected readonly accounts = inject(BankAccountService);
+  protected readonly cards = inject(CreditCardService);
   private readonly categories = inject(CategoryService);
 
   protected readonly t = injectTranslate();
@@ -66,8 +66,23 @@ export class TransactionsPage {
   protected readonly kindFilter = signal<TransactionKind | null>(null);
   protected readonly categoryFilter = signal<Uuid | null>(null);
   protected readonly range = signal<{ from: IsoDate; to: IsoDate } | null>(null);
+  protected readonly bankAccountFilter = signal<Uuid | null>(null);
+  protected readonly creditCardFilter = signal<Uuid | null>(null);
 
   protected readonly categoryOptions = computed(() => this.categories.options());
+  protected readonly accountOptions = computed(() => this.accounts.selectableOptions());
+  protected readonly cardOptions = computed(() => this.cards.selectableOptions());
+
+  /** A kind narrows the list to one side of the ledger, so only that side's filter is offered. */
+  protected readonly accountFilterVisible = computed(() => {
+    const kind = this.kindFilter();
+    return kind === null || !isCardKind(kind);
+  });
+
+  protected readonly cardFilterVisible = computed(() => {
+    const kind = this.kindFilter();
+    return kind === null || isCardKind(kind);
+  });
 
   protected readonly rangeValue = computed(() => {
     const current = this.range();
@@ -91,6 +106,8 @@ export class TransactionsPage {
         to: range?.to,
         categoryId: this.categoryFilter() ?? undefined,
         kind: this.kindFilter() ?? undefined,
+        bankAccountId: this.bankAccountFilter() ?? undefined,
+        creditCardId: this.creditCardFilter() ?? undefined,
         page: this.page(),
         size: this.size(),
       });
@@ -114,8 +131,37 @@ export class TransactionsPage {
     this.applyFilter(() => this.categoryFilter.set(categoryId));
   }
 
+  /** Drops whichever source filter the new kind hides, so it cannot linger in the query. */
   protected onKindChange(kind: TransactionKind | null): void {
-    this.applyFilter(() => this.kindFilter.set(kind));
+    this.applyFilter(() => {
+      this.kindFilter.set(kind);
+      if (kind === null) {
+        return;
+      }
+      if (isCardKind(kind)) {
+        this.bankAccountFilter.set(null);
+      } else {
+        this.creditCardFilter.set(null);
+      }
+    });
+  }
+
+  protected onBankAccountChange(bankAccountId: Uuid | null): void {
+    this.applyFilter(() => {
+      this.bankAccountFilter.set(bankAccountId);
+      if (bankAccountId !== null) {
+        this.creditCardFilter.set(null);
+      }
+    });
+  }
+
+  protected onCreditCardChange(creditCardId: Uuid | null): void {
+    this.applyFilter(() => {
+      this.creditCardFilter.set(creditCardId);
+      if (creditCardId !== null) {
+        this.bankAccountFilter.set(null);
+      }
+    });
   }
 
   /** Fired for both page steps and rows-per-page changes; both repage server-side. */
@@ -129,6 +175,8 @@ export class TransactionsPage {
       this.range.set(null);
       this.kindFilter.set(null);
       this.categoryFilter.set(null);
+      this.bankAccountFilter.set(null);
+      this.creditCardFilter.set(null);
     });
   }
 

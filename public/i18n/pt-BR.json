@@ -222,6 +222,8 @@
       "anyType": "Qualquer tipo",
       "category": "Categoria",
       "anyCategory": "Qualquer categoria",
+      "anyAccount": "Qualquer conta",
+      "anyCard": "Qualquer cartão",
       "from": "De",
       "to": "Até",
       "anyDate": "Qualquer data",

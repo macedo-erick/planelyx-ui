@@ -36,6 +36,15 @@ export class BankAccountService extends CrudService<BankAccount, BankAccountRequ
     })),
   );
 
+  readonly selectable = computed(() => this.sorted().filter((account) => account.active));
+
+  readonly selectableOptions = computed<SelectOption<Uuid>[]>(() =>
+    this.selectable().map((account) => ({
+      label: qualifiedLabel(account.name, account.bankName),
+      value: account.id,
+    })),
+  );
+
   readonly byIdMap = computed(() => new Map(this.items().map((a) => [a.id, a])));
 
   readonly balanceById = computed(
