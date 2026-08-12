@@ -132,6 +132,7 @@
         [transaction]="tx"
         [category]="category(tx.categoryId)"
         [secondary]="sourceName(tx)"
+        [currency]="currencyFor(tx)"
         (edit)="openEdit(tx)"
       />
     }

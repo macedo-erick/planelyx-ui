@@ -48,6 +48,7 @@ import {
 } from '../../shared/util/enum-labels';
 import { formatMoneyUnmasked, splitInstallments } from '../../shared/util/money';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
+import { CurrencyService } from '../bank-accounts/currency.service';
 import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
 import { RecurrenceScopeDialog } from './recurrence-scope-dialog';
@@ -118,6 +119,7 @@ export class TransactionFormDialog {
   private readonly confirm = inject(ConfirmationService);
   private readonly invoice = inject(InvoiceService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly currencies = inject(CurrencyService);
 
   readonly visible = model.required<boolean>();
   readonly transaction = input<Transaction | null>(null);
@@ -215,6 +217,14 @@ export class TransactionFormDialog {
     ),
   );
 
+  /** Follows the account or card currently picked in the form. */
+  protected readonly currency = computed(() =>
+    this.currencies.forSource({
+      bankAccountId: this.f.bankAccountId().value(),
+      creditCardId: this.f.creditCardId().value(),
+    }),
+  );
+
   protected readonly previewSummary = computed(() => {
     if (!this.isInstallment()) {
       return '';
@@ -225,7 +235,7 @@ export class TransactionFormDialog {
       return '';
     }
     const parts = splitInstallments(total, count);
-    return `${parts.length} × ${formatMoneyUnmasked(parts[0])}`;
+    return `${parts.length} × ${formatMoneyUnmasked(parts[0], this.currency())}`;
   });
 
   protected readonly categoryOptions = computed(() => {

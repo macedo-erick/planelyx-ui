@@ -12,6 +12,7 @@ import { Category } from '../../shared/models/category';
 import { IsoDate, Uuid } from '../../shared/models/common';
 import { CategoryBreakdown, Dashboard } from '../../shared/models/dashboard';
 import { InvoiceStatus } from '../../shared/models/enums';
+import { Invoice } from '../../shared/models/invoice';
 import { Transaction } from '../../shared/models/transaction';
 import { PlanelyxCard } from '../../shared/ui/card';
 import { PlanelyxCategoryBadge } from '../../shared/ui/category-badge';
@@ -27,6 +28,7 @@ import {
 } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
+import { CurrencyService } from '../bank-accounts/currency.service';
 import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
 import { TransactionFormDialog } from '../transactions/transaction-form-dialog';
@@ -54,6 +56,7 @@ export class DashboardPage {
   private readonly accounts = inject(BankAccountService);
   private readonly categories = inject(CategoryService);
   private readonly transactions = inject(TransactionService);
+  private readonly currencies = inject(CurrencyService);
 
   protected readonly month = signal(startOfMonth(new Date()));
 
@@ -179,12 +182,25 @@ export class DashboardPage {
     return INVOICE_STATUS_SEVERITY[status];
   }
 
+  /**
+   * The headline tiles are sums the API took across every account, so no single currency is
+   * correct for them. They keep the configured fallback until the API reports one.
+   */
   protected money(value: number): string {
     return formatMoney(value);
   }
 
   protected moneyIn(value: number, currency: string): string {
     return formatMoney(value, currency);
+  }
+
+  /** A bill settles against one account or card, so it has a currency of its own. */
+  protected moneyForBill(bill: Transaction): string {
+    return formatMoney(bill.amount, this.currencies.forSource(bill));
+  }
+
+  protected moneyForInvoice(invoice: Invoice): string {
+    return formatMoney(invoice.totalAmount, this.currencies.forCard(invoice.creditCardId));
   }
 
   protected shortDate(iso: IsoDate): string {

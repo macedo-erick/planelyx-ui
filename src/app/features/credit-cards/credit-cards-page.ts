@@ -10,6 +10,7 @@ import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
 import { PlanelyxPageHeader } from '../../shared/ui/page-header';
 import { formatMoney } from '../../shared/util/money';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
+import { CurrencyService } from '../bank-accounts/currency.service';
 import { CreditCardFormDialog } from './credit-card-form-dialog';
 import { CreditCardService } from './credit-card.service';
 
@@ -28,6 +29,7 @@ import { CreditCardService } from './credit-card.service';
 export class CreditCardsPage {
   protected readonly service = inject(CreditCardService);
   private readonly accounts = inject(BankAccountService);
+  private readonly currencies = inject(CurrencyService);
   protected readonly t = injectTranslate();
 
   protected dialogOpen = signal(false);
@@ -37,9 +39,10 @@ export class CreditCardsPage {
 
   /** e.g. "R$ 400 of R$ 5.000 used · closes day 10 · due day 17". */
   protected usedSummary(card: CreditCard): string {
+    const currency = this.currencies.forAccount(card.bankAccountId);
     return this.t('cards.usedSummary', {
-      used: formatMoney(card.usedLimit),
-      limit: formatMoney(card.creditLimit),
+      used: formatMoney(card.usedLimit, currency),
+      limit: formatMoney(card.creditLimit, currency),
       closing: card.closingDay,
       due: card.dueDay,
     });
@@ -49,8 +52,8 @@ export class CreditCardsPage {
     return this.accounts.byIdMap().get(id)?.name ?? '—';
   }
 
-  protected money(value: number): string {
-    return formatMoney(value);
+  protected money(value: number, card: CreditCard): string {
+    return formatMoney(value, this.currencies.forAccount(card.bankAccountId));
   }
 
   /** How much of the limit is committed. */

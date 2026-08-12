@@ -19,6 +19,7 @@ import { datePickerFormat } from '../../shared/util/date-format';
 import { transactionKindOptions } from '../../shared/util/enum-labels';
 import { formatMoney } from '../../shared/util/money';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
+import { CurrencyService } from '../bank-accounts/currency.service';
 import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
 import { RecurringRulesDialog } from './recurring-rules-dialog';
@@ -52,6 +53,7 @@ export class TransactionsPage {
   protected readonly accounts = inject(BankAccountService);
   protected readonly cards = inject(CreditCardService);
   private readonly categories = inject(CategoryService);
+  private readonly currencies = inject(CurrencyService);
 
   protected readonly t = injectTranslate();
   protected readonly kindOptions = transactionKindOptions();
@@ -197,8 +199,24 @@ export class TransactionsPage {
     return this.accounts.byIdMap().get(tx.bankAccountId ?? '')?.name ?? 'Account';
   }
 
+  protected currencyFor(tx: Transaction): string {
+    return this.currencies.forSource(tx);
+  }
+
+  /**
+   * The summary totals only have one currency when the filter narrows to a single account or
+   * card; across a mixed selection the API has already summed them and this is a best effort.
+   */
+  protected readonly summaryCurrency = computed(() => {
+    const { bankAccountId, creditCardId } = this.service.filters();
+    return this.currencies.forSource({
+      bankAccountId: bankAccountId ?? null,
+      creditCardId: creditCardId ?? null,
+    });
+  });
+
   protected money(value: number): string {
-    return formatMoney(Math.abs(value));
+    return formatMoney(Math.abs(value), this.summaryCurrency());
   }
 
   protected openCreate(): void {

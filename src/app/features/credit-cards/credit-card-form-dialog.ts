@@ -23,6 +23,7 @@ import { PlanelyxTextInput } from '../../shared/controls/text-input';
 import { Uuid } from '../../shared/models/common';
 import { CreditCard, CreditCardRequest } from '../../shared/models/credit-card';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
+import { CurrencyService } from '../bank-accounts/currency.service';
 import { CreditCardService } from './credit-card.service';
 import { FormsModule } from '@angular/forms';
 
@@ -64,6 +65,7 @@ export class CreditCardFormDialog {
   private readonly messages = inject(MessageService);
   private readonly confirm = inject(ConfirmationService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly currencies = inject(CurrencyService);
 
   readonly visible = model.required<boolean>();
   readonly card = input<CreditCard | null>(null);
@@ -91,6 +93,10 @@ export class CreditCardFormDialog {
     min(path.dueDay, 1, { message: this.t('validation.dayRange') });
     max(path.dueDay, 31, { message: this.t('validation.dayRange') });
   });
+
+  protected readonly currency = computed(() =>
+    this.currencies.forAccount(this.f.bankAccountId().value()),
+  );
 
   constructor() {
     effect(() => {
