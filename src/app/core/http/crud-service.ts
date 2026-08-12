@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 import { Uuid } from '../../shared/models/common';
 
 /** Shared shape for the three resources with plain CRUD. */
-export abstract class CrudService<TModel, TRequest> {
+export abstract class CrudService<TModel extends { readonly id: Uuid }, TRequest> {
   protected readonly http = inject(HttpClient);
   private readonly baseUrl: string;
 
@@ -21,7 +21,7 @@ export abstract class CrudService<TModel, TRequest> {
   }
 
   byId(id: Uuid): TModel | undefined {
-    return this.items().find((item) => (item as { id: Uuid }).id === id);
+    return this.items().find((item) => item.id === id);
   }
 
   create(request: TRequest): Observable<TModel> {

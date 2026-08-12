@@ -2,8 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Translation, TranslocoLoader } from '@jsverse/transloco';
 
-/** Loads a language file from `public/i18n/`. */
-@Injectable({ providedIn: 'root' })
+/** Loads a language file from `public/i18n/`. Provided by `provideTransloco`'s `loader`. */
+@Injectable()
 export class TranslationLoader implements TranslocoLoader {
   private readonly http = inject(HttpClient);
 

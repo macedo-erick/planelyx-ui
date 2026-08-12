@@ -11,8 +11,6 @@ export const LOCALE_STORAGE_KEY = 'planelyx.locale';
 /** The locale every `Intl` call in the app formats against. */
 export const currentLocale = signal<AppLocale>(initialLocale());
 
-document.documentElement.lang = currentLocale();
-
 export function isAppLocale(value: string | null | undefined): value is AppLocale {
   return APP_LOCALES.includes(value as AppLocale);
 }

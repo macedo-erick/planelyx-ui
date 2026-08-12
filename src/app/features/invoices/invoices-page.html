@@ -22,7 +22,11 @@
     />
   </div>
 
-  <planelyx-month-nav class="mb-4" [(month)]="selectedMonth" />
+  <planelyx-month-nav
+    class="mb-4"
+    [month]="selectedMonth()"
+    (monthChange)="onMonthChange($event)"
+  />
 
   @if (invoice(); as inv) {
     <planelyx-card>

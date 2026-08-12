@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Component, computed, effect, inject, input, linkedSignal, signal } from '@angular/core';
+import { Component, computed, inject, input, linkedSignal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ConfirmationService } from 'primeng/api';
 import { Button } from 'primeng/button';
@@ -40,6 +40,12 @@ import {
 import { AdjustInvoiceDialog } from './adjust-invoice-dialog';
 import { InvoiceService } from './invoice.service';
 
+/** The card and billing month the page is pointed at. */
+interface InvoiceSelection {
+  readonly cardId: Uuid | null;
+  readonly month: Date;
+}
+
 /** One card, one month at a time. */
 @Component({
   selector: 'planelyx-invoices-page',
@@ -79,8 +85,7 @@ export class InvoicesPage {
   readonly cardId = input<Uuid | undefined>(undefined);
   readonly month = input<MonthKey | undefined>(undefined);
 
-  protected readonly selectedCardId = signal<Uuid | null>(null);
-  protected readonly selectedMonth = signal(startOfMonth(new Date()));
+  private readonly fallbackMonth = startOfMonth(new Date());
 
   protected dialogOpen = signal(false);
   protected readonly adjustOpen = signal(false);
@@ -88,6 +93,46 @@ export class InvoicesPage {
   protected readonly prefill = signal<Partial<TransactionFormModel> | null>(null);
 
   private readonly firstUnpaid = computed(() => this.service.unpaid().at(-1) ?? null);
+
+  /**
+   * Where the page opens: the card and month named in the route, else the oldest unpaid
+   * invoice's. `null` until the cards and invoices have both landed.
+   */
+  private readonly initialSelection = computed<InvoiceSelection | null>(() => {
+    const status = this.service.resource.status();
+    const cards = this.cards.sorted();
+
+    if (cards.length === 0 || (status !== 'resolved' && status !== 'error')) {
+      return null;
+    }
+
+    const requestedCard = this.cardId();
+    const requestedMonth = fromMonthKey(this.month());
+
+    if (requestedCard && requestedMonth) {
+      return { cardId: requestedCard, month: startOfMonth(requestedMonth) };
+    }
+
+    const pending = this.firstUnpaid();
+
+    return {
+      cardId: pending?.creditCardId ?? cards[0].id,
+      month: startOfMonth(fromMonthKey(pending?.referenceMonth) ?? this.fallbackMonth),
+    };
+  });
+
+  /**
+   * Seeds once, then holds whatever the reader picked — a non-null `previous` wins over the
+   * source, so reloading the invoices behind an open page never yanks the selection back.
+   */
+  private readonly selection = linkedSignal<InvoiceSelection | null, InvoiceSelection | null>({
+    source: this.initialSelection,
+    computation: (initial, previous) => previous?.value ?? initial,
+  });
+
+  protected readonly selectedCardId = computed(() => this.selection()?.cardId ?? null);
+
+  protected readonly selectedMonth = computed(() => this.selection()?.month ?? this.fallbackMonth);
 
   protected readonly invoice = computed(() => {
     const cardId = this.selectedCardId();
@@ -133,33 +178,12 @@ export class InvoicesPage {
     return this.charges().slice(start, start + this.chargeSize());
   });
 
-  constructor() {
-    let seeded = false;
-    effect(() => {
-      const status = this.service.resource.status();
-      const cards = this.cards.sorted();
-      if (seeded || cards.length === 0 || (status !== 'resolved' && status !== 'error')) {
-        return;
-      }
-      seeded = true;
-
-      const requestedCard = this.cardId();
-      const requestedMonth = fromMonthKey(this.month());
-
-      if (requestedCard && requestedMonth) {
-        this.selectedCardId.set(requestedCard);
-        this.selectedMonth.set(startOfMonth(requestedMonth));
-        return;
-      }
-
-      const pending = this.firstUnpaid();
-      this.selectedCardId.set(pending?.creditCardId ?? cards[0].id);
-      this.selectedMonth.set(startOfMonth(fromMonthKey(pending?.referenceMonth) ?? new Date()));
-    });
+  protected onCardChange(cardId: Uuid | null): void {
+    this.selection.update((current) => ({ cardId, month: current?.month ?? this.fallbackMonth }));
   }
 
-  protected onCardChange(cardId: Uuid | null): void {
-    this.selectedCardId.set(cardId);
+  protected onMonthChange(month: Date): void {
+    this.selection.update((current) => ({ cardId: current?.cardId ?? null, month }));
   }
 
   protected cardName(id: Uuid): string {
