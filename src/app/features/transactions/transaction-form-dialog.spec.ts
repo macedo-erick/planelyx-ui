@@ -14,6 +14,7 @@ import { provideTestingTransloco } from '../../../testing/transloco';
 
 interface TransactionFormDialogInternals {
   f: FieldTree<TransactionFormModel>;
+  currency(): string;
   previewSummary(): string;
   onSubmit(): void;
   paidVisible(): boolean;
@@ -30,6 +31,19 @@ describe('TransactionFormDialog', () => {
   const CARD = '22222222-2222-2222-2222-222222222222';
   const CATEGORY = '33333333-3333-3333-3333-333333333333';
   const CREATED = '44444444-4444-4444-4444-444444444444';
+  const USD_ACCOUNT = '55555555-5555-5555-5555-555555555555';
+  const USD_CARD = '66666666-6666-6666-6666-666666666666';
+
+  /** Only the fields the currency resolver walks; the rest of the shape is irrelevant here. */
+  const ACCOUNTS = [
+    { id: ACCOUNT, name: 'Everyday', bankName: 'Nubank', currency: 'BRL' },
+    { id: USD_ACCOUNT, name: 'Offshore', bankName: 'Wise', currency: 'USD' },
+  ];
+
+  const CARDS = [
+    { id: CARD, name: 'Ultravioleta', brand: 'Mastercard', bankAccountId: ACCOUNT },
+    { id: USD_CARD, name: 'Travel', brand: 'Visa', bankAccountId: USD_ACCOUNT },
+  ];
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -50,6 +64,8 @@ describe('TransactionFormDialog', () => {
 
     http = TestBed.inject(HttpTestingController);
 
+    http.match(`${environment.apiUrl}/bank-accounts`).forEach((req) => req.flush(ACCOUNTS));
+    http.match(`${environment.apiUrl}/credit-cards`).forEach((req) => req.flush(CARDS));
     http.match(() => true).forEach((req) => req.flush([]));
 
     form = fixture.componentInstance as unknown as TransactionFormDialogInternals;
@@ -149,6 +165,31 @@ describe('TransactionFormDialog', () => {
     form.f.amount().value.set(0);
     fixture.detectChanges();
     expect(form.previewSummary()).toBe('');
+  });
+
+  describe('the amount currency', () => {
+    it('follows the account the transaction settles against', () => {
+      fill({ kind: 'ACCOUNT_DEBIT', bankAccountId: ACCOUNT });
+      expect(form.currency()).toBe('BRL');
+
+      fill({ kind: 'ACCOUNT_DEBIT', bankAccountId: USD_ACCOUNT });
+      expect(form.currency()).toBe('USD');
+    });
+
+    it('follows the card, through to the account the card settles against', () => {
+      fill({ kind: 'CARD_CHARGE', bankAccountId: null, creditCardId: CARD });
+      expect(form.currency()).toBe('BRL');
+
+      fill({ kind: 'CARD_CHARGE', bankAccountId: null, creditCardId: USD_CARD });
+      expect(form.currency()).toBe('USD');
+    });
+
+    it('prefers the card over a stale account left behind by a kind switch', () => {
+      fill({ kind: 'ACCOUNT_DEBIT', bankAccountId: ACCOUNT });
+      fill({ kind: 'CARD_CHARGE', creditCardId: USD_CARD });
+
+      expect(form.currency()).toBe('USD');
+    });
   });
 
   describe('the paid tick', () => {

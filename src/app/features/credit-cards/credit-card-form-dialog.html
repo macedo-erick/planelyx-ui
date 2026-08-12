@@ -23,7 +23,11 @@
       [label]="t('cards.brand')"
       placeholder="Mastercard"
     />
-    <planelyx-money-input [formField]="f.creditLimit" [label]="t('cards.creditLimit')" />
+    <planelyx-money-input
+      [formField]="f.creditLimit"
+      [label]="t('cards.creditLimit')"
+      [currency]="currency()"
+    />
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <planelyx-number-input
