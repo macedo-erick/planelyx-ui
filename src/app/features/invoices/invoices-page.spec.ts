@@ -12,8 +12,8 @@ import { Transaction } from '../../shared/models/transaction';
 import { InvoicesPage } from './invoices-page';
 
 interface InvoicesPageInternals {
-  selectedCardId: { set(value: string | null): void };
-  selectedMonth: { set(value: Date): void };
+  onCardChange(cardId: string | null): void;
+  onMonthChange(month: Date): void;
   invoice(): Invoice | null;
   charges(): readonly Transaction[];
 }
@@ -72,8 +72,8 @@ describe('InvoicesPage', () => {
   let page: InvoicesPageInternals;
 
   function showMonth(year: number, monthIndex: number): Invoice | null {
-    page.selectedCardId.set(CARD_ID);
-    page.selectedMonth.set(new Date(year, monthIndex, 1));
+    page.onCardChange(CARD_ID);
+    page.onMonthChange(new Date(year, monthIndex, 1));
     fixture.detectChanges();
     return page.invoice();
   }
