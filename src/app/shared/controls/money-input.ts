@@ -17,6 +17,7 @@ import { PlanelyxFieldShell } from './field-shell';
   template: `
     <planelyx-field-shell
       [label]="label()"
+      [hideLabel]="hideLabel()"
       [inputId]="inputId"
       [hint]="hint()"
       [required]="required()"
@@ -50,6 +51,8 @@ export class PlanelyxMoneyInput
 {
   readonly value = model<Money | null>(null);
   readonly currency = input(environment.defaultCurrency);
+  /** For a row in a list, where a visible label per line would be noise. */
+  readonly hideLabel = input(false);
   readonly min = input<number | undefined>(undefined);
   readonly max = input<number | undefined>(undefined);
 

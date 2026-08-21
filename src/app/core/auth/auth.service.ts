@@ -9,6 +9,16 @@ interface PlanelyxTokenClaims {
   readonly preferred_username?: string;
   readonly given_name?: string;
   readonly email?: string;
+  readonly realm_access?: { readonly roles?: readonly unknown[] };
+}
+
+/** Hiding a control is a courtesy; every role is enforced again by the service that owns it. */
+function realmRoles(claims: PlanelyxTokenClaims): readonly string[] {
+  const roles = claims.realm_access?.roles;
+
+  return Array.isArray(roles)
+    ? roles.filter((role): role is string => typeof role === 'string')
+    : [];
 }
 
 @Service()
@@ -24,6 +34,12 @@ export class AuthService {
   readonly isAuthenticated = computed(() => this.keycloak.authenticated ?? false);
 
   readonly userId = computed(() => this.claims().sub ?? null);
+
+  readonly roles = computed(() => realmRoles(this.claims()));
+
+  hasRole(role: string): boolean {
+    return this.roles().includes(role);
+  }
 
   readonly username = computed(() => this.claims().preferred_username ?? '');
 

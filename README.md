@@ -152,7 +152,15 @@ than widening the base.
 
 `errorInterceptor` (`core/http/error.interceptor.ts`) turns a failed request into a translated toast
 and rethrows so callers can still react. It skips 401 on purpose: auto-refresh already handles
-expiry, and a toast on the way to a login redirect is just noise.
+expiry, and a toast on the way to a login redirect is just noise. It also skips any request marked
+with `skipErrorToast()`, which the upload uses — the ingest page already names duplicates,
+unsupported files and switched-off formats itself, and a second generic toast beside a specific one
+reads as two failures.
+
+Read a resource through `hasValue()` rather than `value()` when the page has to survive the request
+failing. A `defaultValue` does **not** make a failed `httpResource` return it: `value()` throws, and
+a computed that reads it throws with it. `FeatureFlagService` depends on this — its whole point is
+that an unreachable flag service leaves importing switched on rather than dead.
 
 ## Scripts
 
@@ -241,6 +249,38 @@ The workflow only builds and pushes. Deployment lives in [`planelyx-infra`](../p
 `DEPLOYMENT.md` there is the runbook, and `compose.prod.yaml` is what pulls the tag onto the VPS
 behind the host nginx.
 
+## Import formats and feature flags
+
+`planelyx-ocr` keeps a switch per document type in its own database, so an administrator can stop
+accepting PDFs — the format that can escalate to a language model and cost money — and run on CSV
+alone, without a redeploy. The UI never hardcodes the list of formats it offers:
+`FeatureFlagService` (`features/ingest/feature-flag.service.ts`) reads `GET /ocr/flags` and derives
+the file picker's `accept`, the "read automatically" line and the template button from it. Turning a
+format back on makes it reappear within a page load.
+
+It **fails open**: until the flags arrive, and if the request fails outright, every format counts as
+enabled. This mirrors the server, which treats an unknown key as on. The alternative — assuming off
+— would turn one unreachable endpoint into an app that silently refuses to import anything.
+
+The switches page lives at `settings/imports`, behind `requireRole('ocr-admin')`. That guard is
+cosmetic; `planelyx-ocr` checks the same realm role again on the `PATCH`, which is what actually
+stops a normal user from switching PDF parsing off for everyone. `llm.escalation` carries an
+`effective` flag beside `enabled`, because a server with no API key cannot escalate whatever the
+switch says — the page shows that state rather than claiming the fallback is on.
+
+For CSV, `GET /ocr/templates/transactions.csv` serves an empty, header-only template that the user
+fills in and uploads back. It is fetched through `HttpClient` rather than linked directly, because
+the endpoint is authenticated and a plain `<a href>` carries no bearer token. Header-only is
+deliberate on the server's side: a sample row left in place would import a fake transaction.
+
+Every staged line carries a currency, but `planelyx-ocr` reports the issuer's default on all of
+them — it has no way to know which of the reader's accounts a statement belongs to. The review
+page therefore treats it as a placeholder and relabels from whichever card or account the reviewer
+files against, through the same `CurrencyService` the rest of the app resolves per-record currency
+with. Only the label moves: minor units keep the scale the parser sent them in, because the server
+owns the staged record. The one exception is `foreignExchange.originalAmount`, which is genuinely
+foreign and keeps its own currency.
+
 ## Project structure
 
 ```
@@ -259,7 +299,8 @@ testing/         TestBed helpers
 ```
 
 Every page in `features/` is lazy-loaded from `app.routes.ts` — dashboard, transactions, ingest (plus
-`ingest/:id` for document review), invoices, accounts, cards, categories, profile.
+`ingest/:id` for document review), invoices, accounts, cards, categories, profile, and
+`settings/imports` for the import feature flags.
 
 `shared/models/ingest.ts` is worth reading before touching the import screens. `planelyx-ocr` speaks
 a different dialect of money from `planelyx-api`: integer minor units rather than decimals, because

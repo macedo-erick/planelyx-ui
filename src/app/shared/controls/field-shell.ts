@@ -8,7 +8,11 @@ import { injectTranslate } from '../../core/i18n/translate';
   selector: 'planelyx-field-shell',
   template: `
     <div class="flex flex-col gap-1.5">
-      <label [attr.for]="inputId()" class="text-sm font-medium text-[var(--p-text-color)]">
+      <label
+        [attr.for]="inputId()"
+        class="text-sm font-medium text-[var(--p-text-color)]"
+        [class.sr-only]="hideLabel()"
+      >
         {{ label() }}
         @if (required()) {
           <span class="text-[var(--p-red-500)]" aria-hidden="true">*</span>
@@ -41,6 +45,8 @@ export class PlanelyxFieldShell {
   readonly label = input.required<string>();
   readonly inputId = input.required<string>();
   readonly hint = input<string>('');
+  /** Keeps the label for screen readers only, for a control in a dense row that names itself. */
+  readonly hideLabel = input(false);
   readonly required = input(false);
   readonly invalid = input(false);
   readonly touched = input(false);

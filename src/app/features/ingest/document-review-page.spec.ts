@@ -35,8 +35,36 @@ interface ReviewInternals {
   blockedReason(line: StagedTransaction): string | null;
   setCategory(id: Uuid, categoryId: Uuid | null): void;
   categoryByLine(): Record<Uuid, Uuid | null>;
+  currencyFor(amount: { amountMinor: number; currency: string }): string;
+  amountDraft(line: StagedTransaction): number;
   confirmSelection(): void;
 }
+
+/** One account in a currency the parser never reports, and a card that settles against it. */
+const USD_ACCOUNT = {
+  id: ACCOUNT_ID,
+  name: 'Travel',
+  bankName: 'Wise',
+  accountType: 'CHECKING',
+  initialBalance: 0,
+  currency: 'USD',
+  active: true,
+  createdAt: '2026-01-01T00:00:00Z',
+};
+
+const USD_CARD = {
+  id: CARD_ID,
+  bankAccountId: ACCOUNT_ID,
+  name: 'Travel card',
+  brand: 'VISA',
+  creditLimit: 1000,
+  usedLimit: 0,
+  availableLimit: 1000,
+  closingDay: 1,
+  dueDay: 10,
+  active: true,
+  createdAt: '2026-01-01T00:00:00Z',
+};
 
 const line = (overrides: Partial<StagedTransaction> = {}): StagedTransaction => ({
   id: 'line-1',
@@ -75,6 +103,7 @@ const detail = (transactions: StagedTransaction[], filedCount = 0): DocumentDeta
     parserVersion: '1.0.0',
     pendingCount: transactions.length,
     filedCount,
+    warnings: [],
     createdAt: '2026-08-03T00:00:00Z',
   },
   cards: [],
@@ -87,7 +116,11 @@ describe('DocumentReviewPage', () => {
   let page: ReviewInternals;
   let http: HttpTestingController;
 
-  async function render(transactions: StagedTransaction[], filedCount = 0): Promise<void> {
+  async function render(
+    transactions: StagedTransaction[],
+    filedCount = 0,
+    withLedger = false,
+  ): Promise<void> {
     fixture = TestBed.createComponent(DocumentReviewPage);
     fixture.componentRef.setInput('id', DOCUMENT_ID);
     fixture.detectChanges();
@@ -96,6 +129,16 @@ describe('DocumentReviewPage', () => {
     http
       .match((req) => req.url === `${environment.ocrUrl}/documents/${DOCUMENT_ID}`)
       .forEach((req) => req.flush(detail(transactions, filedCount)));
+
+    if (withLedger) {
+      http
+        .match((req) => req.url === `${environment.apiUrl}/bank-accounts`)
+        .forEach((req) => req.flush([USD_ACCOUNT]));
+      http
+        .match((req) => req.url === `${environment.apiUrl}/credit-cards`)
+        .forEach((req) => req.flush([USD_CARD]));
+    }
+
     http.match(() => true).forEach((req) => req.flush([]));
 
     await fixture.whenStable();
@@ -187,6 +230,68 @@ describe('DocumentReviewPage', () => {
 
     expect(page.canDelete()).toBe(false);
     expect(page.canRollback()).toBe(true);
+  });
+
+  it('keeps the parser’s currency until a target says otherwise', async () => {
+    await render([line({ id: 'line-1' })], 0, true);
+
+    expect(page.currencyFor(page.lines()[0].amount)).toBe('BRL');
+  });
+
+  it('follows the currency of the account the statement is filed against', async () => {
+    await render([line({ id: 'line-1' })], 0, true);
+
+    page.target.set({ kind: 'account', id: ACCOUNT_ID });
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const amountInput: HTMLInputElement = fixture.nativeElement.querySelector(
+      'planelyx-money-input input',
+    );
+
+    expect(page.currencyFor(page.lines()[0].amount)).toBe('USD');
+    expect(amountInput.value).toContain('$');
+    expect(amountInput.value).not.toContain('R$');
+  });
+
+  it('follows the account a card settles against', async () => {
+    await render([line({ id: 'line-1' })], 0, true);
+
+    page.target.set({ kind: 'card', id: CARD_ID });
+    fixture.detectChanges();
+
+    expect(page.currencyFor(page.lines()[0].amount)).toBe('USD');
+  });
+
+  it('leaves a genuinely foreign amount in its own currency', async () => {
+    await render(
+      [
+        line({
+          id: 'line-1',
+          foreignExchange: {
+            originalAmount: { amountMinor: 500, currency: 'EUR' },
+            exchangeRate: 6.1,
+            iof: null,
+          },
+        }),
+      ],
+      0,
+      true,
+    );
+
+    page.target.set({ kind: 'account', id: ACCOUNT_ID });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('€');
+  });
+
+  it('does not rescale the amount the reviewer edits when the label changes', async () => {
+    await render([line({ id: 'line-1', amount: { amountMinor: 1234, currency: 'BRL' } })], 0, true);
+
+    page.target.set({ kind: 'account', id: ACCOUNT_ID });
+    fixture.detectChanges();
+
+    expect(page.amountDraft(page.lines()[0])).toBe(12.34);
   });
 
   it('sends the reviewer’s assignment when confirming', async () => {

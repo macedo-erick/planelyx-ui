@@ -3,11 +3,11 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { environment } from '../../../environments/environment';
 import { provideTestingTransloco } from '../../../testing/transloco';
-import { IngestResult } from '../../shared/models/ingest';
+import { FeatureFlag, FeatureFlagKey, IngestResult } from '../../shared/models/ingest';
 import { IngestPage } from './ingest-page';
 
 interface IngestPageInternals {
@@ -132,5 +132,129 @@ describe('IngestPage upload feedback', () => {
     startUpload();
 
     expect(text()).not.toContain('Nothing imported yet');
+  });
+});
+
+function flag(key: FeatureFlagKey, enabled: boolean): FeatureFlag {
+  return { key, enabled, effective: enabled, updatedAt: '2026-08-20T12:00:00Z', updatedBy: null };
+}
+
+const ALL_ON: FeatureFlag[] = [
+  flag('parse.pdf_statement', true),
+  flag('parse.csv', true),
+  flag('parse.ofx', true),
+  flag('parse.receipt_image', true),
+  flag('llm.escalation', true),
+];
+
+describe('IngestPage feature flags', () => {
+  let fixture: ComponentFixture<IngestPage>;
+  let http: HttpTestingController;
+  let messages: MessageService;
+
+  const text = (): string => fixture.nativeElement.textContent ?? '';
+
+  async function render(flags: FeatureFlag[]): Promise<void> {
+    TestBed.configureTestingModule({
+      imports: [provideTestingTransloco()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        providePrimeNG({}),
+        MessageService,
+      ],
+    });
+
+    fixture = TestBed.createComponent(IngestPage);
+    fixture.detectChanges();
+
+    http = TestBed.inject(HttpTestingController);
+    messages = TestBed.inject(MessageService);
+
+    for (const request of http.match(() => true)) {
+      request.flush(request.request.url.endsWith('/flags') ? flags : []);
+    }
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+  }
+
+  const acceptAttribute = (): string =>
+    (fixture.nativeElement as HTMLElement)
+      .querySelector('input[type=file]')
+      ?.getAttribute('accept') ?? '';
+
+  it('names the formats a reader actually handles', async () => {
+    await render(ALL_ON);
+
+    expect(text()).toContain('PDF statement, CSV');
+  });
+
+  it('is honest that the other formats are only kept on disk', async () => {
+    await render(ALL_ON);
+
+    expect(text()).toContain('OFX, Receipt photo');
+  });
+
+  it('stops offering a format that has been switched off', async () => {
+    await render([flag('parse.pdf_statement', false), ...ALL_ON.slice(1)]);
+
+    expect(acceptAttribute()).not.toContain('.pdf');
+    expect(acceptAttribute()).toContain('.csv');
+  });
+
+  it('hides the template download when CSV imports are off', async () => {
+    await render([...ALL_ON.slice(0, 1), flag('parse.csv', false), ...ALL_ON.slice(2)]);
+
+    expect(text()).not.toContain('CSV template');
+  });
+
+  it('says so plainly when every format is off, rather than failing at upload', async () => {
+    await render([
+      flag('parse.pdf_statement', false),
+      flag('parse.csv', false),
+      flag('parse.ofx', false),
+      flag('parse.receipt_image', false),
+      flag('llm.escalation', false),
+    ]);
+
+    expect(text()).toContain('Importing is switched off for every format');
+    expect(acceptAttribute()).toBe('');
+  });
+
+  it('names the switched-off format when the server refuses the upload', async () => {
+    await render(ALL_ON);
+
+    const added = vi.spyOn(messages, 'add');
+
+    (fixture.componentInstance as unknown as { onFileSelected(event: Event): void }).onFileSelected(
+      fileEvent(),
+    );
+    fixture.detectChanges();
+
+    http
+      .expectOne(`${environment.ocrUrl}/documents`)
+      .flush(
+        { error: 'document_type_disabled', documentType: 'pdf_statement' },
+        { status: 422, statusText: 'Unprocessable Entity' },
+      );
+    fixture.detectChanges();
+
+    expect(added).toHaveBeenCalledWith(
+      expect.objectContaining({
+        severity: 'warn',
+        detail: expect.stringContaining('PDF statement'),
+      }),
+    );
+  });
+
+  it('downloads the template through the token-bearing client', async () => {
+    await render(ALL_ON);
+
+    (fixture.componentInstance as unknown as { onDownloadTemplate(): void }).onDownloadTemplate();
+
+    const request = http.expectOne(`${environment.ocrUrl}/templates/transactions.csv`);
+
+    expect(request.request.responseType).toBe('blob');
   });
 });

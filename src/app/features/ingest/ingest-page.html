@@ -1,19 +1,44 @@
 <planelyx-page-header [title]="t('ingest.title')" [subtitle]="t('ingest.subtitle')">
+  @if (csvEnabled()) {
+    <p-button
+      icon="pi pi-download"
+      severity="secondary"
+      [outlined]="true"
+      [label]="t('ingest.downloadTemplate')"
+      [loading]="downloadingTemplate()"
+      (onClick)="onDownloadTemplate()"
+    />
+  }
   <p-button
     icon="pi pi-upload"
     [label]="t('ingest.upload')"
     [loading]="uploading()"
+    [disabled]="!canUpload()"
     (onClick)="fileInput.click()"
   />
   <input
     #fileInput
     type="file"
     class="sr-only"
-    accept=".ofx,.csv,.pdf,.jpg,.jpeg,.png"
+    [attr.accept]="accept()"
     [attr.aria-label]="t('ingest.upload')"
     (change)="onFileSelected($event)"
   />
 </planelyx-page-header>
+
+<div class="mb-4 flex flex-col gap-1 text-sm text-[var(--p-text-muted-color)]">
+  @if (canUpload()) {
+    <p>{{ t('ingest.acceptedFormats', { formats: readableFormats() }) }}</p>
+    @if (storedOnlyFormats()) {
+      <p>{{ t('ingest.storedOnlyFormats', { formats: storedOnlyFormats() }) }}</p>
+    }
+    @if (csvEnabled()) {
+      <p>{{ t('ingest.templateHint') }}</p>
+    }
+  } @else {
+    <p class="text-[var(--p-text-color)]">{{ t('ingest.allTypesDisabled') }}</p>
+  }
+</div>
 
 @if (uploading()) {
   @let percent = uploadPercent();

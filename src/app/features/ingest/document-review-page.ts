@@ -9,14 +9,16 @@ import { Select } from 'primeng/select';
 import { Tag } from 'primeng/tag';
 
 import { injectTranslate } from '../../core/i18n/translate';
+import { PlanelyxMoneyInput } from '../../shared/controls/money-input';
 import { Uuid } from '../../shared/models/common';
 import { ConfirmLine, MinorAmount, StagedTransaction } from '../../shared/models/ingest';
 import { PlanelyxCard } from '../../shared/ui/card';
 import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
 import { PlanelyxPageHeader } from '../../shared/ui/page-header';
 import { shortDate } from '../../shared/util/date-format';
-import { currencySymbol, formatMinor, majorToMinor, minorToMajor } from '../../shared/util/money';
+import { formatMinor, majorToMinor, minorToMajor } from '../../shared/util/money';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
+import { CurrencyService } from '../bank-accounts/currency.service';
 import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
 import { IngestService } from './ingest.service';
@@ -40,6 +42,7 @@ type BlockedReason = 'payment' | 'balanceCarry' | 'creditOnCard' | 'decided' | n
     Select,
     Tag,
     ConfirmDialog,
+    PlanelyxMoneyInput,
     PlanelyxCard,
     PlanelyxPageHeader,
     PlanelyxEmptyState,
@@ -59,6 +62,7 @@ export class DocumentReviewPage {
   private readonly categories = inject(CategoryService);
   private readonly cards = inject(CreditCardService);
   private readonly accounts = inject(BankAccountService);
+  private readonly currencies = inject(CurrencyService);
   private readonly messages = inject(MessageService);
   private readonly confirmation = inject(ConfirmationService);
   private readonly router = inject(Router);
@@ -74,6 +78,9 @@ export class DocumentReviewPage {
   protected readonly document = computed(() => this.detail()?.document ?? null);
   protected readonly validation = computed(() => this.detail()?.validation ?? null);
   protected readonly lines = computed(() => this.detail()?.transactions ?? []);
+
+  /** Rows the parser skipped or corrected. For a hand-filled CSV this is the only trace of them. */
+  protected readonly warnings = computed(() => this.document()?.warnings ?? []);
 
   protected readonly categoryOptions = computed(() =>
     this.categories.selectable().map((category) => ({
@@ -94,6 +101,26 @@ export class DocumentReviewPage {
   ]);
 
   protected readonly target = signal<LedgerTarget | null>(null);
+
+  /**
+   * The target is what fixes the currency: `planelyx-ocr` reports the issuer's default on every
+   * line and has no way to know which of the reader's accounts the statement belongs to.
+   */
+  private readonly targetCurrency = computed(() => {
+    const target = this.target();
+
+    return target
+      ? this.currencies.forSource({
+          bankAccountId: target.kind === 'account' ? target.id : null,
+          creditCardId: target.kind === 'card' ? target.id : null,
+        })
+      : null;
+  });
+
+  /** Falls back to what the parser said, which is all there is before a target is picked. */
+  protected currencyFor(amount: MinorAmount): string {
+    return this.targetCurrency() ?? amount.currency;
+  }
 
   protected readonly categoryByLine = linkedSignal<
     readonly StagedTransaction[],
@@ -236,17 +263,34 @@ export class DocumentReviewPage {
     });
   }
 
+  /** Kept in its own currency: an FX line is genuinely foreign, not mislabelled. */
   protected amount(value: MinorAmount): string {
     return formatMinor(value);
   }
 
-  protected majorAmount(value: MinorAmount): number {
-    return minorToMajor(value);
+  /**
+   * What the reviewer edits, in major units. The scale stays the parser's — relabelling the
+   * currency must not rescale minor units the server owns.
+   */
+  protected readonly amountDrafts = linkedSignal<
+    readonly StagedTransaction[],
+    Record<Uuid, number>
+  >({
+    source: () => this.lines(),
+    computation: (lines) =>
+      Object.fromEntries(lines.map((line) => [line.id, minorToMajor(line.amount)])),
+  });
+
+  protected amountDraft(line: StagedTransaction): number {
+    return this.amountDrafts()[line.id] ?? minorToMajor(line.amount);
   }
 
-  /** Prefixes the amount control, which holds the bare number the reviewer edits. */
-  protected symbol(value: MinorAmount): string {
-    return currencySymbol(value.currency);
+  protected setAmountDraft(line: StagedTransaction, value: number | null): void {
+    if (value === null || Number.isNaN(value)) {
+      return;
+    }
+
+    this.amountDrafts.update((current) => ({ ...current, [line.id]: value }));
   }
 
   protected day(iso: string): string {
@@ -296,8 +340,11 @@ export class DocumentReviewPage {
       .subscribe({ error: () => undefined });
   }
 
-  protected onAmountChange(line: StagedTransaction, value: number | null): void {
-    if (value === null || Number.isNaN(value)) {
+  /** On blur, not on every keystroke: each commit is a PATCH. */
+  protected commitAmount(line: StagedTransaction): void {
+    const value = this.amountDrafts()[line.id];
+
+    if (value === undefined || Number.isNaN(value)) {
       return;
     }
 

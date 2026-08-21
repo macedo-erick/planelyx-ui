@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { authGuard } from './core/auth/auth.guard';
+import { OCR_ADMIN_ROLE, requireRole } from './core/auth/role.guard';
 import { Shell } from './layout/shell';
 
 export const routes: Routes = [
@@ -58,6 +59,13 @@ export const routes: Routes = [
         title: 'titles.categories',
         loadComponent: () =>
           import('./features/categories/categories-page').then((m) => m.CategoriesPage),
+      },
+      {
+        path: 'settings/imports',
+        title: 'titles.importSettings',
+        canActivate: [requireRole(OCR_ADMIN_ROLE)],
+        loadComponent: () =>
+          import('./features/settings/import-settings-page').then((m) => m.ImportSettingsPage),
       },
       {
         path: 'profile',
