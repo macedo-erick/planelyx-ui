@@ -80,7 +80,7 @@
         </button>
 
         <p-popover #userMenu>
-          <div class="flex w-56 flex-col">
+          <div class="flex w-max min-w-56 max-w-72 flex-col">
             <div class="border-b border-[var(--p-content-border-color)] px-3 pt-1 pb-2">
               <p class="truncate text-sm font-medium">{{ auth.displayName() }}</p>
               <p class="truncate text-xs text-[var(--p-text-muted-color)]">{{ auth.email() }}</p>
@@ -91,7 +91,7 @@
               icon="pi pi-user"
               severity="secondary"
               [text]="true"
-              styleClass="justify-start w-full"
+              styleClass="justify-start w-full text-left"
               routerLink="/profile"
               (onClick)="userMenu.hide()"
             />
@@ -102,7 +102,7 @@
                 icon="pi pi-sliders-h"
                 severity="secondary"
                 [text]="true"
-                styleClass="justify-start w-full"
+                styleClass="justify-start w-full text-left"
                 routerLink="/settings/imports"
                 (onClick)="userMenu.hide()"
               />
@@ -118,7 +118,7 @@
                   [icon]="option === locale.locale() ? 'pi pi-check' : 'pi pi-fw'"
                   severity="secondary"
                   [text]="true"
-                  styleClass="justify-start w-full"
+                  styleClass="justify-start w-full text-left"
                   (onClick)="locale.set(option)"
                 />
               }
@@ -129,7 +129,7 @@
               icon="pi pi-sign-out"
               severity="secondary"
               [text]="true"
-              styleClass="justify-start w-full border-t border-[var(--p-content-border-color)]"
+              styleClass="justify-start w-full border-t border-[var(--p-content-border-color)] text-left"
               (onClick)="userMenu.hide(); auth.logout()"
             />
           </div>
