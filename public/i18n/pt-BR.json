@@ -342,7 +342,7 @@
     "validationFailed": "A soma destes lançamentos não bate com o total impresso pelo emissor, então algum está faltando ou foi contado duas vezes. Não lance nada até explicar a diferença.",
     "target": "Lançar em",
     "targetPlaceholder": "Escolha um cartão ou conta",
-    "targetHint": "Um cartão ou conta para a fatura inteira.",
+    "targetHint": "Um cartão ou conta para a fatura inteira. Os valores seguem a moeda dela.",
     "targetKind": {
       "card": "Cartão",
       "account": "Conta"

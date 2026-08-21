@@ -342,7 +342,7 @@
     "validationFailed": "These lines do not add up to the total the issuer printed, so one is missing or counted twice. Do not file them until the difference is explained.",
     "target": "File against",
     "targetPlaceholder": "Choose a card or account",
-    "targetHint": "One card or account for the whole statement.",
+    "targetHint": "One card or account for the whole statement. Amounts follow its currency.",
     "targetKind": {
       "card": "Card",
       "account": "Account"

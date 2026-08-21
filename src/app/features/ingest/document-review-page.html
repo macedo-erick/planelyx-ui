@@ -248,21 +248,14 @@
                 </div>
 
                 <div class="flex flex-col gap-1">
-                  <div class="relative">
-                    <span
-                      class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-xs text-[var(--p-text-muted-color)]"
-                    >
-                      {{ symbol(line.amount) }}
-                    </span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      class="h-10 w-full rounded-md border border-[var(--p-content-border-color)] bg-transparent pr-3 pl-12 text-right text-sm tabular-nums"
-                      [value]="majorAmount(line.amount)"
-                      [attr.aria-label]="t('ingest.amount')"
-                      (change)="onAmountChange(line, $any($event.target).valueAsNumber)"
-                    />
-                  </div>
+                  <planelyx-money-input
+                    [label]="t('ingest.amount')"
+                    [hideLabel]="true"
+                    [currency]="currencyFor(line.amount)"
+                    [value]="amountDraft(line)"
+                    (valueChange)="setAmountDraft(line, $event)"
+                    (touch)="commitAmount(line)"
+                  />
                   @if (line.foreignExchange; as fx) {
                     <span class="text-xs text-[var(--p-text-muted-color)]">
                       {{ amount(fx.originalAmount) }}

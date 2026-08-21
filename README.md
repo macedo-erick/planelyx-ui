@@ -273,6 +273,14 @@ fills in and uploads back. It is fetched through `HttpClient` rather than linked
 the endpoint is authenticated and a plain `<a href>` carries no bearer token. Header-only is
 deliberate on the server's side: a sample row left in place would import a fake transaction.
 
+Every staged line carries a currency, but `planelyx-ocr` reports the issuer's default on all of
+them — it has no way to know which of the reader's accounts a statement belongs to. The review
+page therefore treats it as a placeholder and relabels from whichever card or account the reviewer
+files against, through the same `CurrencyService` the rest of the app resolves per-record currency
+with. Only the label moves: minor units keep the scale the parser sent them in, because the server
+owns the staged record. The one exception is `foreignExchange.originalAmount`, which is genuinely
+foreign and keeps its own currency.
+
 ## Project structure
 
 ```
