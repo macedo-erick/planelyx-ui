@@ -96,6 +96,18 @@
               (onClick)="userMenu.hide()"
             />
 
+            @if (isOcrAdmin()) {
+              <p-button
+                [label]="t('common.importSettings')"
+                icon="pi pi-sliders-h"
+                severity="secondary"
+                [text]="true"
+                styleClass="justify-start w-full"
+                routerLink="/settings/imports"
+                (onClick)="userMenu.hide()"
+              />
+            }
+
             <div class="border-t border-[var(--p-content-border-color)] pt-1">
               <p class="px-3 py-1 text-xs text-[var(--p-text-muted-color)]">
                 {{ t('common.language') }}

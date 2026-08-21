@@ -75,6 +75,7 @@ const detail = (transactions: StagedTransaction[], filedCount = 0): DocumentDeta
     parserVersion: '1.0.0',
     pendingCount: transactions.length,
     filedCount,
+    warnings: [],
     createdAt: '2026-08-03T00:00:00Z',
   },
   cards: [],

@@ -75,6 +75,9 @@ export class DocumentReviewPage {
   protected readonly validation = computed(() => this.detail()?.validation ?? null);
   protected readonly lines = computed(() => this.detail()?.transactions ?? []);
 
+  /** Rows the parser skipped or corrected. For a hand-filled CSV this is the only trace of them. */
+  protected readonly warnings = computed(() => this.document()?.warnings ?? []);
+
   protected readonly categoryOptions = computed(() =>
     this.categories.selectable().map((category) => ({
       label: this.categories.displayName(category),

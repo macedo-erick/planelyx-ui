@@ -32,7 +32,8 @@
     "source": "Origem",
     "adjust": "Ajustar",
     "previousMonth": "Mês anterior",
-    "nextMonth": "Próximo mês"
+    "nextMonth": "Próximo mês",
+    "importSettings": "Configurações de importação"
   },
   "titles": {
     "dashboard": "Painel",
@@ -44,7 +45,8 @@
     "cards": "Cartões de crédito",
     "categories": "Categorias",
     "profile": "Perfil",
-    "notFound": "Não encontrado"
+    "notFound": "Não encontrado",
+    "importSettings": "Configurações de importação"
   },
   "nav": {
     "dashboard": "Painel",
@@ -70,8 +72,8 @@
       "CARD_CHARGE": "Compra no cartão"
     },
     "recurrenceType": {
-      "FIXED_INDEFINITE": "Fixa — sem data final",
-      "FIXED_COUNT": "Fixa — número definido de vezes",
+      "FIXED_INDEFINITE": "Fixa - sem data final",
+      "FIXED_COUNT": "Fixa - número definido de vezes",
       "INSTALLMENT": "Parcelamento"
     },
     "invoiceStatus": {
@@ -128,14 +130,14 @@
     "lessInvoicesDue": "menos {{count}} fatura(s) a vencer, {{amount}}",
     "expenseHint": "Gastos em conta no mês, mais as faturas que vencem nele",
     "dueSoonest": "{{count}} a vencer primeiro",
-    "balancesNote": "Os saldos são o saldo inicial mais as transações da conta até o fim do mês selecionado — pagar uma fatura lança um débito, então uma fatura já paga já saiu daí. Do total ainda são descontadas as faturas em aberto que vencem até lá, por isso ele não bate com os valores por conta abaixo: é dinheiro comprometido, mas ainda não retirado de nenhuma conta.",
+    "balancesNote": "Os saldos são o saldo inicial mais as transações da conta até o fim do mês selecionado - pagar uma fatura lança um débito, então uma fatura já paga já saiu daí. Do total ainda são descontadas as faturas em aberto que vencem até lá, por isso ele não bate com os valores por conta abaixo: é dinheiro comprometido, mas ainda não retirado de nenhuma conta.",
     "accountBalances": "Saldo das contas",
     "invoicesDueSoon": "Faturas a vencer",
     "nothingDue": "Nada a vencer",
     "due": "Vence",
     "otherCategories": "Outras",
     "billsDue": "Contas do mês",
-    "billsNote": "Já descontadas dos saldos acima — marcar não muda nenhuma cifra. Toque para corrigir o valor.",
+    "billsNote": "Já descontadas dos saldos acima - marcar não muda nenhuma cifra. Toque para corrigir o valor.",
     "noBills": "Nenhuma conta a pagar",
     "paid": "Pago",
     "markPaid": "Marcar {{description}} como paga",
@@ -291,7 +293,7 @@
   },
   "recurring": {
     "header": "Recorrências",
-    "intro": "As recorrências são criadas ao adicionar uma transação que se repete. Elas não podem ser editadas — interrompa uma e crie outra no lugar.",
+    "intro": "As recorrências são criadas ao adicionar uma transação que se repete. Elas não podem ser editadas - interrompa uma e crie outra no lugar.",
     "empty": "Nenhuma recorrência",
     "emptyMessage": "Adicione uma transação e marque para repetir, ou parcele uma compra no cartão.",
     "recurrence": "Repetição",
@@ -318,7 +320,7 @@
     "filedCount": "{{count}} lançados",
     "uploadingTitle": "Importando {{name}}",
     "uploadingSending": "Enviando o arquivo…",
-    "uploadingReading": "Lendo a fatura. Pode demorar um pouco — um layout que nenhum leitor reconhece é lido pelo modelo.",
+    "uploadingReading": "Lendo a fatura. Pode demorar um pouco - um layout que nenhum leitor reconhece é lido pelo modelo.",
     "uploadDuplicate": "Já importado",
     "uploadDuplicateDetail": "Este documento já havia sido importado e não foi alterado.",
     "uploadUnsupported": "Documento não suportado",
@@ -368,9 +370,9 @@
     "categoryPlaceholder": "Escolha",
     "suggested": "Sugerida",
     "blocked": {
-      "payment": "Paga uma fatura — quite pela tela de Faturas",
+      "payment": "Paga uma fatura - quite pela tela de Faturas",
       "balanceCarry": "Saldo do mês anterior, não é uma despesa nova",
-      "creditOnCard": "Estorno em cartão — registre manualmente",
+      "creditOnCard": "Estorno em cartão - registre manualmente",
       "decided": "Já decidido"
     },
     "field": {
@@ -396,7 +398,22 @@
     "deleteConfirm": "Excluir",
     "deleted": "Importação excluída",
     "notFound": "Documento não encontrado",
-    "notFoundMessage": "Pode ter sido descartado."
+    "notFoundMessage": "Pode ter sido descartado.",
+    "downloadTemplate": "Modelo CSV",
+    "acceptedFormats": "Lidos automaticamente: {{formats}}.",
+    "storedOnlyFormats": "{{formats}} podem ser enviados, mas ainda não há leitor para eles - o arquivo fica guardado até haver um.",
+    "templateHint": "Sem fatura em mãos? Baixe o modelo CSV, preencha uma transação por linha e importe de volta.",
+    "allTypesDisabled": "A importação está desligada para todos os formatos no momento. Um administrador pode religar um deles em Configurações de importação.",
+    "typeDisabled": "Formato desligado",
+    "typeDisabledDetail": "A importação de {{type}} está desligada no momento, então nada foi guardado. Use outro formato ou peça a um administrador para religar.",
+    "uploadWarnings": "{{count}} linhas pediram atenção",
+    "parseWarnings": "{{count}} observações da importação",
+    "type": {
+      "pdf_statement": "Fatura em PDF",
+      "csv": "CSV",
+      "ofx": "OFX",
+      "receipt_image": "Foto de comprovante"
+    }
   },
   "invoices": {
     "title": "Faturas",
@@ -497,6 +514,43 @@
     "passwordMessage": "As senhas são cuidadas pelo serviço de login, não pelo Planelyx. Alterar abre a página de conta em outra aba.",
     "changePassword": "Alterar senha",
     "updated": "Perfil atualizado"
+  },
+  "importSettings": {
+    "title": "Configurações de importação",
+    "subtitle": "O que o serviço de importação aceita e o quanto ele se esforça para ler. As mudanças valem em segundos, sem reiniciar nada.",
+    "formats": "Formatos de arquivo",
+    "formatsMessage": "Um formato desligado aqui é recusado no envio, antes de qualquer coisa ser guardada.",
+    "reading": "Leitura",
+    "readingMessage": "O que acontece quando o layout de uma fatura vence o leitor determinístico.",
+    "inert": "Ligado, mas este servidor não tem chave de API configurada, então nada é escalado.",
+    "updatedAt": "Alterado {{when}}",
+    "turnedOn": "{{name}} ligado",
+    "turnedOff": "{{name}} desligado",
+    "propagates": "Todos os servidores adotam a mudança em cerca de quinze segundos.",
+    "unavailable": "Configurações indisponíveis",
+    "unavailableMessage": "O serviço de importação não retornou as feature flags. Verifique se ele está no ar.",
+    "flag": {
+      "pdfStatement": {
+        "label": "Faturas em PDF",
+        "description": "Faturas de cartão e extratos em PDF. É o caminho que pode chamar o modelo de linguagem, ou seja, o que custa dinheiro."
+      },
+      "csv": {
+        "label": "Importação por CSV",
+        "description": "O modelo de transações preenchido. Determinístico e gratuito."
+      },
+      "ofx": {
+        "label": "Arquivos OFX",
+        "description": "São enviados e guardados, mas ainda não há leitor para OFX."
+      },
+      "receiptImage": {
+        "label": "Fotos de comprovante",
+        "description": "São enviadas e guardadas, mas ainda não há leitor para imagens."
+      },
+      "llmEscalation": {
+        "label": "Leitura por modelo de linguagem",
+        "description": "Quando o leitor determinístico não fecha o total de um PDF, a fatura é enviada ao Claude. Desligar mantém a importação de PDF funcionando, mas um layout ilegível continua ilegível - e para de custar."
+      }
+    }
   },
   "notFound": {
     "title": "Página não encontrada",

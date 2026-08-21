@@ -29,6 +29,21 @@
     }
   </planelyx-page-header>
 
+  @if (warnings().length > 0) {
+    <div
+      class="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm dark:border-amber-900 dark:bg-amber-950/40"
+    >
+      <p class="font-medium text-amber-800 dark:text-amber-200">
+        {{ t('ingest.parseWarnings', { count: warnings().length }) }}
+      </p>
+      <ul class="mt-2 list-inside list-disc text-amber-800 dark:text-amber-200">
+        @for (warning of warnings(); track $index) {
+          <li>{{ warning }}</li>
+        }
+      </ul>
+    </div>
+  }
+
   @if (validation(); as check) {
     @if (!check.ok) {
       <div

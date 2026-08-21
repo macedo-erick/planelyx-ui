@@ -3,6 +3,7 @@ import { computed, inject, Service, signal } from '@angular/core';
 import { filter, map, Observable, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
+import { skipErrorToast } from '../../core/http/error.interceptor';
 import { Uuid } from '../../shared/models/common';
 import {
   ConfirmRequest,
@@ -13,8 +14,12 @@ import {
   RollbackResult,
   StagedTransaction,
   StagedTransactionEdit,
+  CsvTemplate,
   UploadProgress,
 } from '../../shared/models/ingest';
+
+/** What the download is called when the server's descriptor is unavailable. */
+const TEMPLATE_FILENAME = 'planelyx-transactions.csv';
 
 /** Turns one HTTP event into an upload phase, or into nothing. */
 function toProgress(event: HttpEvent<IngestResult>): UploadProgress | null {
@@ -41,6 +46,7 @@ function toProgress(event: HttpEvent<IngestResult>): UploadProgress | null {
 export class IngestService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.ocrUrl}/documents`;
+  private readonly templatesUrl = `${environment.ocrUrl}/templates`;
 
   readonly resource = httpResource<IngestDocument[]>(() => this.baseUrl, { defaultValue: [] });
 
@@ -76,7 +82,11 @@ export class IngestService {
     const url = force ? `${this.baseUrl}?force=true` : this.baseUrl;
 
     return this.http
-      .post<IngestResult>(url, body, { observe: 'events', reportProgress: true })
+      .post<IngestResult>(url, body, {
+        observe: 'events',
+        reportProgress: true,
+        context: skipErrorToast(),
+      })
       .pipe(
         map((event) => toProgress(event)),
         filter((progress): progress is UploadProgress => progress !== null),
@@ -130,6 +140,23 @@ export class IngestService {
   /** Removes an import outright, staged lines and all. */
   delete(documentId: Uuid): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${documentId}`).pipe(tap(() => this.reload()));
+  }
+
+  /** The CSV template's shape, described by the server so the help text cannot drift from it. */
+  readonly template = httpResource<CsvTemplate | undefined>(
+    () => `${this.templatesUrl}/transactions`,
+  );
+
+  /** Guarded rather than read straight: a failed descriptor request throws out of `value()`. */
+  readonly templateFilename = computed(() =>
+    this.template.hasValue()
+      ? (this.template.value()?.filename ?? TEMPLATE_FILENAME)
+      : TEMPLATE_FILENAME,
+  );
+
+  /** The empty template itself, byte for byte as the parser expects it back. */
+  downloadTemplate(): Observable<Blob> {
+    return this.http.get(`${this.templatesUrl}/transactions.csv`, { responseType: 'blob' });
   }
 
   /** The original file, for checking a line against what the issuer actually printed. */

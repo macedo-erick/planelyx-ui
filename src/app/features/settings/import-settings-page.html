@@ -1,0 +1,59 @@
+<planelyx-page-header
+  [title]="t('importSettings.title')"
+  [subtitle]="t('importSettings.subtitle')"
+/>
+
+@if (flags.isLoading()) {
+  <p class="text-[var(--p-text-muted-color)]">{{ t('common.loading') }}</p>
+} @else if (flags.ordered().length === 0) {
+  <planelyx-empty-state
+    icon="pi-sliders-h"
+    [title]="t('importSettings.unavailable')"
+    [message]="t('importSettings.unavailableMessage')"
+  />
+} @else {
+  <div class="flex flex-col gap-4">
+    @for (section of sections(); track section.id) {
+      <planelyx-card>
+        <div class="border-b border-[var(--p-content-border-color)] p-4">
+          <h2 class="font-medium text-[var(--p-text-color)]">{{ section.title }}</h2>
+          <p class="mt-1 text-sm text-[var(--p-text-muted-color)]">{{ section.message }}</p>
+        </div>
+
+        @for (flag of section.flags; track flag.key) {
+          <div
+            class="flex items-start justify-between gap-4 border-b border-[var(--p-content-border-color)] p-4 last:border-b-0"
+          >
+            <div class="min-w-0">
+              <label
+                [attr.for]="inputId(flag)"
+                class="cursor-pointer font-medium text-[var(--p-text-color)]"
+              >
+                {{ label(flag) }}
+              </label>
+              <p class="mt-1 text-sm text-[var(--p-text-muted-color)]">{{ description(flag) }}</p>
+
+              @if (isInert(flag)) {
+                <p class="mt-1 text-sm font-medium text-[var(--p-orange-500)]">
+                  {{ t('importSettings.inert') }}
+                </p>
+              }
+
+              <p class="mt-1 text-xs text-[var(--p-text-muted-color)]">
+                {{ t('importSettings.updatedAt', { when: when(flag) }) }}
+              </p>
+            </div>
+
+            <p-toggleswitch
+              [inputId]="inputId(flag)"
+              [ngModel]="flag.enabled"
+              [ngModelOptions]="{ standalone: true }"
+              [disabled]="isSaving(flag)"
+              (ngModelChange)="onToggle(flag, $event)"
+            />
+          </div>
+        }
+      </planelyx-card>
+    }
+  </div>
+}

@@ -32,7 +32,8 @@
     "source": "Source",
     "adjust": "Adjust",
     "previousMonth": "Previous month",
-    "nextMonth": "Next month"
+    "nextMonth": "Next month",
+    "importSettings": "Import settings"
   },
   "titles": {
     "dashboard": "Dashboard",
@@ -44,7 +45,8 @@
     "cards": "Credit cards",
     "categories": "Categories",
     "profile": "Profile",
-    "notFound": "Not found"
+    "notFound": "Not found",
+    "importSettings": "Import settings"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -396,7 +398,22 @@
     "deleteConfirm": "Delete",
     "deleted": "Import deleted",
     "notFound": "Document not found",
-    "notFoundMessage": "It may have been discarded."
+    "notFoundMessage": "It may have been discarded.",
+    "downloadTemplate": "CSV template",
+    "acceptedFormats": "Read automatically: {{formats}}.",
+    "storedOnlyFormats": "{{formats}} can be uploaded, but no reader handles them yet — the file is kept until one does.",
+    "templateHint": "No statement to hand? Download the CSV template, fill in one transaction per row and import it back.",
+    "allTypesDisabled": "Importing is switched off for every format right now. An administrator can turn one back on under Import settings.",
+    "typeDisabled": "Format switched off",
+    "typeDisabledDetail": "{{type}} imports are switched off right now, so nothing was stored. Use another format, or ask an administrator to turn it back on.",
+    "uploadWarnings": "{{count}} rows needed attention",
+    "parseWarnings": "{{count}} notes from the import",
+    "type": {
+      "pdf_statement": "PDF statement",
+      "csv": "CSV",
+      "ofx": "OFX",
+      "receipt_image": "Receipt photo"
+    }
   },
   "invoices": {
     "title": "Invoices",
@@ -497,6 +514,43 @@
     "passwordMessage": "Passwords are handled by the sign-in service, not by Planelyx. Changing one opens its account page in a new tab.",
     "changePassword": "Change password",
     "updated": "Profile updated"
+  },
+  "importSettings": {
+    "title": "Import settings",
+    "subtitle": "What the import service accepts, and how hard it tries to read it. Changes take effect in seconds, with no restart.",
+    "formats": "File formats",
+    "formatsMessage": "A format switched off here is refused on upload, before anything is stored.",
+    "reading": "Reading",
+    "readingMessage": "What happens when a statement layout defeats the deterministic reader.",
+    "inert": "On, but this server has no API key configured, so nothing is escalated.",
+    "updatedAt": "Changed {{when}}",
+    "turnedOn": "{{name}} turned on",
+    "turnedOff": "{{name}} turned off",
+    "propagates": "Every server picks this up within about fifteen seconds.",
+    "unavailable": "Settings unavailable",
+    "unavailableMessage": "The import service did not return its feature flags. Check that it is running.",
+    "flag": {
+      "pdfStatement": {
+        "label": "PDF statements",
+        "description": "Card invoices and bank statements as PDF. This is the path that may call the language model, so it is the one that costs money."
+      },
+      "csv": {
+        "label": "CSV imports",
+        "description": "The filled-in transaction template. Deterministic and free."
+      },
+      "ofx": {
+        "label": "OFX files",
+        "description": "Uploaded and stored, but no reader handles OFX yet."
+      },
+      "receiptImage": {
+        "label": "Receipt photos",
+        "description": "Uploaded and stored, but no reader handles images yet."
+      },
+      "llmEscalation": {
+        "label": "Language-model fallback",
+        "description": "When the deterministic reader cannot reconcile a PDF, send it to Claude. Turning this off keeps PDF imports working, but an unreadable layout stays unreadable — and stops costing anything."
+      }
+    }
   },
   "notFound": {
     "title": "Page not found",

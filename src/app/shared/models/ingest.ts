@@ -21,6 +21,17 @@ export type IngestDocumentStatus = (typeof INGEST_DOCUMENT_STATUSES)[number];
 export const INGEST_DOCUMENT_TYPES = ['pdf_statement', 'csv', 'ofx', 'receipt_image'] as const;
 export type IngestDocumentType = (typeof INGEST_DOCUMENT_TYPES)[number];
 
+/** The types a parser actually reads today. The rest upload and wait for a reader. */
+export const PARSED_DOCUMENT_TYPES: readonly IngestDocumentType[] = ['pdf_statement', 'csv'];
+
+/** What the file picker offers for each type. */
+export const DOCUMENT_TYPE_EXTENSIONS: Readonly<Record<IngestDocumentType, readonly string[]>> = {
+  pdf_statement: ['.pdf'],
+  csv: ['.csv'],
+  ofx: ['.ofx'],
+  receipt_image: ['.jpg', '.jpeg', '.png'],
+};
+
 /** Richer than "expense or not" on purpose: a fatura mixes purchases with fees. */
 export const INGEST_TRANSACTION_KINDS = [
   'purchase',
@@ -67,6 +78,7 @@ export interface IngestDocument {
   readonly parserVersion: string | null;
   readonly pendingCount: number;
   readonly filedCount: number;
+  readonly warnings: readonly string[];
   readonly createdAt: IsoInstant;
 }
 
@@ -199,3 +211,49 @@ export type UploadProgress =
   | { readonly phase: 'sending'; readonly percent: number | null }
   | { readonly phase: 'reading' }
   | { readonly phase: 'done'; readonly result: IngestResult };
+
+/** Runtime switches served by `planelyx-ocr`, flipped without a redeploy. */
+export const FEATURE_FLAG_KEYS = [
+  'parse.pdf_statement',
+  'parse.csv',
+  'parse.ofx',
+  'parse.receipt_image',
+  'llm.escalation',
+] as const;
+export type FeatureFlagKey = (typeof FEATURE_FLAG_KEYS)[number];
+
+/** Mirrors `FLAG_FOR_TYPE` in `planelyx-ocr`: one switch per document type. */
+export const FLAG_FOR_DOCUMENT_TYPE: Readonly<Record<IngestDocumentType, FeatureFlagKey>> = {
+  pdf_statement: 'parse.pdf_statement',
+  csv: 'parse.csv',
+  ofx: 'parse.ofx',
+  receipt_image: 'parse.receipt_image',
+};
+
+/** `effective` is what the server will actually do; `enabled` is only what the switch says. */
+export interface FeatureFlag {
+  readonly key: FeatureFlagKey;
+  readonly enabled: boolean;
+  readonly effective: boolean;
+  readonly updatedAt: IsoInstant;
+  readonly updatedBy: Uuid | null;
+}
+
+export interface CsvTemplateColumn {
+  readonly name: string;
+  readonly required: boolean;
+  readonly formats: readonly string[];
+  readonly example: string;
+}
+
+/** The import template described by the server, so the browser never hardcodes its shape. */
+export interface CsvTemplate {
+  readonly filename: string;
+  readonly delimiter: string;
+  readonly encoding: string;
+  readonly columns: readonly CsvTemplateColumn[];
+  readonly kinds: readonly IngestTransactionKind[];
+  readonly kindAliases: Readonly<Record<string, IngestTransactionKind>>;
+  readonly signRule: string;
+  readonly example: string;
+}
