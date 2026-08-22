@@ -35,3 +35,17 @@ body {
   outline: 2px solid var(--p-primary-color);
   outline-offset: 2px;
 }
+
+@media (pointer: coarse) {
+  :root {
+    --p-form-field-font-size: 16px;
+    --p-form-field-sm-font-size: 16px;
+  }
+
+  input:not([type='checkbox'], [type='radio'], [type='range'], [type='color'], [type='file']),
+  textarea,
+  select,
+  [contenteditable]:not([contenteditable='false']) {
+    font-size: 16px;
+  }
+}
