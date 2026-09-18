@@ -5,7 +5,7 @@
   class="flex w-full items-center gap-3 border-b border-[var(--p-content-border-color)] px-4 py-3 text-left last:border-b-0 enabled:hover:bg-[var(--p-content-hover-background)] enabled:hover:cursor-pointer"
   [disabled]="!interactive()"
   [attr.aria-label]="
-    interactive() ? t('transactions.editAria', { description: tx.description }) : null
+    interactive() ? t('transactions.editAria', { description: description() }) : null
   "
   [attr.title]="locked() ? t('transactions.systemLocked') : null"
   (click)="edit.emit(tx)"
@@ -14,7 +14,7 @@
 
   <span class="min-w-0 flex-1">
     <span class="block truncate font-medium text-[var(--p-text-color)]">
-      {{ tx.description }}
+      {{ description() }}
       @if (installment(); as label) {
         <span class="font-normal text-[var(--p-text-muted-color)]">({{ label }})</span>
       }
