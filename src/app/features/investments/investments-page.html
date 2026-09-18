@@ -49,15 +49,15 @@
 
   <div class="grid gap-4 md:grid-cols-2">
     @for (investment of investments(); track investment.id) {
-      <planelyx-card class="group relative">
+      <planelyx-card class="relative">
         <button
           type="button"
-          class="absolute inset-0 rounded-xl enabled:hover:cursor-pointer"
+          class="peer absolute inset-0 rounded-xl enabled:hover:cursor-pointer"
           [attr.aria-label]="t('investments.editAria', { name: investment.name })"
           (click)="openEdit(investment)"
         ></button>
 
-        <div class="flex flex-col gap-3 p-4 group-hover:bg-[var(--p-content-hover-background)]">
+        <div class="flex flex-col gap-3 p-4 peer-hover:bg-[var(--p-content-hover-background)]">
           <div class="min-w-0">
             <h2 class="truncate text-lg font-medium text-[var(--p-text-color)]">
               {{ investment.name }}
