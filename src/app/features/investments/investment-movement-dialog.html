@@ -1,0 +1,95 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [header]="contributing() ? t('investments.contributeHeader') : t('investments.redeemHeader')"
+  [modal]="true"
+  [style]="{ width: '30rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [draggable]="false"
+>
+  @if (noEligibleAccounts()) {
+    <p class="text-sm text-[var(--p-text-muted-color)]">
+      {{ t('investments.noEligibleAccounts', { currency: currency() }) }}
+    </p>
+    <div class="mt-4 flex justify-end">
+      <p-button
+        type="button"
+        severity="secondary"
+        [text]="true"
+        [label]="t('common.close')"
+        (onClick)="visible.set(false)"
+      />
+    </div>
+  } @else {
+    <form class="flex flex-col gap-4" novalidate (ngSubmit)="onSubmit()">
+      <planelyx-select
+        [formField]="f.bankAccountId"
+        [label]="contributing() ? t('investments.fromAccount') : t('investments.toAccount')"
+        [options]="accountOptions()"
+        [hint]="t('investments.accountHint', { currency: currency() })"
+      />
+
+      <planelyx-money-input
+        [formField]="f.amount"
+        [label]="t('common.amount')"
+        [currency]="currency()"
+      />
+
+      <planelyx-date-picker [formField]="f.transactionDate" [label]="t('common.date')" />
+
+      <planelyx-text-input
+        [formField]="f.description"
+        [label]="t('common.description')"
+        [placeholder]="t('investments.descriptionPlaceholder')"
+      />
+
+      @if (amount() > 0) {
+        <div class="flex flex-col gap-2 rounded-md bg-[var(--p-content-hover-background)] p-3">
+          <div class="flex items-baseline justify-between gap-3 text-sm">
+            <span class="truncate text-[var(--p-text-muted-color)]">
+              {{ selectedAccountLabel() }}
+            </span>
+            <span class="shrink-0 tabular-nums">
+              <span class="text-[var(--p-text-muted-color)]">{{ money(accountBalance()) }}</span>
+              <span class="mx-1 text-[var(--p-text-muted-color)]" aria-hidden="true">&rarr;</span>
+              <span class="font-medium">{{ money(accountAfter()) }}</span>
+            </span>
+          </div>
+          <div class="flex items-baseline justify-between gap-3 text-sm">
+            <span class="truncate text-[var(--p-text-muted-color)]">{{ investment()?.name }}</span>
+            <span class="shrink-0 tabular-nums">
+              <span class="text-[var(--p-text-muted-color)]">{{ money(investmentBalance()) }}</span>
+              <span class="mx-1 text-[var(--p-text-muted-color)]" aria-hidden="true">&rarr;</span>
+              <span class="font-medium">{{ money(investmentAfter()) }}</span>
+            </span>
+          </div>
+        </div>
+      }
+
+      @if (overdrawn()) {
+        <small role="alert" class="text-[var(--p-red-500)]">
+          {{ t('investments.overdrawn', { balance: money(investmentBalance()) }) }}
+        </small>
+      } @else {
+        <small class="text-[var(--p-text-muted-color)]">
+          {{ contributing() ? t('investments.notAnExpense') : t('investments.notIncome') }}
+        </small>
+      }
+
+      <div class="mt-2 flex justify-end gap-2">
+        <p-button
+          type="button"
+          severity="secondary"
+          [text]="true"
+          [label]="t('common.cancel')"
+          (onClick)="visible.set(false)"
+        />
+        <p-button
+          type="submit"
+          [label]="contributing() ? t('investments.contribute') : t('investments.redeem')"
+          [loading]="saving()"
+          [disabled]="overdrawn()"
+        />
+      </div>
+    </form>
+  }
+</p-dialog>

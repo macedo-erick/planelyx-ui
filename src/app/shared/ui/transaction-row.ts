@@ -3,6 +3,7 @@ import { Component, computed, input, output } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { injectTranslate } from '../../core/i18n/translate';
 import { Category } from '../models/category';
+import { flowSign, incomeSign, isSpending } from '../models/enums';
 import { Transaction } from '../models/transaction';
 import { longDate } from '../util/date-format';
 import { defaultCategoryNames } from '../util/enum-labels';
@@ -56,13 +57,24 @@ export class PlanelyxTransactionRow {
 
   protected readonly amount = computed(() => {
     const tx = this.transaction();
-    const sign = tx.kind === 'ACCOUNT_CREDIT' ? '+' : '−';
+    const sign = flowSign(tx.kind) > 0 ? '+' : '−';
     return `${sign}${formatMoney(Math.abs(tx.amount), this.currency())}`;
   });
 
-  protected readonly amountClasses = computed(() =>
-    this.transaction().kind === 'ACCOUNT_CREDIT' ? 'text-green-600' : 'text-red-500',
-  );
+  /**
+   * Colour says whether the row left the owner richer or poorer, which is not the same question as
+   * which way the money went: a transfer is neither, and only its sign says where it moved. Red
+   * therefore covers spending and a market loss alike, though only the first is an expense.
+   */
+  protected readonly amountClasses = computed(() => {
+    const kind = this.transaction().kind;
+
+    if (incomeSign(kind) > 0) {
+      return 'text-green-600';
+    }
+
+    return incomeSign(kind) < 0 || isSpending(kind) ? 'text-red-500' : 'text-[var(--p-text-color)]';
+  });
 
   protected readonly date = computed(() => longDate(this.transaction().purchaseDate));
 }

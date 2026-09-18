@@ -43,6 +43,7 @@
     "invoices": "Faturas",
     "accounts": "Contas bancárias",
     "cards": "Cartões de crédito",
+    "investments": "Investimentos",
     "categories": "Categorias",
     "profile": "Perfil",
     "notFound": "Não encontrado",
@@ -52,6 +53,7 @@
     "dashboard": "Painel",
     "accounts": "Contas",
     "cards": "Cartões",
+    "investments": "Investimentos",
     "transactions": "Transações",
     "ingest": "Importações",
     "invoices": "Faturas",
@@ -62,6 +64,14 @@
       "CHECKING": "Conta corrente",
       "SAVINGS": "Poupança"
     },
+    "investmentType": {
+      "FIXED_INCOME": "Renda fixa",
+      "FUNDS": "Fundos",
+      "STOCKS": "Ações",
+      "CRYPTO": "Cripto",
+      "PENSION": "Previdência",
+      "OTHER": "Outro"
+    },
     "categoryType": {
       "EXPENSE": "Despesa",
       "INCOME": "Receita"
@@ -69,7 +79,12 @@
     "transactionKind": {
       "ACCOUNT_DEBIT": "Saída",
       "ACCOUNT_CREDIT": "Entrada",
-      "CARD_CHARGE": "Compra no cartão"
+      "CARD_CHARGE": "Compra no cartão",
+      "INVOICE_PAYMENT": "Pagamento de fatura",
+      "INVESTMENT_CONTRIBUTION": "Aporte",
+      "INVESTMENT_REDEMPTION": "Resgate",
+      "INVESTMENT_YIELD": "Rendimento",
+      "INVESTMENT_LOSS": "Perda"
     },
     "recurrenceType": {
       "FIXED_INDEFINITE": "Fixa - sem data final",
@@ -103,7 +118,8 @@
     "Other Income": "Outras receitas",
     "Adjustment": "Ajuste",
     "Uncategorised": "Sem categoria",
-    "Invoice payment": "Pagamento de fatura"
+    "Invoice payment": "Pagamento de fatura",
+    "Investment": "Investimento"
   },
   "dashboard": {
     "title": "Painel",
@@ -141,7 +157,11 @@
     "noBills": "Nenhuma conta a pagar",
     "paid": "Pago",
     "markPaid": "Marcar {{description}} como paga",
-    "billsCount": "{{count}} conta(s)"
+    "billsCount": "{{count}} conta(s)",
+    "invested": "Investido",
+    "netWorth": "Patrimônio",
+    "netWorthHint": "Dinheiro em conta mais o investido",
+    "acrossInvestments": "Em {{count}} investimentos"
   },
   "accounts": {
     "title": "Contas bancárias",
@@ -211,6 +231,62 @@
     "limitUsedAria": "Limite usado no {{name}}",
     "availableLimit": "Limite disponível",
     "usedSummary": "{{used}} de {{limit}} usado · fecha dia {{closing}} · vence dia {{due}}"
+  },
+  "investments": {
+    "title": "Investimentos",
+    "subtitle": "O que você guardou, e quanto vale.",
+    "new": "Novo investimento",
+    "empty": "Nenhum investimento ainda",
+    "emptyMessage": "Adicione um para tirar dinheiro da conta sem que isso vire despesa.",
+    "investmentName": "Nome do investimento",
+    "institution": "Instituição",
+    "editAria": "Editar {{name}}",
+    "projectedTo": "Projetado até {{date}}",
+    "newHeader": "Novo investimento",
+    "editHeader": "Editar investimento",
+    "balanceHint": "Quanto vale hoje. Nenhuma conta é debitada por isso.",
+    "currencyHint": "Código ISO de três letras.",
+    "deleteHeader": "Excluir investimento",
+    "deleteMessage": "Excluir \"{{name}}\" permanentemente? Todo aporte, resgate e rendimento registrado nele também será excluído. Não é possível desfazer.",
+    "created": "Investimento criado",
+    "updated": "Investimento atualizado",
+    "totalInvested": "Total investido",
+    "contributed": "Aportado",
+    "contributedHint": "Líquido de resgates, nunca despesa",
+    "contributedAmount": "{{amount}} aportados",
+    "return": "Rendimento",
+    "returnHint": "Rendimentos menos perdas, no total",
+    "acrossCount": "Em {{count}} investimentos",
+    "contribute": "Aportar",
+    "redeem": "Resgatar",
+    "contributeHeader": "Aportar",
+    "redeemHeader": "Resgatar",
+    "fromAccount": "Da conta",
+    "toAccount": "Para a conta",
+    "accountHint": "Somente contas em {{currency}}.",
+    "noEligibleAccounts": "Nenhuma conta em {{currency}}. Adicione uma, ou altere a moeda do investimento — não há conversão entre elas.",
+    "descriptionPlaceholder": "Aporte mensal",
+    "notAnExpense": "Não é despesa. Os gastos do mês não mudam.",
+    "notIncome": "Não é receita. O dinheiro já era seu.",
+    "overdrawn": "Mais do que o investimento tem ({{balance}}).",
+    "contributed_done": "Aporte registrado",
+    "redeemed_done": "Resgate registrado",
+    "movementDetail": "{{amount}} · {{name}}",
+    "adjust": {
+      "action": "Atualizar saldo",
+      "header": "Atualizar saldo",
+      "current": "Saldo atual",
+      "newBalance": "Novo saldo",
+      "newBalanceHint": "O quanto a corretora diz que vale.",
+      "date": "Na data de",
+      "difference": "Diferença",
+      "recordedAs": "Registrado como",
+      "yieldNotice": "Lançado como rendimento e somado à receita do mês — mesmo o dinheiro seguindo investido.",
+      "lossNotice": "Lançado como perda. Reduz o investimento e seu patrimônio, mas não é despesa.",
+      "description": "Rendimento de investimento",
+      "done": "Saldo atualizado",
+      "doneDetail": "{{name}} agora está em {{target}}"
+    }
   },
   "transactions": {
     "title": "Transações",
@@ -595,7 +671,11 @@
     "occurrenceMin": "No mínimo 1.",
     "installmentMin": "O parcelamento precisa de pelo menos 2.",
     "firstName": "Informe o seu nome.",
-    "emailRequired": "O e-mail é obrigatório."
+    "emailRequired": "O e-mail é obrigatório.",
+    "investmentName": "Dê um nome ao investimento.",
+    "institution": "Informe a instituição.",
+    "investmentType": "Escolha um tipo.",
+    "account": "Escolha uma conta."
   },
   "errors": {
     "offline": "Não foi possível falar com o servidor",

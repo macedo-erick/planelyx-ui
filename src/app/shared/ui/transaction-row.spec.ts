@@ -34,4 +34,39 @@ describe('PlanelyxTransactionRow', () => {
 
     amountsHidden.set(false);
   });
+
+  /**
+   * Sign and colour answer different questions: which way the money went, and whether the owner
+   * ended up richer or poorer. A transfer moves an account without being either.
+   */
+  it.each([
+    { kind: 'ACCOUNT_CREDIT', sign: '+', colour: 'text-green-600' },
+    { kind: 'ACCOUNT_DEBIT', sign: '−', colour: 'text-red-500' },
+    { kind: 'CARD_CHARGE', sign: '−', colour: 'text-red-500' },
+    { kind: 'INVOICE_PAYMENT', sign: '−', colour: 'text-[var(--p-text-color)]' },
+    { kind: 'INVESTMENT_CONTRIBUTION', sign: '−', colour: 'text-[var(--p-text-color)]' },
+    { kind: 'INVESTMENT_REDEMPTION', sign: '+', colour: 'text-[var(--p-text-color)]' },
+    { kind: 'INVESTMENT_YIELD', sign: '+', colour: 'text-green-600' },
+    { kind: 'INVESTMENT_LOSS', sign: '−', colour: 'text-red-500' },
+  ])('renders $kind as $sign in $colour', async ({ kind, sign, colour }) => {
+    TestBed.configureTestingModule({ imports: [provideTestingTransloco()] });
+    currentLocale.set('pt-BR');
+    amountsHidden.set(false);
+
+    const fixture: ComponentFixture<PlanelyxTransactionRow> =
+      TestBed.createComponent(PlanelyxTransactionRow);
+    fixture.componentRef.setInput('transaction', {
+      id: '1',
+      description: 'Movement',
+      amount: 100,
+      kind,
+      purchaseDate: '2026-08-03',
+    } as Transaction);
+    await fixture.whenStable();
+
+    const amount: HTMLElement = fixture.nativeElement.querySelector('.tabular-nums');
+
+    expect(amount.textContent?.trim().startsWith(sign)).toBe(true);
+    expect(amount.className).toContain(colour);
+  });
 });

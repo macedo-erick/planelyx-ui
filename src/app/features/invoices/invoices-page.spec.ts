@@ -56,6 +56,7 @@ const charge = (overrides: Partial<Transaction>): Transaction => ({
   categoryId: '66666666-6666-6666-6666-666666666666',
   invoiceId: AUGUST_CLOSE_SEPTEMBER_DUE.id,
   templateId: null,
+  investmentId: null,
   installmentNumber: null,
   totalInstallments: null,
   amount: 50,

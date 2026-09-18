@@ -91,6 +91,10 @@ export class DashboardPage {
   );
 
   protected readonly totalBalance = computed(() => this.data()?.totalBalance ?? 0);
+  protected readonly investedTotal = computed(() => this.data()?.investedTotal ?? 0);
+  protected readonly netWorth = computed(() => this.data()?.netWorth ?? 0);
+  protected readonly investmentBalances = computed(() => this.data()?.investmentBalances ?? []);
+  protected readonly hasInvestments = computed(() => this.investmentBalances().length > 0);
   protected readonly invoicesDueTotal = computed(() => this.data()?.invoicesDueTotal ?? 0);
   protected readonly invoicesDueCount = computed(() => this.data()?.invoicesDueCount ?? 0);
   protected readonly income = computed(() => this.data()?.income ?? 0);
@@ -188,6 +192,11 @@ export class DashboardPage {
    */
   protected money(value: number): string {
     return formatMoney(value);
+  }
+
+  /** Signed, so a return reads as a gain or a loss rather than a bare amount. */
+  protected returnIn(value: number, currency: string): string {
+    return `${value >= 0 ? '+' : '−'}${formatMoney(Math.abs(value), currency)}`;
   }
 
   protected moneyIn(value: number, currency: string): string {

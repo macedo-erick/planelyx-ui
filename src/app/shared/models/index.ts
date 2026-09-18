@@ -5,6 +5,7 @@ export * from './category';
 export * from './credit-card';
 export * from './dashboard';
 export * from './ingest';
+export * from './investment';
 export * from './invoice';
 export * from './page';
 export * from './profile';

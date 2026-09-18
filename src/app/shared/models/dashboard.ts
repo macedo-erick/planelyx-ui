@@ -8,7 +8,10 @@ export interface Dashboard {
   readonly periodEnd: IsoDate;
   readonly accountBalances: readonly AccountBalance[];
   readonly accountBalanceTotal: Money;
+  readonly investmentBalances: readonly InvestmentSummary[];
+  readonly investedTotal: Money;
   readonly totalBalance: Money;
+  readonly netWorth: Money;
   readonly invoicesDueTotal: Money;
   readonly invoicesDueCount: number;
   readonly income: Money;
@@ -29,6 +32,16 @@ export interface AccountBalance {
   readonly bankName: string;
   readonly currency: string;
   readonly balance: Money;
+}
+
+/** `contributed` is net of redemptions, so the difference against `balance` is the return. */
+export interface InvestmentSummary {
+  readonly investmentId: Uuid;
+  readonly name: string;
+  readonly institution: string;
+  readonly currency: string;
+  readonly balance: Money;
+  readonly contributed: Money;
 }
 
 /** One slice of `expense`. The slices total `expense`, so the chart agrees with the tile. */
