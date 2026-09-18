@@ -101,13 +101,14 @@
           </p>
 
           <div
-            class="relative -mx-4 -mb-1 flex flex-wrap gap-1 border-t border-[var(--p-content-border-color)] px-2 pt-2"
+            class="relative -mx-4 -mb-1 flex flex-nowrap items-center gap-1 border-t border-[var(--p-content-border-color)] px-2 pt-2"
           >
             <p-button
               icon="pi pi-arrow-down-right"
               severity="secondary"
               [text]="true"
               size="small"
+              styleClass="whitespace-nowrap !px-1.5 !text-xs"
               [label]="t('investments.contribute')"
               (onClick)="openMovement(investment, 'CONTRIBUTE')"
             />
@@ -116,6 +117,7 @@
               severity="secondary"
               [text]="true"
               size="small"
+              styleClass="whitespace-nowrap !px-1.5 !text-xs"
               [label]="t('investments.redeem')"
               (onClick)="openMovement(investment, 'REDEEM')"
             />
@@ -124,6 +126,7 @@
               severity="secondary"
               [text]="true"
               size="small"
+              styleClass="whitespace-nowrap !px-1.5 !text-xs"
               [label]="t('investments.adjust.action')"
               (onClick)="openAdjust(investment)"
             />
