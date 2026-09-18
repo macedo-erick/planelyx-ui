@@ -11,7 +11,7 @@
   </p>
 }
 
-<div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+<div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
   <planelyx-card [padded]="true">
     <div class="text-xs text-[var(--p-text-muted-color)]">
       {{ t(isFuture() ? 'dashboard.projectedBalance' : 'dashboard.totalBalance') }}
@@ -33,6 +33,24 @@
       </div>
     }
   </planelyx-card>
+  @if (hasInvestments()) {
+    <planelyx-card [padded]="true">
+      <div class="text-xs text-[var(--p-text-muted-color)]">{{ t('dashboard.invested') }}</div>
+      <div class="text-2xl font-semibold tabular-nums">{{ money(investedTotal()) }}</div>
+      <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
+        {{ t('dashboard.acrossInvestments', { count: investmentBalances().length }) }}
+      </div>
+    </planelyx-card>
+    <planelyx-card [padded]="true">
+      <div class="text-xs text-[var(--p-text-muted-color)]">{{ t('dashboard.netWorth') }}</div>
+      <div class="text-2xl font-semibold tabular-nums" [class.text-red-500]="netWorth() < 0">
+        {{ money(netWorth()) }}
+      </div>
+      <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
+        {{ t('dashboard.netWorthHint') }}
+      </div>
+    </planelyx-card>
+  }
   <planelyx-card [padded]="true">
     <div class="text-xs text-[var(--p-text-muted-color)]">{{ t('dashboard.income') }}</div>
     <div class="text-2xl font-semibold tabular-nums text-green-600">{{ money(income()) }}</div>
@@ -184,6 +202,42 @@
         }
       }
     </planelyx-card>
+
+    @if (hasInvestments()) {
+      <planelyx-card>
+        <div card-header class="border-b border-[var(--p-content-border-color)] px-4 py-3">
+          <h2 class="text-lg font-medium">{{ t('dashboard.invested') }}</h2>
+        </div>
+
+        @for (row of investmentBalances(); track row.investmentId) {
+          <a
+            routerLink="/investments"
+            class="flex items-center gap-3 border-b border-[var(--p-content-border-color)] px-4 py-3 last:border-b-0 hover:bg-[var(--p-content-hover-background)]"
+          >
+            <span class="min-w-0 flex-1">
+              <span class="block truncate font-medium text-[var(--p-text-color)]">
+                {{ row.name }}
+              </span>
+              <span class="block truncate text-sm text-[var(--p-text-muted-color)]">
+                {{ row.institution }}
+              </span>
+            </span>
+            <span class="shrink-0 text-right">
+              <span class="block font-medium tabular-nums" [class.text-red-500]="row.balance < 0">
+                {{ moneyIn(row.balance, row.currency) }}
+              </span>
+              <span
+                class="block text-sm tabular-nums text-[var(--p-text-muted-color)]"
+                [class.text-green-600]="row.balance - row.contributed > 0"
+                [class.text-red-500]="row.balance - row.contributed < 0"
+              >
+                {{ returnIn(row.balance - row.contributed, row.currency) }}
+              </span>
+            </span>
+          </a>
+        }
+      </planelyx-card>
+    }
 
     <planelyx-card>
       <div card-header class="border-b border-[var(--p-content-border-color)] px-4 py-3">

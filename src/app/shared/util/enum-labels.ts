@@ -6,6 +6,10 @@ import {
   AccountType,
   CATEGORY_TYPES,
   CategoryType,
+  FILABLE_TRANSACTION_KINDS,
+  FilableTransactionKind,
+  INVESTMENT_TYPES,
+  InvestmentType,
   INVOICE_STATUSES,
   InvoiceStatus,
   RECURRENCE_TYPES,
@@ -44,6 +48,10 @@ export function categoryTypeLabels(): Signal<Record<CategoryType, string>> {
   return labels('categoryType');
 }
 
+export function investmentTypeLabels(): Signal<Record<InvestmentType, string>> {
+  return labels('investmentType');
+}
+
 /** The API names are ledger-side. */
 export function transactionKindLabels(): Signal<Record<TransactionKind, string>> {
   return labels('transactionKind');
@@ -65,8 +73,18 @@ export function categoryTypeOptions(): Signal<SelectOption<CategoryType>[]> {
   return options(CATEGORY_TYPES, categoryTypeLabels());
 }
 
+/** Every kind, for the transactions filter — the derived ones included, so they can be narrowed to. */
 export function transactionKindOptions(): Signal<SelectOption<TransactionKind>[]> {
   return options(TRANSACTION_KINDS, transactionKindLabels());
+}
+
+/** Only the kinds a user may file, for the transaction form. The API refuses the rest. */
+export function filableTransactionKindOptions(): Signal<SelectOption<FilableTransactionKind>[]> {
+  return options(FILABLE_TRANSACTION_KINDS, transactionKindLabels());
+}
+
+export function investmentTypeOptions(): Signal<SelectOption<InvestmentType>[]> {
+  return options(INVESTMENT_TYPES, investmentTypeLabels());
 }
 
 export function recurrenceTypeOptions(): Signal<SelectOption<RecurrenceType>[]> {

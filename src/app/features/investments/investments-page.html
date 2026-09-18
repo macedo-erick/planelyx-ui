@@ -1,0 +1,143 @@
+<planelyx-page-header [title]="t('investments.title')" [subtitle]="t('investments.subtitle')">
+  <p-button icon="pi pi-plus" [label]="t('investments.new')" (onClick)="openCreate()" />
+</planelyx-page-header>
+
+@if (service.isLoading()) {
+  <p class="text-[var(--p-text-muted-color)]">{{ t('common.loading') }}</p>
+} @else if (investments().length === 0) {
+  <planelyx-empty-state
+    icon="pi-chart-line"
+    [title]="t('investments.empty')"
+    [message]="t('investments.emptyMessage')"
+  />
+} @else {
+  <div class="mb-6 grid gap-4 sm:grid-cols-3">
+    <planelyx-card [padded]="true">
+      <div class="text-xs text-[var(--p-text-muted-color)]">
+        {{ t('investments.totalInvested') }}
+      </div>
+      <div class="text-2xl font-semibold tabular-nums">
+        {{ money(investedTotal(), currency()) }}
+      </div>
+      <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
+        {{ t('investments.acrossCount', { count: investments().length }) }}
+      </div>
+    </planelyx-card>
+    <planelyx-card [padded]="true">
+      <div class="text-xs text-[var(--p-text-muted-color)]">{{ t('investments.contributed') }}</div>
+      <div class="text-2xl font-semibold tabular-nums">
+        {{ money(contributedTotal(), currency()) }}
+      </div>
+      <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
+        {{ t('investments.contributedHint') }}
+      </div>
+    </planelyx-card>
+    <planelyx-card [padded]="true">
+      <div class="text-xs text-[var(--p-text-muted-color)]">{{ t('investments.return') }}</div>
+      <div
+        class="text-2xl font-semibold tabular-nums"
+        [class.text-green-600]="returnTotal() > 0"
+        [class.text-red-500]="returnTotal() < 0"
+      >
+        {{ returnLabel(returnTotal(), currency()) }}
+      </div>
+      <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
+        {{ t('investments.returnHint') }}
+      </div>
+    </planelyx-card>
+  </div>
+
+  <div class="grid gap-4 md:grid-cols-2">
+    @for (investment of investments(); track investment.id) {
+      <planelyx-card class="group relative">
+        <button
+          type="button"
+          class="absolute inset-0 rounded-xl enabled:hover:cursor-pointer"
+          [attr.aria-label]="t('investments.editAria', { name: investment.name })"
+          (click)="openEdit(investment)"
+        ></button>
+
+        <div class="flex flex-col gap-3 p-4 group-hover:bg-[var(--p-content-hover-background)]">
+          <div class="min-w-0">
+            <h2 class="truncate text-lg font-medium text-[var(--p-text-color)]">
+              {{ investment.name }}
+            </h2>
+            <p class="truncate text-sm text-[var(--p-text-muted-color)]">
+              {{ investment.institution }}
+            </p>
+          </div>
+
+          <div class="flex items-center justify-between gap-2 text-sm">
+            <span class="text-[var(--p-text-muted-color)]">{{ t('common.type') }}</span>
+            <p-tag [value]="typeLabel(investment.investmentType)" severity="secondary" />
+          </div>
+
+          <div class="flex items-baseline justify-between gap-2 text-sm">
+            <span class="text-[var(--p-text-muted-color)]">{{ t('common.balance') }}</span>
+            <span class="text-right">
+              <span class="font-medium tabular-nums" [class.text-red-500]="balance(investment) < 0">
+                {{ money(balance(investment), investment.currency) }}
+              </span>
+              @if (asOfLabel(); as asOf) {
+                <span class="block text-xs text-[var(--p-text-muted-color)]">{{ asOf }}</span>
+              }
+            </span>
+          </div>
+
+          <p class="text-xs text-[var(--p-text-muted-color)]">
+            {{ investment.currency }} ·
+            {{
+              t('investments.contributedAmount', {
+                amount: money(contributed(investment), investment.currency),
+              })
+            }}
+            ·
+            <span
+              [class.text-green-600]="returned(investment) > 0"
+              [class.text-red-500]="returned(investment) < 0"
+            >
+              {{ returnLabel(returned(investment), investment.currency) }}
+            </span>
+          </p>
+
+          <div
+            class="relative -mx-4 -mb-1 flex flex-wrap gap-1 border-t border-[var(--p-content-border-color)] px-2 pt-2"
+          >
+            <p-button
+              icon="pi pi-arrow-down-right"
+              severity="secondary"
+              [text]="true"
+              size="small"
+              [label]="t('investments.contribute')"
+              (onClick)="openMovement(investment, 'CONTRIBUTE')"
+            />
+            <p-button
+              icon="pi pi-arrow-up-right"
+              severity="secondary"
+              [text]="true"
+              size="small"
+              [label]="t('investments.redeem')"
+              (onClick)="openMovement(investment, 'REDEEM')"
+            />
+            <p-button
+              icon="pi pi-sliders-h"
+              severity="secondary"
+              [text]="true"
+              size="small"
+              [label]="t('investments.adjust.action')"
+              (onClick)="openAdjust(investment)"
+            />
+          </div>
+        </div>
+      </planelyx-card>
+    }
+  </div>
+}
+
+<planelyx-investment-form-dialog [(visible)]="dialogOpen" [investment]="selected()" />
+<planelyx-investment-movement-dialog
+  [(visible)]="movementOpen"
+  [investment]="selected()"
+  [direction]="direction()"
+/>
+<planelyx-adjust-investment-balance-dialog [(visible)]="adjustOpen" [investment]="selected()" />
