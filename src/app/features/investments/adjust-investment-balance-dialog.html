@@ -1,0 +1,75 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [header]="t('investments.adjust.header')"
+  [modal]="true"
+  [style]="{ width: '30rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [draggable]="false"
+>
+  <form class="flex flex-col gap-4" novalidate (ngSubmit)="onSubmit()">
+    <div
+      class="flex items-baseline justify-between gap-3 border-b border-[var(--p-content-border-color)] pb-3 text-sm"
+    >
+      <span class="text-[var(--p-text-muted-color)]">{{ t('investments.adjust.current') }}</span>
+      <span class="font-medium tabular-nums">{{ currentLabel() }}</span>
+    </div>
+
+    <planelyx-money-input
+      [formField]="f.targetBalance"
+      [label]="t('investments.adjust.newBalance')"
+      [currency]="currency()"
+      [hint]="t('investments.adjust.newBalanceHint')"
+    />
+
+    <planelyx-date-picker [formField]="f.transactionDate" [label]="t('investments.adjust.date')" />
+
+    @if (!unchanged()) {
+      <div class="flex flex-col gap-2 rounded-md bg-[var(--p-content-hover-background)] p-3">
+        <div class="flex items-baseline justify-between gap-3 text-sm">
+          <span class="text-[var(--p-text-muted-color)]">
+            {{ t('investments.adjust.difference') }}
+          </span>
+          <span
+            class="font-semibold tabular-nums"
+            [class.text-green-600]="gain()"
+            [class.text-red-500]="!gain()"
+          >
+            {{ deltaLabel() }}
+          </span>
+        </div>
+        <div class="flex items-baseline justify-between gap-3 text-sm">
+          <span class="text-[var(--p-text-muted-color)]">
+            {{ t('investments.adjust.recordedAs') }}
+          </span>
+          <span class="font-medium">
+            {{
+              gain()
+                ? t('enums.transactionKind.INVESTMENT_YIELD')
+                : t('enums.transactionKind.INVESTMENT_LOSS')
+            }}
+          </span>
+        </div>
+      </div>
+
+      <small class="text-[var(--p-text-muted-color)]">
+        {{ gain() ? t('investments.adjust.yieldNotice') : t('investments.adjust.lossNotice') }}
+      </small>
+    }
+
+    <div class="mt-2 flex justify-end gap-2">
+      <p-button
+        type="button"
+        severity="secondary"
+        [text]="true"
+        [label]="t('common.cancel')"
+        (onClick)="visible.set(false)"
+      />
+      <p-button
+        type="submit"
+        [label]="t('common.save')"
+        [loading]="saving()"
+        [disabled]="unchanged()"
+      />
+    </div>
+  </form>
+</p-dialog>

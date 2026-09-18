@@ -33,7 +33,13 @@ import { PlanelyxNumberInput } from '../../shared/controls/number-input';
 import { PlanelyxSelect } from '../../shared/controls/select';
 import { PlanelyxTextInput } from '../../shared/controls/text-input';
 import { IsoDate, Money, Uuid } from '../../shared/models/common';
-import { RecurrenceType, TransactionKind, TransactionScope } from '../../shared/models/enums';
+import {
+  FilableTransactionKind,
+  isDerived,
+  RecurrenceType,
+  TransactionKind,
+  TransactionScope,
+} from '../../shared/models/enums';
 import {
   Transaction,
   TransactionRequest,
@@ -44,7 +50,7 @@ import { todayIso } from '../../shared/util/date';
 import {
   SelectOption,
   transactionKindLabels,
-  transactionKindOptions,
+  filableTransactionKindOptions,
 } from '../../shared/util/enum-labels';
 import { formatMoneyUnmasked, splitInstallments } from '../../shared/util/money';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
@@ -69,7 +75,7 @@ const REPEAT_OPTIONS: readonly { readonly key: string; readonly value: Repeat }[
 ];
 
 export interface TransactionFormModel {
-  kind: TransactionKind;
+  kind: FilableTransactionKind;
   bankAccountId: Uuid | null;
   creditCardId: Uuid | null;
   categoryId: Uuid | null;
@@ -91,6 +97,14 @@ const empty = (): TransactionFormModel => ({
   repeats: 'NONE',
   totalOccurrences: null,
 });
+
+/**
+ * A derived row renders locked and cannot be clicked through to here, and the API refuses to
+ * update one anyway. The fallback keeps the narrowing explicit rather than a cast.
+ */
+function filableKindOf(transaction: Transaction): FilableTransactionKind {
+  return isDerived(transaction.kind) ? 'ACCOUNT_DEBIT' : transaction.kind;
+}
 
 @Component({
   selector: 'planelyx-transaction-form-dialog',
@@ -129,7 +143,7 @@ export class TransactionFormDialog {
 
   protected readonly t = injectTranslate();
   private readonly kindLabels = transactionKindLabels();
-  protected readonly kindOptions = transactionKindOptions();
+  protected readonly kindOptions = filableTransactionKindOptions();
   protected readonly repeatOptions = computed<SelectOption<Repeat>[]>(() =>
     REPEAT_OPTIONS.map(({ key, value }) => ({ label: this.t(key), value })),
   );
@@ -273,7 +287,7 @@ export class TransactionFormDialog {
         this.f().reset(
           current
             ? {
-                kind: current.kind,
+                kind: filableKindOf(current),
                 bankAccountId: current.bankAccountId,
                 creditCardId: current.creditCardId,
                 categoryId: current.categoryId,

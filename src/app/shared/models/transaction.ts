@@ -1,5 +1,5 @@
 import { IsoDate, IsoInstant, Money, Uuid } from './common';
-import { TransactionKind, TransactionScope } from './enums';
+import { FilableTransactionKind, TransactionKind, TransactionScope } from './enums';
 
 /** One transaction as the API holds it. */
 export interface Transaction {
@@ -10,6 +10,7 @@ export interface Transaction {
   readonly categoryId: Uuid;
   readonly invoiceId: Uuid | null;
   readonly templateId: Uuid | null;
+  readonly investmentId: Uuid | null;
   readonly installmentNumber: number | null;
   readonly totalInstallments: number | null;
   readonly amount: Money;
@@ -20,9 +21,9 @@ export interface Transaction {
   readonly createdAt: IsoInstant;
 }
 
-/** A transaction to write. */
+/** A transaction to write. Only the kinds a user may file — the rest are posted by the API. */
 export interface TransactionRequest {
-  kind: TransactionKind;
+  kind: FilableTransactionKind;
   bankAccountId: Uuid | null;
   creditCardId: Uuid | null;
   categoryId: Uuid;

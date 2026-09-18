@@ -43,6 +43,7 @@
     "invoices": "Invoices",
     "accounts": "Bank accounts",
     "cards": "Credit cards",
+    "investments": "Investments",
     "categories": "Categories",
     "profile": "Profile",
     "notFound": "Not found",
@@ -52,6 +53,7 @@
     "dashboard": "Dashboard",
     "accounts": "Accounts",
     "cards": "Credit cards",
+    "investments": "Investments",
     "transactions": "Transactions",
     "ingest": "Imports",
     "invoices": "Invoices",
@@ -62,6 +64,14 @@
       "CHECKING": "Checking",
       "SAVINGS": "Savings"
     },
+    "investmentType": {
+      "FIXED_INCOME": "Fixed income",
+      "FUNDS": "Funds",
+      "STOCKS": "Stocks",
+      "CRYPTO": "Crypto",
+      "PENSION": "Pension",
+      "OTHER": "Other"
+    },
     "categoryType": {
       "EXPENSE": "Expense",
       "INCOME": "Income"
@@ -69,7 +79,12 @@
     "transactionKind": {
       "ACCOUNT_DEBIT": "Account expense",
       "ACCOUNT_CREDIT": "Account income",
-      "CARD_CHARGE": "Card charge"
+      "CARD_CHARGE": "Card charge",
+      "INVOICE_PAYMENT": "Invoice payment",
+      "INVESTMENT_CONTRIBUTION": "Investment contribution",
+      "INVESTMENT_REDEMPTION": "Investment redemption",
+      "INVESTMENT_YIELD": "Yield",
+      "INVESTMENT_LOSS": "Loss"
     },
     "recurrenceType": {
       "FIXED_INDEFINITE": "Fixed — no end date",
@@ -103,7 +118,8 @@
     "Other Income": "Other Income",
     "Adjustment": "Adjustment",
     "Uncategorised": "Uncategorised",
-    "Invoice payment": "Invoice payment"
+    "Invoice payment": "Invoice payment",
+    "Investment": "Investment"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -141,7 +157,11 @@
     "noBills": "Nothing to pay",
     "paid": "Paid",
     "markPaid": "Mark {{description}} as paid",
-    "billsCount": "{{count}} bill(s)"
+    "billsCount": "{{count}} bill(s)",
+    "invested": "Invested",
+    "netWorth": "Net worth",
+    "netWorthHint": "Cash plus what is invested",
+    "acrossInvestments": "Across {{count}} investments"
   },
   "accounts": {
     "title": "Bank accounts",
@@ -211,6 +231,62 @@
     "limitUsedAria": "Limit used on {{name}}",
     "availableLimit": "Available limit",
     "usedSummary": "{{used}} of {{limit}} used · closes day {{closing}} · due day {{due}}"
+  },
+  "investments": {
+    "title": "Investments",
+    "subtitle": "What you've set aside, and what it's worth.",
+    "new": "New investment",
+    "empty": "No investments yet",
+    "emptyMessage": "Add one to move money out of an account without it counting as spending.",
+    "investmentName": "Investment name",
+    "institution": "Institution",
+    "editAria": "Edit {{name}}",
+    "projectedTo": "Projected to {{date}}",
+    "newHeader": "New investment",
+    "editHeader": "Edit investment",
+    "balanceHint": "What it is worth today. No account is debited for it.",
+    "currencyHint": "Three-letter ISO code.",
+    "deleteHeader": "Delete investment",
+    "deleteMessage": "Permanently delete \"{{name}}\"? Every contribution, redemption and return recorded against it goes too. This cannot be undone.",
+    "created": "Investment created",
+    "updated": "Investment updated",
+    "totalInvested": "Total invested",
+    "contributed": "Contributed",
+    "contributedHint": "Net of redemptions, never spending",
+    "contributedAmount": "{{amount}} contributed",
+    "return": "Return",
+    "returnHint": "Yield less losses, all time",
+    "acrossCount": "Across {{count}} investments",
+    "contribute": "Contribute",
+    "redeem": "Redeem",
+    "contributeHeader": "Contribute",
+    "redeemHeader": "Redeem",
+    "fromAccount": "From account",
+    "toAccount": "To account",
+    "accountHint": "Only accounts held in {{currency}}.",
+    "noEligibleAccounts": "No account is held in {{currency}}. Add one, or change the investment's currency — there is no conversion between them.",
+    "descriptionPlaceholder": "Monthly contribution",
+    "notAnExpense": "Not an expense. This month's spending does not change.",
+    "notIncome": "Not income. The money was already yours.",
+    "overdrawn": "More than the investment holds ({{balance}}).",
+    "contributed_done": "Contribution recorded",
+    "redeemed_done": "Redemption recorded",
+    "movementDetail": "{{amount}} · {{name}}",
+    "adjust": {
+      "action": "Update balance",
+      "header": "Update balance",
+      "current": "Current balance",
+      "newBalance": "New balance",
+      "newBalanceHint": "What your broker says it is worth.",
+      "date": "As of",
+      "difference": "Difference",
+      "recordedAs": "Recorded as",
+      "yieldNotice": "Posted as yield, and counted in this month's income — even though the money stays invested.",
+      "lossNotice": "Posted as a loss. It lowers the investment and your net worth, but is not an expense.",
+      "description": "Investment return",
+      "done": "Balance updated",
+      "doneDetail": "{{name}} is now {{target}}"
+    }
   },
   "transactions": {
     "title": "Transactions",
@@ -595,7 +671,11 @@
     "occurrenceMin": "At least 1.",
     "installmentMin": "Installments need at least 2.",
     "firstName": "Tell us your first name.",
-    "emailRequired": "An email address is required."
+    "emailRequired": "An email address is required.",
+    "investmentName": "Name the investment.",
+    "institution": "Name the institution.",
+    "investmentType": "Choose a type.",
+    "account": "Choose an account."
   },
   "errors": {
     "offline": "Cannot reach the server",
