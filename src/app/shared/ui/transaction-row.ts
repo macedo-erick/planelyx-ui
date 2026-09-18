@@ -3,10 +3,10 @@ import { Component, computed, input, output } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { injectTranslate } from '../../core/i18n/translate';
 import { Category } from '../models/category';
-import { flowSign, incomeSign, isSpending } from '../models/enums';
+import { flowSign, incomeSign, isDerived, isSpending } from '../models/enums';
 import { Transaction } from '../models/transaction';
 import { longDate } from '../util/date-format';
-import { defaultCategoryNames } from '../util/enum-labels';
+import { defaultCategoryNames, transactionKindLabels } from '../util/enum-labels';
 import { formatMoney } from '../util/money';
 import { PlanelyxCategoryBadge } from './category-badge';
 
@@ -33,6 +33,7 @@ export class PlanelyxTransactionRow {
 
   protected readonly t = injectTranslate();
   private readonly translateCategory = defaultCategoryNames();
+  private readonly kindLabels = transactionKindLabels();
 
   protected readonly locked = computed(() => this.category()?.system === true);
 
@@ -48,6 +49,12 @@ export class PlanelyxTransactionRow {
     return category
       ? this.translateCategory()(category.name)
       : this.t('categoryDefaults.Uncategorised');
+  });
+
+  /** The API writes derived rows' description in English; their kind name is localized instead. */
+  protected readonly description = computed(() => {
+    const tx = this.transaction();
+    return isDerived(tx.kind) ? this.kindLabels()[tx.kind] : tx.description;
   });
 
   protected readonly installment = computed(() => {
