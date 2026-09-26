@@ -126,6 +126,8 @@
     "totalBalance": "Saldo total",
     "income": "Receitas do mês",
     "expense": "Gastos do mês",
+    "result": "Resultado do mês",
+    "resultChange": "{{amount}} em relação ao mês anterior",
     "unpaidInvoices": "Faturas em aberto",
     "balancesByAccount": "Saldo por conta",
     "spendingByCategory": "Gastos por categoria",

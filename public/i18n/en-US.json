@@ -126,6 +126,8 @@
     "totalBalance": "Total balance",
     "income": "Income this month",
     "expense": "Spent this month",
+    "result": "Result this month",
+    "resultChange": "{{amount}} compared to last month",
     "unpaidInvoices": "Unpaid invoices",
     "balancesByAccount": "Balances by account",
     "spendingByCategory": "Spending by category",

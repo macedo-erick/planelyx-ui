@@ -99,6 +99,14 @@ export class DashboardPage {
   protected readonly invoicesDueCount = computed(() => this.data()?.invoicesDueCount ?? 0);
   protected readonly income = computed(() => this.data()?.income ?? 0);
   protected readonly expense = computed(() => this.data()?.expense ?? 0);
+  protected readonly result = computed(() => this.data()?.result ?? 0);
+
+  protected readonly resultChangeLabel = computed(() =>
+    this.t('dashboard.resultChange', {
+      amount: this.signed(this.result() - (this.data()?.previousResult ?? 0)),
+    }),
+  );
+
   protected readonly outstandingInvoices = computed(
     () => this.data()?.outstandingInvoiceTotal ?? 0,
   );
@@ -192,6 +200,12 @@ export class DashboardPage {
    */
   protected money(value: number): string {
     return formatMoney(value);
+  }
+
+  /** Signed, so a change reads as up or down rather than a bare amount. */
+  private signed(value: number): string {
+    const cents = Math.round(value * 100) / 100;
+    return `${cents >= 0 ? '+' : '−'}${formatMoney(Math.abs(cents))}`;
   }
 
   /** Signed, so a return reads as a gain or a loss rather than a bare amount. */
