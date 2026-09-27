@@ -151,7 +151,6 @@
     "acrossAccountsEom": "Across {{count}} account(s) at end of month, {{amount}}",
     "lessInvoicesDue": "less {{count}} invoice(s) due, {{amount}}",
     "expenseHint": "Account spending this month, plus the invoices falling due in it",
-    "dueSoonest": "{{count}} due soonest",
     "balancesNote": "Balances are your initial balance plus account transactions up to the end of the selected month — paying an invoice posts a debit, so one already paid has left them. The total then has any unpaid invoice due by then taken off it, which is why it will not match the per account figures below: that money is committed but not yet drawn from one account.",
     "accountBalances": "Account balances",
     "invoicesDueSoon": "Invoices due soon",
