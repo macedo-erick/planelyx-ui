@@ -16,6 +16,10 @@ export interface Dashboard {
   readonly invoicesDueCount: number;
   readonly income: Money;
   readonly expense: Money;
+  /** `income` less `expense`. */
+  readonly result: Money;
+  /** The same subtraction for the month before, for comparison. */
+  readonly previousResult: Money;
   readonly categoryBreakdown: readonly CategoryBreakdown[];
   readonly outstandingInvoiceTotal: Money;
   readonly upcomingInvoices: readonly Invoice[];

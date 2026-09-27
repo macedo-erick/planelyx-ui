@@ -63,6 +63,19 @@
     </div>
   </planelyx-card>
   <planelyx-card [padded]="true">
+    <div class="text-xs text-[var(--p-text-muted-color)]">{{ t('dashboard.result') }}</div>
+    <div
+      class="text-2xl font-semibold tabular-nums"
+      [class.text-green-600]="result() > 0"
+      [class.text-red-500]="result() < 0"
+    >
+      {{ money(result()) }}
+    </div>
+    <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
+      {{ resultChangeLabel() }}
+    </div>
+  </planelyx-card>
+  <planelyx-card [padded]="true">
     <div class="text-xs text-[var(--p-text-muted-color)]">{{ t('dashboard.unpaidInvoices') }}</div>
     <div class="text-2xl font-semibold tabular-nums">{{ money(outstandingInvoices()) }}</div>
     <div class="mt-1 text-xs text-[var(--p-text-muted-color)]">
