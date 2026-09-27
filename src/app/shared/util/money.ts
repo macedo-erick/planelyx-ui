@@ -35,6 +35,28 @@ export function formatMoney(value: Money, currency = environment.defaultCurrency
   return amountsHidden() ? maskMoney(currency) : formatMoneyUnmasked(value, currency);
 }
 
+/**
+ * Whole units, for a chart axis where the cents are noise: "R$ 14.000", or "R$ 14 mil" when
+ * `compact` because the space is short. Masked like `formatMoney`.
+ */
+export function formatMoneyRounded(
+  value: Money,
+  { compact = false }: { compact?: boolean } = {},
+  currency = environment.defaultCurrency,
+): string {
+  if (amountsHidden()) {
+    return maskMoney(currency);
+  }
+
+  return new Intl.NumberFormat(currentLocale(), {
+    style: 'currency',
+    currency,
+    notation: compact ? 'compact' : 'standard',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: compact ? 1 : 0,
+  }).format(value);
+}
+
 /** The same formatting, never masked — for amounts the reader is editing rather than reading. */
 export function formatMoneyUnmasked(value: Money, currency = environment.defaultCurrency): string {
   return new Intl.NumberFormat(currentLocale(), {
