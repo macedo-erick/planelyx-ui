@@ -273,18 +273,30 @@
         card-header
         class="flex items-start justify-between gap-3 border-b border-[var(--p-content-border-color)] px-4 py-3"
       >
-        <h2 class="min-w-0 text-lg font-medium">{{ t('dashboard.invoicesDueSoon') }}</h2>
-        @if (openInvoiceCount() > 0) {
+        <span class="min-w-0">
+          <h2 class="text-lg font-medium">{{ t('dashboard.invoicesOfMonth') }}</h2>
+          <p class="mt-0.5 text-xs text-[var(--p-text-muted-color)]">
+            {{ t('dashboard.onePerCard') }}
+          </p>
+        </span>
+        @if (invoicesDueCount() > 0) {
           <span class="shrink-0 text-right">
-            <span class="block font-semibold tabular-nums">{{ money(outstandingInvoices()) }}</span>
+            <span class="block font-semibold tabular-nums">{{ money(invoicesDueTotal()) }}</span>
             <span class="block text-xs text-[var(--p-text-muted-color)]">
-              {{ t('dashboard.unpaidInvoices') }}
+              {{ t('dashboard.toPay') }}
+            </span>
+          </span>
+        } @else if (invoicesPaid().length > 0) {
+          <span class="shrink-0 text-right">
+            <span class="block font-semibold">{{ t('dashboard.allPaid') }}</span>
+            <span class="block text-xs text-[var(--p-text-muted-color)]">
+              {{ t('dashboard.invoicesCount', { count: invoicesPaid().length }) }}
             </span>
           </span>
         }
       </div>
 
-      @for (invoice of upcomingInvoices(); track invoice.id) {
+      @for (invoice of invoicesDue(); track invoice.id) {
         <a
           routerLink="/invoices"
           [queryParams]="{ cardId: invoice.creditCardId, month: invoice.referenceMonth }"
@@ -294,7 +306,10 @@
             <span class="block truncate font-medium text-[var(--p-text-color)]">
               {{ cardName(invoice.creditCardId) }}
             </span>
-            <span class="block truncate text-sm text-[var(--p-text-muted-color)]">
+            <span
+              class="block truncate text-sm text-[var(--p-text-muted-color)]"
+              [class.text-red-500]="isOverdue(invoice.dueDate)"
+            >
               {{ t('dashboard.due') }} {{ shortDate(invoice.dueDate) }}
               @if (dueText(invoice.dueDate); as text) {
                 <span> · {{ text }}</span>
@@ -310,7 +325,52 @@
             />
           </span>
         </a>
-      } @empty {
+      }
+
+      @if (hasMoreInvoicesDue()) {
+        <a
+          routerLink="/invoices"
+          class="block border-b border-[var(--p-content-border-color)] px-4 py-3 text-center text-sm font-medium text-[var(--p-primary-color)] last:border-b-0 hover:bg-[var(--p-content-hover-background)]"
+        >
+          {{ t('dashboard.seeAllInvoices', { count: invoicesDueCount() }) }}
+        </a>
+      }
+
+      @if (invoicesPaid().length > 0) {
+        <div
+          class="border-b border-[var(--p-content-border-color)] bg-[var(--p-content-hover-background)] px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--p-text-muted-color)]"
+        >
+          {{ t(invoicesDue().length > 0 ? 'dashboard.paidInvoices' : 'dashboard.nothingPending') }}
+        </div>
+        @for (invoice of invoicesPaid(); track invoice.id) {
+          <a
+            routerLink="/invoices"
+            [queryParams]="{ cardId: invoice.creditCardId, month: invoice.referenceMonth }"
+            class="flex items-center gap-3 border-b border-[var(--p-content-border-color)] px-4 py-3 last:border-b-0 hover:bg-[var(--p-content-hover-background)]"
+          >
+            <span class="min-w-0 flex-1">
+              <span class="block truncate text-[var(--p-text-muted-color)]">
+                {{ cardName(invoice.creditCardId) }}
+              </span>
+              <span class="block truncate text-sm text-[var(--p-text-muted-color)]">
+                {{ t('invoices.paidAt', { when: paidOn(invoice) }) }}
+              </span>
+            </span>
+            <span class="shrink-0 text-right">
+              <span class="block tabular-nums text-[var(--p-text-muted-color)]">
+                {{ moneyForInvoice(invoice) }}
+              </span>
+              <p-tag
+                class="mt-1 inline-block"
+                [value]="statusLabel(invoice.status)"
+                [severity]="statusSeverity(invoice.status)"
+              />
+            </span>
+          </a>
+        }
+      }
+
+      @if (invoicesDue().length === 0 && invoicesPaid().length === 0) {
         <planelyx-empty-state icon="pi-check-circle" [title]="t('dashboard.nothingDue')" />
       }
     </planelyx-card>
