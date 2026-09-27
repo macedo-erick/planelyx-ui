@@ -151,7 +151,6 @@
     "acrossAccountsEom": "Em {{count}} conta(s) no fim do mês, {{amount}}",
     "lessInvoicesDue": "menos {{count}} fatura(s) a vencer, {{amount}}",
     "expenseHint": "Gastos em conta no mês, mais as faturas que vencem nele",
-    "dueSoonest": "{{count}} a vencer primeiro",
     "balancesNote": "Os saldos são o saldo inicial mais as transações da conta até o fim do mês selecionado - pagar uma fatura lança um débito, então uma fatura já paga já saiu daí. Do total ainda são descontadas as faturas em aberto que vencem até lá, por isso ele não bate com os valores por conta abaixo: é dinheiro comprometido, mas ainda não retirado de nenhuma conta.",
     "accountBalances": "Saldo das contas",
     "invoicesDueSoon": "Faturas a vencer",
