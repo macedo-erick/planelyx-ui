@@ -1,4 +1,4 @@
-import { IsoDate, Money, Uuid } from './common';
+import { IsoDate, Money, MonthKey, Uuid } from './common';
 import { Invoice } from './invoice';
 import { Transaction } from './transaction';
 
@@ -20,6 +20,11 @@ export interface Dashboard {
   readonly result: Money;
   /** The same subtraction for the month before, for comparison. */
   readonly previousResult: Money;
+  /**
+   * Income and expense for the twelve months ending with this one, oldest first. Every month is
+   * present, a quiet one at zero, and the last is this month's own `income` and `expense`.
+   */
+  readonly trend: readonly MonthMovement[];
   readonly categoryBreakdown: readonly CategoryBreakdown[];
   readonly outstandingInvoiceTotal: Money;
   readonly upcomingInvoices: readonly Invoice[];
@@ -46,6 +51,13 @@ export interface InvestmentSummary {
   readonly currency: string;
   readonly balance: Money;
   readonly contributed: Money;
+}
+
+/** One month of `Dashboard.trend`. */
+export interface MonthMovement {
+  readonly month: MonthKey;
+  readonly income: Money;
+  readonly expense: Money;
 }
 
 /** One slice of `expense`. The slices total `expense`, so the chart agrees with the tile. */

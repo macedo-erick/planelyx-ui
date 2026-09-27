@@ -90,6 +90,25 @@
   {{ t('dashboard.balancesNote') }}
 </p>
 
+<planelyx-card class="mb-6">
+  <div card-header class="border-b border-[var(--p-content-border-color)] px-4 py-3">
+    <h2 id="dashboard-trend-title" class="text-lg font-medium">{{ t('dashboard.trend') }}</h2>
+  </div>
+  @if (hasTrend()) {
+    <div class="p-4">
+      <p-chart
+        type="line"
+        [data]="trendData()"
+        [options]="trendOptions()"
+        ariaLabelledBy="dashboard-trend-title"
+        height="300px"
+      />
+    </div>
+  } @else {
+    <planelyx-empty-state icon="pi-chart-line" [title]="t('dashboard.noTrend')" />
+  }
+</planelyx-card>
+
 <div class="grid items-start gap-6 lg:grid-cols-2">
   <div class="flex flex-col gap-6">
     <planelyx-card>
