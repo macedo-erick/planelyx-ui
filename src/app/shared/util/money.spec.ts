@@ -6,6 +6,7 @@ import {
   currencySymbol,
   formatMinor,
   formatMoney,
+  formatMoneyRounded,
   formatMoneyUnmasked,
   roundCents,
   splitInstallments,
@@ -33,6 +34,39 @@ describe('money utils', () => {
       currentLocale.set('pt-BR');
 
       expect(formatMoney(10, 'USD')).toContain('US$');
+    });
+  });
+
+  describe('formatMoneyRounded', () => {
+    const original = currentLocale();
+
+    const normalise = (value: string) => value.replace(/\u00A0/g, ' ');
+
+    afterEach(() => {
+      currentLocale.set(original);
+      amountsHidden.set(false);
+    });
+
+    it('drops the cents', () => {
+      currentLocale.set('pt-BR');
+
+      expect(normalise(formatMoneyRounded(14000, {}, 'BRL'))).toBe('R$ 14.000');
+      expect(normalise(formatMoneyRounded(1234.56, {}, 'BRL'))).toBe('R$ 1.235');
+    });
+
+    it('abbreviates when compact, in the active locale', () => {
+      currentLocale.set('pt-BR');
+      expect(normalise(formatMoneyRounded(14000, { compact: true }, 'BRL'))).toBe('R$ 14 mil');
+
+      currentLocale.set('en-US');
+      expect(formatMoneyRounded(14000, { compact: true }, 'USD')).toBe('$14K');
+    });
+
+    it('is masked like formatMoney', () => {
+      currentLocale.set('pt-BR');
+      amountsHidden.set(true);
+
+      expect(formatMoneyRounded(14000, { compact: true }, 'BRL')).toBe(formatMoney(1, 'BRL'));
     });
   });
 
