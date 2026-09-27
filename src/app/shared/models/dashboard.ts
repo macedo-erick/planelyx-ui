@@ -26,8 +26,13 @@ export interface Dashboard {
    */
   readonly trend: readonly MonthMovement[];
   readonly categoryBreakdown: readonly CategoryBreakdown[];
-  readonly outstandingInvoiceTotal: Money;
-  readonly upcomingInvoices: readonly Invoice[];
+  /**
+   * The invoices `invoicesDueTotal` adds up, earliest first, so an overdue one from before the
+   * month leads. Only the first few come back; `invoicesDueCount` is how many there are in all.
+   */
+  readonly invoicesDue: readonly Invoice[];
+  /** The month's invoices that are already settled. */
+  readonly invoicesPaid: readonly Invoice[];
   readonly billsDue: readonly Transaction[];
   readonly billsDueTotal: Money;
   readonly billsDueCount: number;

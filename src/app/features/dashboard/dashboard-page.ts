@@ -110,11 +110,12 @@ export class DashboardPage {
     }),
   );
 
-  protected readonly outstandingInvoices = computed(
-    () => this.data()?.outstandingInvoiceTotal ?? 0,
-  );
   protected readonly balances = computed(() => [...(this.data()?.accountBalances ?? [])]);
-  protected readonly upcomingInvoices = computed(() => [...(this.data()?.upcomingInvoices ?? [])]);
+  protected readonly invoicesDue = computed(() => [...(this.data()?.invoicesDue ?? [])]);
+  protected readonly invoicesPaid = computed(() => [...(this.data()?.invoicesPaid ?? [])]);
+  protected readonly hasMoreInvoicesDue = computed(
+    () => this.invoicesDueCount() > this.invoicesDue().length,
+  );
   protected readonly dialogOpen = signal(false);
   protected readonly selected = signal<Transaction | null>(null);
 
@@ -122,7 +123,6 @@ export class DashboardPage {
   protected readonly billsDueTotal = computed(() => this.data()?.billsDueTotal ?? 0);
   protected readonly billsDueCount = computed(() => this.data()?.billsDueCount ?? 0);
   protected readonly accountCount = computed(() => this.balances().length);
-  protected readonly openInvoiceCount = computed(() => this.upcomingInvoices().length);
 
   /** Ticks a bill off the reminder, or puts it back. */
   protected toggleBill(bill: Transaction, paid: boolean): void {
@@ -247,6 +247,15 @@ export class DashboardPage {
 
   protected shortDate(iso: IsoDate): string {
     return shortDate(iso);
+  }
+
+  protected isOverdue(iso: IsoDate): boolean {
+    return (daysUntil(iso) ?? 0) < 0;
+  }
+
+  /** The day an invoice was settled, on the reader's own calendar. */
+  protected paidOn(invoice: Invoice): string {
+    return invoice.paidAt ? shortDate(toIsoDate(new Date(invoice.paidAt))) : '';
   }
 
   protected dueText(iso: IsoDate): string | null {
