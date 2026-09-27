@@ -19,6 +19,7 @@ import { PlanelyxCategoryBadge } from '../../shared/ui/category-badge';
 import { PlanelyxEmptyState } from '../../shared/ui/empty-state';
 import { PlanelyxMonthNav } from '../../shared/ui/month-nav';
 import { PlanelyxPageHeader } from '../../shared/ui/page-header';
+import { amountsHidden } from '../../shared/util/amount-visibility';
 import { daysUntil, startOfMonth, toIsoDate } from '../../shared/util/date';
 import { monthYear, shortDate } from '../../shared/util/date-format';
 import {
@@ -26,6 +27,7 @@ import {
   INVOICE_STATUS_SEVERITY,
   invoiceStatusLabels,
 } from '../../shared/util/enum-labels';
+import { currentLocale } from '../../shared/util/locale';
 import { formatMoney } from '../../shared/util/money';
 import { BankAccountService } from '../bank-accounts/bank-account.service';
 import { CurrencyService } from '../bank-accounts/currency.service';
@@ -33,6 +35,7 @@ import { CategoryService } from '../categories/category.service';
 import { CreditCardService } from '../credit-cards/credit-card.service';
 import { TransactionFormDialog } from '../transactions/transaction-form-dialog';
 import { TransactionService } from '../transactions/transaction.service';
+import { hasMovement, trendChartData, trendChartOptions } from './trend-chart';
 
 @Component({
   selector: 'planelyx-dashboard-page',
@@ -99,6 +102,14 @@ export class DashboardPage {
   protected readonly invoicesDueCount = computed(() => this.data()?.invoicesDueCount ?? 0);
   protected readonly income = computed(() => this.data()?.income ?? 0);
   protected readonly expense = computed(() => this.data()?.expense ?? 0);
+  protected readonly result = computed(() => this.data()?.result ?? 0);
+
+  protected readonly resultChangeLabel = computed(() =>
+    this.t('dashboard.resultChange', {
+      amount: this.signed(this.result() - (this.data()?.previousResult ?? 0)),
+    }),
+  );
+
   protected readonly outstandingInvoices = computed(
     () => this.data()?.outstandingInvoiceTotal ?? 0,
   );
@@ -174,6 +185,22 @@ export class DashboardPage {
     plugins: { legend: { position: 'bottom' } },
   };
 
+  protected readonly hasTrend = computed(() => hasMovement(this.data()?.trend ?? []));
+
+  protected readonly trendData = computed(() =>
+    trendChartData(this.data()?.trend ?? [], {
+      income: this.t('dashboard.trendIncome'),
+      expense: this.t('dashboard.trendExpense'),
+    }),
+  );
+
+  /** Rebuilt when the mask or the locale changes, since Chart.js only reads options as it draws. */
+  protected readonly trendOptions = computed(() => {
+    amountsHidden();
+    currentLocale();
+    return trendChartOptions();
+  });
+
   protected cardName(id: Uuid): string {
     return this.cards.byIdMap().get(id)?.name ?? this.t('dashboard.card');
   }
@@ -192,6 +219,12 @@ export class DashboardPage {
    */
   protected money(value: number): string {
     return formatMoney(value);
+  }
+
+  /** Signed, so a change reads as up or down rather than a bare amount. */
+  private signed(value: number): string {
+    const cents = Math.round(value * 100) / 100;
+    return `${cents >= 0 ? '+' : '−'}${formatMoney(Math.abs(cents))}`;
   }
 
   /** Signed, so a return reads as a gain or a loss rather than a bare amount. */
