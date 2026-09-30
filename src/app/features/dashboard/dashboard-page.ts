@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { UIChart } from 'primeng/chart';
@@ -113,8 +113,16 @@ export class DashboardPage {
   protected readonly balances = computed(() => [...(this.data()?.accountBalances ?? [])]);
   protected readonly invoicesDue = computed(() => [...(this.data()?.invoicesDue ?? [])]);
   protected readonly invoicesPaid = computed(() => [...(this.data()?.invoicesPaid ?? [])]);
+  /** Collapsed again whenever the month changes. */
+  protected readonly showAllInvoicesDue = linkedSignal({
+    source: this.month,
+    computation: () => false,
+  });
+  protected readonly visibleInvoicesDue = computed(() =>
+    this.showAllInvoicesDue() ? this.invoicesDue() : this.invoicesDue().slice(0, INVOICE_PREVIEW),
+  );
   protected readonly hasMoreInvoicesDue = computed(
-    () => this.invoicesDueCount() > this.invoicesDue().length,
+    () => this.invoicesDue().length > INVOICE_PREVIEW,
   );
   protected readonly dialogOpen = signal(false);
   protected readonly selected = signal<Transaction | null>(null);
@@ -274,6 +282,9 @@ export class DashboardPage {
 function monthParam(month: Date): string {
   return toIsoDate(month).slice(0, 7);
 }
+
+/** How many owed invoices show before the list is expanded. */
+const INVOICE_PREVIEW = 5;
 
 const PALETTE = [
   '#3b82f6',

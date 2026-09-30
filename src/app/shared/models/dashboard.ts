@@ -28,7 +28,7 @@ export interface Dashboard {
   readonly categoryBreakdown: readonly CategoryBreakdown[];
   /**
    * The invoices `invoicesDueTotal` adds up, earliest first, so an overdue one from before the
-   * month leads. Only the first few come back; `invoicesDueCount` is how many there are in all.
+   * month leads. Every one comes back; `invoicesDueCount` is their number.
    */
   readonly invoicesDue: readonly Invoice[];
   /** The month's invoices that are already settled. */

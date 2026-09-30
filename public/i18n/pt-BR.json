@@ -159,6 +159,7 @@
     "allPaid": "Tudo pago",
     "invoicesCount": "{{count}} fatura(s)",
     "seeAllInvoices": "Ver todas as {{count}} faturas",
+    "showFewerInvoices": "Mostrar menos",
     "paidInvoices": "Pagas no mês",
     "nothingPending": "Nada pendente",
     "nothingDue": "Nada a vencer",

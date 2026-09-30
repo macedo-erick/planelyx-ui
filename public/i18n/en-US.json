@@ -159,6 +159,7 @@
     "allPaid": "All paid",
     "invoicesCount": "{{count}} invoice(s)",
     "seeAllInvoices": "See all {{count}} invoices",
+    "showFewerInvoices": "Show fewer",
     "paidInvoices": "Paid this month",
     "nothingPending": "Nothing pending",
     "nothingDue": "Nothing due",
