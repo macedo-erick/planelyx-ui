@@ -296,7 +296,7 @@
         }
       </div>
 
-      @for (invoice of invoicesDue(); track invoice.id) {
+      @for (invoice of visibleInvoicesDue(); track invoice.id) {
         <a
           routerLink="/invoices"
           [queryParams]="{ cardId: invoice.creditCardId, month: invoice.referenceMonth }"
@@ -328,12 +328,18 @@
       }
 
       @if (hasMoreInvoicesDue()) {
-        <a
-          routerLink="/invoices"
-          class="block border-b border-[var(--p-content-border-color)] px-4 py-3 text-center text-sm font-medium text-[var(--p-primary-color)] last:border-b-0 hover:bg-[var(--p-content-hover-background)]"
+        <button
+          type="button"
+          class="block w-full border-b border-[var(--p-content-border-color)] px-4 py-3 text-center text-sm font-medium text-[var(--p-primary-color)] last:border-b-0 hover:cursor-pointer hover:bg-[var(--p-content-hover-background)]"
+          [attr.aria-expanded]="showAllInvoicesDue()"
+          (click)="showAllInvoicesDue.set(!showAllInvoicesDue())"
         >
-          {{ t('dashboard.seeAllInvoices', { count: invoicesDueCount() }) }}
-        </a>
+          {{
+            showAllInvoicesDue()
+              ? t('dashboard.showFewerInvoices')
+              : t('dashboard.seeAllInvoices', { count: invoicesDue().length })
+          }}
+        </button>
       }
 
       @if (invoicesPaid().length > 0) {
