@@ -170,6 +170,7 @@
     "noBills": "Nenhuma conta a pagar",
     "paid": "Pago",
     "markPaid": "Marcar {{description}} como paga",
+    "markUnpaid": "Desmarcar {{description}} como paga",
     "billsCount": "{{count}} conta(s)",
     "invested": "Investido",
     "netWorth": "Patrimônio",

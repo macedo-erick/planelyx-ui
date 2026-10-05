@@ -170,6 +170,7 @@
     "noBills": "Nothing to pay",
     "paid": "Paid",
     "markPaid": "Mark {{description}} as paid",
+    "markUnpaid": "Mark {{description}} as unpaid",
     "billsCount": "{{count}} bill(s)",
     "invested": "Invested",
     "netWorth": "Net worth",

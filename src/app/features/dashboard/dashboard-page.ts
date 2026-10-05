@@ -130,6 +130,7 @@ export class DashboardPage {
   protected readonly billsDue = computed(() => [...(this.data()?.billsDue ?? [])]);
   protected readonly billsDueTotal = computed(() => this.data()?.billsDueTotal ?? 0);
   protected readonly billsDueCount = computed(() => this.data()?.billsDueCount ?? 0);
+  protected readonly billsPaid = computed(() => [...(this.data()?.billsPaid ?? [])]);
   protected readonly accountCount = computed(() => this.balances().length);
 
   /** Ticks a bill off the reminder, or puts it back. */
@@ -262,6 +263,10 @@ export class DashboardPage {
   }
 
   /** The day an invoice was settled, on the reader's own calendar. */
+  protected billPaidOn(bill: Transaction): string {
+    return bill.paidDate ? shortDate(bill.paidDate) : '';
+  }
+
   protected paidOn(invoice: Invoice): string {
     return invoice.paidAt ? shortDate(toIsoDate(new Date(invoice.paidAt))) : '';
   }

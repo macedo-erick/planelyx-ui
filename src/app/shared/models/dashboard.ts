@@ -36,6 +36,8 @@ export interface Dashboard {
   readonly billsDue: readonly Transaction[];
   readonly billsDueTotal: Money;
   readonly billsDueCount: number;
+  /** The month's bills already ticked off, in the order they were paid. */
+  readonly billsPaid: readonly Transaction[];
   readonly beyondGeneratedOccurrences: boolean;
 }
 
