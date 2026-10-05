@@ -18,6 +18,8 @@ export interface Transaction {
   readonly purchaseDate: IsoDate;
   readonly description: string;
   readonly paid: boolean;
+  /** The day it was settled, present exactly when `paid` is. */
+  readonly paidDate: IsoDate | null;
   readonly createdAt: IsoInstant;
 }
 

@@ -64,6 +64,7 @@ const charge = (overrides: Partial<Transaction>): Transaction => ({
   purchaseDate: '2026-08-01',
   description: 'Charge',
   paid: false,
+  paidDate: null,
   createdAt: '2026-08-01T00:00:00Z',
   ...overrides,
 });
