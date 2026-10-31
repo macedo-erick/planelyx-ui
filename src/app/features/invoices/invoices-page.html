@@ -53,14 +53,14 @@
               (onClick)="actions.toggle($event)"
             />
             <p-popover #actions>
-              <div class="flex w-52 flex-col">
+              <div class="flex w-60 flex-col">
                 @if (inv.status === 'PAID') {
                   <p-button
                     [label]="t('invoices.undoPayment')"
                     icon="pi pi-undo"
                     severity="secondary"
                     [text]="true"
-                    styleClass="justify-start w-full"
+                    styleClass="justify-start w-full whitespace-nowrap"
                     (onClick)="actions.hide(); confirmUnpay(inv)"
                   />
                 } @else {
@@ -69,7 +69,7 @@
                     icon="pi pi-check-circle"
                     severity="secondary"
                     [text]="true"
-                    styleClass="justify-start w-full"
+                    styleClass="justify-start w-full whitespace-nowrap"
                     (onClick)="actions.hide(); confirmPay(inv)"
                   />
                   @if (canCloseEarly(inv)) {
@@ -78,7 +78,7 @@
                       icon="pi pi-lock"
                       severity="secondary"
                       [text]="true"
-                      styleClass="justify-start w-full"
+                      styleClass="justify-start w-full whitespace-nowrap"
                       (onClick)="actions.hide(); confirmCloseEarly(inv)"
                     />
                   }
@@ -88,7 +88,7 @@
                       icon="pi pi-lock-open"
                       severity="secondary"
                       [text]="true"
-                      styleClass="justify-start w-full"
+                      styleClass="justify-start w-full whitespace-nowrap"
                       (onClick)="actions.hide(); confirmReopenEarlyClose(inv)"
                     />
                   }
@@ -97,7 +97,7 @@
                     icon="pi pi-sliders-h"
                     severity="secondary"
                     [text]="true"
-                    styleClass="justify-start w-full"
+                    styleClass="justify-start w-full whitespace-nowrap"
                     (onClick)="actions.hide(); adjustOpen.set(true)"
                   />
                 }
@@ -106,7 +106,7 @@
                   icon="pi pi-trash"
                   severity="danger"
                   [text]="true"
-                  styleClass="justify-start w-full"
+                  styleClass="justify-start w-full whitespace-nowrap"
                   (onClick)="actions.hide(); confirmDelete(inv)"
                 />
               </div>
