@@ -549,7 +549,7 @@
       "message": "Fechar esta fatura hoje? Compras lançadas depois de hoje vão para a próxima fatura.",
       "messageWithDays": "Fechar esta fatura hoje, {{days}} dias antes do fechamento previsto? Compras lançadas depois de hoje vão para a próxima fatura.",
       "confirm": "Fechar agora",
-      "undoAction": "Desfazer fechamento antecipado",
+      "undoAction": "Desfazer fechamento",
       "undoHeader": "Desfazer fechamento antecipado",
       "undoMessage": "Reabrir esta fatura? Compras já movidas para a próxima fatura permanecem lá.",
       "undoConfirm": "Desfazer"
