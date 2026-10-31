@@ -53,6 +53,20 @@ export class InvoiceService {
       .pipe(tap(() => this.resource.reload()));
   }
 
+  /** Closes the invoice today instead of waiting for the card's calendar closing day. */
+  closeEarly(id: Uuid): Observable<Invoice> {
+    return this.http
+      .post<Invoice>(`${this.baseUrl}/${id}/close-early`, null)
+      .pipe(tap(() => this.resource.reload()));
+  }
+
+  /** Undoes `closeEarly`. */
+  reopenEarlyClose(id: Uuid): Observable<Invoice> {
+    return this.http
+      .post<Invoice>(`${this.baseUrl}/${id}/reopen`, null)
+      .pipe(tap(() => this.resource.reload()));
+  }
+
   /** Removes the invoice and every charge on it. */
   remove(id: Uuid): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`).pipe(tap(() => this.resource.reload()));

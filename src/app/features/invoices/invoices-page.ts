@@ -204,6 +204,14 @@ export class InvoicesPage {
     return INVOICE_STATUS_SEVERITY[status];
   }
 
+  protected canCloseEarly(invoice: Invoice): boolean {
+    return invoice.status === 'OPEN';
+  }
+
+  protected canReopenEarlyClose(invoice: Invoice): boolean {
+    return invoice.closedEarlyOn !== null && invoice.status !== 'PAID';
+  }
+
   /** Every figure on the page belongs to the selected card, so they share its currency. */
   protected readonly currency = computed(() => this.currencies.forCard(this.selectedCardId()));
 
@@ -288,6 +296,37 @@ export class InvoicesPage {
       rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },
       accept: () => {
         this.service.unpay(invoice.id).subscribe(() => this.cards.reload());
+      },
+    });
+  }
+
+  protected confirmCloseEarly(invoice: Invoice): void {
+    const days = daysUntil(invoice.billingPeriodEnd);
+
+    this.confirm.confirm({
+      header: this.t('invoices.closeEarly.header'),
+      message:
+        days !== null && days > 0
+          ? this.t('invoices.closeEarly.messageWithDays', { days })
+          : this.t('invoices.closeEarly.message'),
+      icon: 'pi pi-lock',
+      acceptButtonProps: { label: this.t('invoices.closeEarly.confirm'), severity: 'danger' },
+      rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },
+      accept: () => {
+        this.service.closeEarly(invoice.id).subscribe(() => this.cards.reload());
+      },
+    });
+  }
+
+  protected confirmReopenEarlyClose(invoice: Invoice): void {
+    this.confirm.confirm({
+      header: this.t('invoices.closeEarly.undoHeader'),
+      message: this.t('invoices.closeEarly.undoMessage'),
+      icon: 'pi pi-lock-open',
+      acceptButtonProps: { label: this.t('invoices.closeEarly.undoConfirm'), severity: 'danger' },
+      rejectButtonProps: { label: this.t('common.cancel'), severity: 'secondary', text: true },
+      accept: () => {
+        this.service.reopenEarlyClose(invoice.id).subscribe(() => this.cards.reload());
       },
     });
   }

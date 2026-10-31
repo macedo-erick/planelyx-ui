@@ -11,11 +11,19 @@ import { Invoice } from '../../shared/models/invoice';
 import { Transaction } from '../../shared/models/transaction';
 import { InvoicesPage } from './invoices-page';
 
+function acceptConfirmation(): void {
+  TestBed.inject(ConfirmationService).requireConfirmation$.subscribe((options) => options?.accept?.());
+}
+
 interface InvoicesPageInternals {
   onCardChange(cardId: string | null): void;
   onMonthChange(month: Date): void;
   invoice(): Invoice | null;
   charges(): readonly Transaction[];
+  canCloseEarly(invoice: Invoice): boolean;
+  canReopenEarlyClose(invoice: Invoice): boolean;
+  confirmCloseEarly(invoice: Invoice): void;
+  confirmReopenEarlyClose(invoice: Invoice): void;
 }
 
 const CARD_ID = '22222222-2222-2222-2222-222222222222';
@@ -32,6 +40,7 @@ const AUGUST_CLOSE_SEPTEMBER_DUE: Invoice = {
   totalAmount: 200,
   status: 'OPEN',
   paidAt: null,
+  closedEarlyOn: null,
   createdAt: '2026-07-29T00:00:00Z',
 };
 
@@ -45,6 +54,7 @@ const SEPTEMBER_CLOSE_OCTOBER_DUE: Invoice = {
   totalAmount: 90,
   status: 'OPEN',
   paidAt: null,
+  closedEarlyOn: null,
   createdAt: '2026-08-29T00:00:00Z',
 };
 
@@ -158,5 +168,57 @@ describe('InvoicesPage', () => {
     fixture.detectChanges();
 
     expect(page.charges().map((tx) => tx.id)).toEqual(['groceries', 'fuel', 'installment']);
+  });
+
+  it('only offers to close early while the invoice is open', () => {
+    expect(page.canCloseEarly({ ...AUGUST_CLOSE_SEPTEMBER_DUE, status: 'OPEN' })).toBe(true);
+    expect(page.canCloseEarly({ ...AUGUST_CLOSE_SEPTEMBER_DUE, status: 'CLOSED' })).toBe(false);
+    expect(page.canCloseEarly({ ...AUGUST_CLOSE_SEPTEMBER_DUE, status: 'PAID' })).toBe(false);
+  });
+
+  it('only offers to undo an early close that was actually manual', () => {
+    expect(
+      page.canReopenEarlyClose({
+        ...AUGUST_CLOSE_SEPTEMBER_DUE,
+        status: 'CLOSED',
+        closedEarlyOn: '2026-08-15',
+      }),
+    ).toBe(true);
+    expect(page.canReopenEarlyClose({ ...AUGUST_CLOSE_SEPTEMBER_DUE, status: 'CLOSED', closedEarlyOn: null })).toBe(
+      false,
+    );
+    expect(
+      page.canReopenEarlyClose({
+        ...AUGUST_CLOSE_SEPTEMBER_DUE,
+        status: 'PAID',
+        closedEarlyOn: '2026-08-15',
+      }),
+    ).toBe(false);
+  });
+
+  it('closes an invoice early', () => {
+    showMonth(2026, 8);
+    acceptConfirmation();
+
+    page.confirmCloseEarly(AUGUST_CLOSE_SEPTEMBER_DUE);
+
+    const http = TestBed.inject(HttpTestingController);
+    const req = http.expectOne(`${environment.apiUrl}/invoices/${AUGUST_CLOSE_SEPTEMBER_DUE.id}/close-early`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toBeNull();
+    req.flush({ ...AUGUST_CLOSE_SEPTEMBER_DUE, status: 'CLOSED', closedEarlyOn: '2026-08-15' });
+  });
+
+  it('undoes an early close', () => {
+    showMonth(2026, 8);
+    acceptConfirmation();
+
+    page.confirmReopenEarlyClose({ ...AUGUST_CLOSE_SEPTEMBER_DUE, status: 'CLOSED', closedEarlyOn: '2026-08-15' });
+
+    const http = TestBed.inject(HttpTestingController);
+    const req = http.expectOne(`${environment.apiUrl}/invoices/${AUGUST_CLOSE_SEPTEMBER_DUE.id}/reopen`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toBeNull();
+    req.flush({ ...AUGUST_CLOSE_SEPTEMBER_DUE, status: 'OPEN', closedEarlyOn: null });
   });
 });
