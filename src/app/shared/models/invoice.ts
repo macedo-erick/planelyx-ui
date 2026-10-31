@@ -12,6 +12,7 @@ export interface Invoice {
   readonly totalAmount: Money;
   readonly status: InvoiceStatus;
   readonly paidAt: IsoInstant | null;
+  readonly closedEarlyOn: IsoDate | null;
   readonly createdAt: IsoInstant;
 }
 

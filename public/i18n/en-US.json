@@ -543,6 +543,17 @@
       "doneDetail": "The total is now {{target}}.",
       "description": "Invoice adjustment"
     },
+    "closeEarly": {
+      "action": "Close early",
+      "header": "Close invoice early",
+      "message": "Close this invoice today? Charges dated after today will go to the next invoice.",
+      "messageWithDays": "Close this invoice today, {{days}} days before it would normally close? Charges dated after today will go to the next invoice.",
+      "confirm": "Close now",
+      "undoAction": "Undo early close",
+      "undoHeader": "Undo early close",
+      "undoMessage": "Reopen this invoice? Charges already moved to the next invoice stay there.",
+      "undoConfirm": "Undo"
+    },
     "noCards": "No credit cards yet",
     "noCardsMessage": "Add a card and its invoices will show up here.",
     "overdue": "{{days}} days overdue",

@@ -31,6 +31,7 @@ const INVOICE: Invoice = {
   totalAmount: 200,
   status: 'OPEN',
   paidAt: null,
+  closedEarlyOn: null,
   createdAt: '2026-07-11T00:00:00Z',
 };
 

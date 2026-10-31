@@ -72,6 +72,26 @@
                     styleClass="justify-start w-full"
                     (onClick)="actions.hide(); confirmPay(inv)"
                   />
+                  @if (canCloseEarly(inv)) {
+                    <p-button
+                      [label]="t('invoices.closeEarly.action')"
+                      icon="pi pi-lock"
+                      severity="secondary"
+                      [text]="true"
+                      styleClass="justify-start w-full"
+                      (onClick)="actions.hide(); confirmCloseEarly(inv)"
+                    />
+                  }
+                  @if (canReopenEarlyClose(inv)) {
+                    <p-button
+                      [label]="t('invoices.closeEarly.undoAction')"
+                      icon="pi pi-lock-open"
+                      severity="secondary"
+                      [text]="true"
+                      styleClass="justify-start w-full"
+                      (onClick)="actions.hide(); confirmReopenEarlyClose(inv)"
+                    />
+                  }
                   <p-button
                     [label]="t('invoices.adjust.action')"
                     icon="pi pi-sliders-h"
